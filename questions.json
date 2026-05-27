@@ -3,81 +3,429 @@
     "id": 1,
     "type": "text",
     "difficulty": "easy",
-    "category": "넌센스",
-    "question": "왜 바나나는 재판을 받을 수 없을까요?",
-    "hint": "바나나의 특징을 생각해보세요!",
-    "answer": "껍질(껍데기)을 벗기면 속이 다 보이기 때문!"
+    "category": "수학",
+    "format": "short",
+    "question": "캠핑에서 친구들이 텐트 3개를 쳤어요. 텐트 하나에 4명씩 자면 모두 몇 명이 자는 걸까요?",
+    "hints": [
+      "텐트 한 개에 몇 명이 자나요?",
+      "같은 수를 여러 번 더해 보세요.",
+      "3×4를 계산해 보세요."
+    ],
+    "answer": "12",
+    "answerDisplay": "12명"
   },
   {
     "id": 2,
     "type": "text",
     "difficulty": "easy",
     "category": "수학",
-    "question": "닭 3마리가 3일 동안 달걀 3개를 낳는다면, 닭 6마리가 6일 동안 몇 개의 달걀을 낳을까요?",
-    "hint": "닭 한 마리가 하루에 몇 개를 낳는지 생각해보세요.",
-    "answer": "12개 (닭 1마리가 3일에 1개 → 하루 1/3개, 6마리×6일×1/3 = 12개)"
+    "format": "short",
+    "question": "모닥불 장작이 20개 있었는데 8개를 태웠어요. 남은 장작은 몇 개일까요?",
+    "hints": [
+      "처음에 몇 개였나요?",
+      "없어진 것은 몇 개인가요?",
+      "20에서 8을 빼 보세요."
+    ],
+    "answer": "12",
+    "answerDisplay": "12개"
   },
   {
     "id": 3,
     "type": "text",
-    "difficulty": "easy",
-    "category": "상식",
-    "question": "우리나라의 국화(나라꽃)는 무엇일까요?",
-    "hint": "여름에 아침마다 새 꽃이 피는 꽃이에요!",
-    "answer": "무궁화"
+    "difficulty": "medium",
+    "category": "수학",
+    "format": "choice",
+    "question": "하늘에 별이 5개씩 5줄로 보여요. 별은 모두 몇 개일까요?",
+    "choices": ["20개", "25개", "30개", "35개"],
+    "hints": [
+      "줄마다 별이 몇 개인가요?",
+      "줄이 몇 줄인가요?",
+      "5씩 5번 더해 보세요."
+    ],
+    "answer": "25개",
+    "answerDisplay": "25개"
   },
   {
     "id": 4,
     "type": "text",
     "difficulty": "medium",
-    "category": "영어",
-    "question": "다음 영어 단어의 뜻을 맞혀보세요!\n\n'Butterfly'",
-    "hint": "날개가 있고, 꽃 주변에서 많이 볼 수 있어요!",
-    "answer": "나비"
+    "category": "수학",
+    "format": "choice",
+    "question": "나뭇잎을 15장 모았어요. 친구 3명에게 똑같이 나눠주면 한 명이 받는 잎은 몇 장일까요?",
+    "choices": ["3장", "4장", "5장", "6장"],
+    "hints": [
+      "모두 몇 장인가요?",
+      "나눠줄 친구는 몇 명인가요?",
+      "15를 3으로 똑같이 나눠 보세요."
+    ],
+    "answer": "5장",
+    "answerDisplay": "5장"
   },
   {
     "id": 5,
     "type": "text",
     "difficulty": "medium",
-    "category": "넌센스",
-    "question": "세상에서 가장 빠른 닭은?",
-    "hint": "소리와 관련이 있어요!",
-    "answer": "전기구이 통닭! (전기처럼 빠르니까)"
+    "category": "수학",
+    "format": "choice",
+    "question": "길이가 30cm인 나뭇가지가 있어요. 10cm짜리 조각으로 자르면 몇 조각이 될까요?",
+    "choices": ["2조각", "3조각", "4조각", "5조각"],
+    "hints": [
+      "나뭇가지 전체 길이는?",
+      "한 조각은 얼마나 길어요?",
+      "30÷10을 계산해 보세요."
+    ],
+    "answer": "3조각",
+    "answerDisplay": "3조각"
   },
   {
     "id": 6,
     "type": "text",
-    "difficulty": "medium",
-    "category": "상식",
-    "question": "지구에서 가장 큰 바다는 무엇일까요?",
-    "hint": "이름에 '평화롭다'는 뜻이 담겨있어요.",
-    "answer": "태평양"
+    "difficulty": "easy",
+    "category": "수학",
+    "format": "short",
+    "question": "개미가 1분에 2cm씩 이동해요. 5분이 지나면 몇 cm를 이동한 걸까요?",
+    "hints": [
+      "1분에 얼마나 가나요?",
+      "몇 분이 지났나요?",
+      "2씩 5번 더해 보세요."
+    ],
+    "answer": "10",
+    "answerDisplay": "10cm"
   },
   {
     "id": 7,
     "type": "text",
-    "difficulty": "hard",
-    "category": "수학",
-    "question": "1부터 100까지 모든 숫자를 더하면 얼마일까요?",
-    "hint": "1+100, 2+99, 3+98... 패턴을 찾아보세요!",
-    "answer": "5050 (101 × 50 = 5050)"
+    "difficulty": "medium",
+    "category": "국어",
+    "format": "choice",
+    "question": "다음 중 흉내 내는 말(의태어)이 아닌 것은 무엇일까요?",
+    "choices": ["살금살금", "반짝반짝", "졸졸졸", "파랗다"],
+    "hints": [
+      "흉내 내는 말은 어떤 느낌을 주나요?",
+      "모양이나 소리를 흉내 내는 말을 찾아보세요.",
+      "'파랗다'는 상태를 설명하는 말이에요."
+    ],
+    "answer": "파랗다",
+    "answerDisplay": "파랗다"
   },
   {
     "id": 8,
     "type": "text",
     "difficulty": "hard",
-    "category": "영어",
-    "question": "빈칸에 알맞은 단어를 넣어 문장을 완성하세요!\n\n'I _____ to school every day.'",
-    "hint": "매일 반복되는 행동에 쓰는 동사예요.",
-    "answer": "go (I go to school every day.)"
+    "category": "국어",
+    "format": "choice",
+    "question": "\"풀잎에 맺힌 이슬이 빛난다\"에서 '이슬이' 대신 넣어도 자연스러운 것은?",
+    "choices": ["별이", "나무가", "강이", "구름이"],
+    "hints": [
+      "'빛난다'는 어떤 것과 잘 어울릴까요?",
+      "작고 반짝이는 것을 생각해 보세요.",
+      "밤하늘에서 반짝이는 것은 무엇인가요?"
+    ],
+    "answer": "별이",
+    "answerDisplay": "별이"
   },
   {
     "id": 9,
     "type": "text",
     "difficulty": "hard",
-    "category": "상식",
-    "question": "태양계에서 가장 큰 행성은 무엇일까요?\n지름이 지구의 약 11배나 돼요!",
-    "hint": "로마 신화의 신 이름이기도 해요.",
-    "answer": "목성 (Jupiter)"
+    "category": "국어",
+    "format": "choice",
+    "question": "'숲속'을 바르게 소리 내면 어떻게 될까요?",
+    "choices": ["숩속", "숲쏙", "숩쏙", "수속"],
+    "hints": [
+      "'숲'의 받침은 어떻게 발음될까요?",
+      "뒤에 '속'이 오면 받침이 어떻게 연결되나요?",
+      "연음 법칙을 생각해 보세요."
+    ],
+    "answer": "숩쏙",
+    "answerDisplay": "숩쏙"
+  },
+  {
+    "id": 10,
+    "type": "text",
+    "difficulty": "medium",
+    "category": "국어",
+    "format": "choice",
+    "question": "다음 중 '사실'이 적힌 문장은 어느 것일까요?",
+    "choices": ["산이 정말 아름답다", "하늘이 파랗다", "캠핑이 재미있다", "별이 신기하게 느껴진다"],
+    "hints": [
+      "사실은 눈으로 직접 확인할 수 있는 것이에요.",
+      "누가 보아도 같은 대답이 나오는 것은 무엇인가요?",
+      "느낌이 들어간 문장은 사실이 아니에요."
+    ],
+    "answer": "하늘이 파랗다",
+    "answerDisplay": "하늘이 파랗다"
+  },
+  {
+    "id": 11,
+    "type": "text",
+    "difficulty": "easy",
+    "category": "국어",
+    "format": "choice",
+    "question": "캠핑 일기를 쓸 때 들어가야 하는 것이 아닌 것은?",
+    "choices": ["날짜와 날씨", "그날의 경험", "내 생각과 느낌", "친구 집 주소"],
+    "hints": [
+      "일기는 오늘 하루를 기록하는 것이에요.",
+      "일기를 써 본 적 있나요? 무엇을 적었나요?",
+      "날짜, 날씨, 겪은 일, 느낀 점 — 이 네 가지가 핵심이에요."
+    ],
+    "answer": "친구 집 주소",
+    "answerDisplay": "친구 집 주소"
+  },
+  {
+    "id": 12,
+    "type": "text",
+    "difficulty": "easy",
+    "category": "국어",
+    "format": "choice",
+    "question": "'시냇물이 ___ 흐른다'에서 빈칸에 어울리는 흉내 내는 말은?",
+    "choices": ["둥둥", "졸졸", "펑펑", "쾅쾅"],
+    "hints": [
+      "물이 조금씩 흐를 때 나는 소리를 생각해 보세요.",
+      "'졸졸'은 어떤 소리를 흉내 낸 말일까요?",
+      "시내는 작은 강이에요. 어떤 소리가 어울릴까요?"
+    ],
+    "answer": "졸졸",
+    "answerDisplay": "졸졸"
+  },
+  {
+    "id": 13,
+    "type": "text",
+    "difficulty": "easy",
+    "category": "과학",
+    "format": "choice",
+    "question": "식물이 살아가는 데 꼭 필요하지 않은 것은 무엇일까요?",
+    "choices": ["햇빛", "물", "공기", "유리"],
+    "hints": [
+      "식물이 스스로 밥을 만들려면 무엇이 필요할까요?",
+      "식물 뿌리는 무엇을 빨아들이나요?",
+      "유리는 식물이 자라는 데 쓰이는 재료인가요?"
+    ],
+    "answer": "유리",
+    "answerDisplay": "유리"
+  },
+  {
+    "id": 14,
+    "type": "text",
+    "difficulty": "medium",
+    "category": "과학",
+    "format": "choice",
+    "question": "숲속 나무의 어느 부분이 물과 양분을 뿌리에서 잎까지 전달해 줄까요?",
+    "choices": ["꽃", "열매", "줄기", "씨앗"],
+    "hints": [
+      "물은 아래에서 위로 어떻게 이동할까요?",
+      "나무를 세로로 잘라보면 안에 무엇이 보일까요?",
+      "뿌리, 줄기, 잎 — 어느 것이 연결통로 역할을 할까요?"
+    ],
+    "answer": "줄기",
+    "answerDisplay": "줄기"
+  },
+  {
+    "id": 15,
+    "type": "text",
+    "difficulty": "easy",
+    "category": "과학",
+    "format": "choice",
+    "question": "다음 중 겨울에도 잎이 지지 않는 나무는 무엇일까요?",
+    "choices": ["은행나무", "소나무", "단풍나무", "벚나무"],
+    "hints": [
+      "겨울 숲에서 초록색 나무를 본 적 있나요?",
+      "바늘처럼 뾰족한 잎을 가진 나무를 생각해 보세요.",
+      "크리스마스 트리로 쓰이는 나무는 어떤 종류일까요?"
+    ],
+    "answer": "소나무",
+    "answerDisplay": "소나무"
+  },
+  {
+    "id": 16,
+    "type": "text",
+    "difficulty": "medium",
+    "category": "과학",
+    "format": "choice",
+    "question": "개구리가 겨울잠을 자는 이유는 무엇일까요?",
+    "choices": ["더워서", "무서워서", "먹이가 없고 추워서", "날기 위해서"],
+    "hints": [
+      "개구리는 어떤 동물을 먹고 사나요?",
+      "겨울에 개구리 먹이인 곤충은 어디에 있나요?",
+      "체온이 주변 온도에 따라 변하는 동물을 변온동물이라고 해요."
+    ],
+    "answer": "먹이가 없고 추워서",
+    "answerDisplay": "먹이가 없고 추워서"
+  },
+  {
+    "id": 17,
+    "type": "text",
+    "difficulty": "easy",
+    "category": "과학",
+    "format": "choice",
+    "question": "캠핑장에서 하늘을 보니 달이 반쪽만 보여요. 이 달 모양의 이름은 무엇일까요?",
+    "choices": ["보름달", "그믐달", "반달", "초승달"],
+    "hints": [
+      "보름달은 동그란 달이에요.",
+      "초승달은 아주 가늘고 작은 달이에요.",
+      "딱 반만 보이는 달은 무엇이라고 부를까요?"
+    ],
+    "answer": "반달",
+    "answerDisplay": "반달"
+  },
+  {
+    "id": 18,
+    "type": "text",
+    "difficulty": "medium",
+    "category": "과학",
+    "format": "choice",
+    "question": "씨앗이 싹을 틔우는 데 가장 필요한 조건은 무엇일까요?",
+    "choices": ["적당한 물과 온도", "소금과 설탕", "어둠과 냉기", "바람과 소리"],
+    "hints": [
+      "씨앗을 심으면 무엇을 줘야 할까요?",
+      "너무 춥거나 너무 더우면 어떻게 될까요?",
+      "식물이 자라기 좋은 봄 날씨를 생각해 보세요."
+    ],
+    "answer": "적당한 물과 온도",
+    "answerDisplay": "적당한 물과 온도"
+  },
+  {
+    "id": 19,
+    "type": "text",
+    "difficulty": "medium",
+    "category": "사회",
+    "format": "choice",
+    "question": "지도에서 북쪽(N)이 위를 가리킬 때, 오른쪽은 어느 방향일까요?",
+    "choices": ["동쪽", "서쪽", "남쪽", "북쪽"],
+    "hints": [
+      "나침반에서 N은 북쪽이에요.",
+      "해가 뜨는 쪽은 동쪽이에요.",
+      "동서남북을 손으로 표시해 보세요."
+    ],
+    "answer": "동쪽",
+    "answerDisplay": "동쪽"
+  },
+  {
+    "id": 20,
+    "type": "text",
+    "difficulty": "easy",
+    "category": "사회",
+    "format": "choice",
+    "question": "캠핑장에서 불이 났을 때 신고해야 하는 전화번호는?",
+    "choices": ["112", "119", "110", "114"],
+    "hints": [
+      "화재·응급 구조를 담당하는 기관은 어디일까요?",
+      "소방차와 구급차가 오는 번호예요.",
+      "119 = 소방서 (화재, 구조, 응급)"
+    ],
+    "answer": "119",
+    "answerDisplay": "119"
+  },
+  {
+    "id": 21,
+    "type": "text",
+    "difficulty": "medium",
+    "category": "사회",
+    "format": "choice",
+    "question": "캠핑하기 좋은 계절은 언제일까요? 이유도 맞는 것을 골라보세요.",
+    "choices": ["여름 — 눈이 와서", "봄·가을 — 날씨가 따뜻하고 선선해서", "겨울 — 꽃이 피어서", "봄 — 태풍이 와서"],
+    "hints": [
+      "계절마다 날씨가 어떻게 다른가요?",
+      "덥지도 춥지도 않은 계절은 언제인가요?",
+      "봄과 가을의 날씨 특징을 생각해 보세요."
+    ],
+    "answer": "봄·가을 — 날씨가 따뜻하고 선선해서",
+    "answerDisplay": "봄·가을 — 날씨가 따뜻하고 선선해서"
+  },
+  {
+    "id": 22,
+    "type": "text",
+    "difficulty": "easy",
+    "category": "사회",
+    "format": "choice",
+    "question": "다음 중 공공장소에서 지켜야 할 규칙이 아닌 것은?",
+    "choices": ["쓰레기를 함부로 버리지 않는다", "큰 소리로 떠들지 않는다", "내가 먹고 싶은 것만 먹는다", "다른 사람에게 피해를 주지 않는다"],
+    "hints": [
+      "공공장소는 많은 사람이 함께 쓰는 곳이에요.",
+      "혼자만 생각하는 행동이 왜 문제가 될까요?",
+      "규칙은 여러 사람이 함께 잘 지내기 위한 약속이에요."
+    ],
+    "answer": "내가 먹고 싶은 것만 먹는다",
+    "answerDisplay": "내가 먹고 싶은 것만 먹는다"
+  },
+  {
+    "id": 23,
+    "type": "text",
+    "difficulty": "medium",
+    "category": "사회",
+    "format": "choice",
+    "question": "자연을 보호하기 위한 행동 중 잘못된 것을 고르세요.",
+    "choices": ["쓰레기를 되가져간다", "나무를 꺾지 않는다", "계곡에 세제를 씻어 흘려보낸다", "야생 동물에게 먹이를 함부로 주지 않는다"],
+    "hints": [
+      "계곡은 우리가 마시는 물과 연결될 수 있어요.",
+      "세제가 물속 생물에게 어떤 영향을 줄까요?",
+      "우리가 자연에 남겨야 하는 것은 발자국뿐이에요."
+    ],
+    "answer": "계곡에 세제를 씻어 흘려보낸다",
+    "answerDisplay": "계곡에 세제를 씻어 흘려보낸다"
+  },
+  {
+    "id": 24,
+    "type": "text",
+    "difficulty": "hard",
+    "category": "사회",
+    "format": "choice",
+    "question": "지도에서 같은 높이의 땅을 이은 선을 무엇이라고 부를까요?",
+    "choices": ["방위표", "범례", "등고선", "축척"],
+    "hints": [
+      "지도에서 산 모양을 어떻게 나타낼까요?",
+      "같은 높이끼리 연결한 선을 상상해 보세요.",
+      "'등(等)'은 '같다', '고(高)'는 '높이'라는 뜻이에요."
+    ],
+    "answer": "등고선",
+    "answerDisplay": "등고선"
+  },
+  {
+    "id": 25,
+    "type": "text",
+    "difficulty": "easy",
+    "category": "넌센스",
+    "format": "choice",
+    "question": "나무는 나무인데 절대로 오를 수 없는 나무는 무엇일까요?",
+    "choices": ["소나무", "구름나무", "참나무", "그네나무"],
+    "hints": [
+      "나무 이름에 힌트가 숨어 있어요.",
+      "하늘에 떠 있는 것과 관련 있어요.",
+      "잡으려 해도 잡히지 않는 것은?"
+    ],
+    "answer": "구름나무",
+    "answerDisplay": "구름나무"
+  },
+  {
+    "id": 26,
+    "type": "text",
+    "difficulty": "easy",
+    "category": "넌센스",
+    "format": "choice",
+    "question": "세상에서 가장 빠른 닭은 무엇일까요?",
+    "choices": ["청계", "토종닭", "전기닭", "KTX닭"],
+    "hints": [
+      "가장 빠른 것과 이름을 합치면?",
+      "빠르게 이동하는 에너지 중 하나를 생각해 보세요.",
+      "'전기'가 붙으면 빠른 이유가 뭘까요?"
+    ],
+    "answer": "전기닭",
+    "answerDisplay": "전기닭"
+  },
+  {
+    "id": 27,
+    "type": "text",
+    "difficulty": "easy",
+    "category": "넌센스",
+    "format": "choice",
+    "question": "캠핑 중에 불을 피워도 절대 타지 않는 나무는 무엇일까요?",
+    "choices": ["참나무", "소나무", "그림 속 나무", "잣나무"],
+    "hints": [
+      "실제로 존재하는 나무인가요?",
+      "눈으로 볼 수 있지만 만질 수 없는 것은?",
+      "종이 위에 그려진 것은 실제가 아니에요."
+    ],
+    "answer": "그림 속 나무",
+    "answerDisplay": "그림 속 나무"
   }
 ]
