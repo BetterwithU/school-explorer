@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>학교 캠핑 퀴즈 탐험대</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Apple SD Gothic Neo', 'Nanum Gothic', sans-serif;
+      background: #1a1a2e;
+      color: #fff;
+      min-height: 100vh;
+      padding: 24px 16px;
+    }
+
+    header {
+      text-align: center;
+      padding: 32px 0 24px;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      color: #e94560;
+      margin-bottom: 8px;
+    }
+
+    header p {
+      color: #a8dadc;
+      font-size: 1rem;
+    }
+
+    .section {
+      max-width: 600px;
+      margin: 0 auto 32px;
+    }
+
+    .section h2 {
+      font-size: 1.1rem;
+      color: #a8dadc;
+      margin-bottom: 14px;
+      border-left: 4px solid #e94560;
+      padding-left: 10px;
+    }
+
+    .rules {
+      background: #16213e;
+      border-radius: 16px;
+      padding: 20px;
+      line-height: 2;
+      color: #ccc;
+    }
+
+    .rules li {
+      margin-left: 16px;
+      font-size: 0.95rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .q-card {
+      background: #16213e;
+      border-radius: 14px;
+      padding: 16px 12px;
+      text-align: center;
+      text-decoration: none;
+      color: #fff;
+      transition: transform 0.15s, background 0.15s;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .q-card:hover {
+      transform: translateY(-3px);
+      background: #0f3460;
+    }
+
+    .q-num {
+      font-size: 1.4rem;
+      font-weight: bold;
+      color: #e94560;
+    }
+
+    .q-cat {
+      font-size: 0.8rem;
+      color: #a8dadc;
+    }
+
+    .q-diff {
+      font-size: 0.75rem;
+      padding: 3px 8px;
+      border-radius: 10px;
+      margin: 0 auto;
+    }
+
+    .easy { background: #2d6a4f; color: #b7e4c7; }
+    .medium { background: #7b4f12; color: #ffd166; }
+    .hard { background: #6b1c2e; color: #ffb3c1; }
+
+    .schedule-link {
+      display: block;
+      background: #e94560;
+      color: #fff;
+      text-align: center;
+      padding: 16px;
+      border-radius: 14px;
+      text-decoration: none;
+      font-size: 1rem;
+      font-weight: bold;
+      transition: background 0.2s;
+    }
+
+    .schedule-link:hover { background: #c73652; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🏕️ 퀴즈 탐험대</h1>
+    <p>학교 구석구석을 탐험하며 문제를 풀어보세요!</p>
+  </header>
+
+  <div class="section">
+    <h2>게임 규칙</h2>
+    <div class="rules">
+      <ul>
+        <li>조별로 순서표에 적힌 순서대로 QR코드를 찾아다니세요.</li>
+        <li>QR코드를 스캔하면 문제가 나타납니다.</li>
+        <li>힌트는 1번만 사용할 수 있어요!</li>
+        <li>모든 문제를 다 풀면 선생님께 확인받으세요.</li>
+        <li>가장 빨리, 가장 많이 맞힌 조가 우승!</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>문제 목록</h2>
+    <div class="grid" id="grid"></div>
+  </div>
+
+  <div class="section">
+    <h2>조별 순서표</h2>
+    <a href="schedule.html" class="schedule-link">📋 우리 조 순서 확인하기</a>
+  </div>
+
+  <script>
+    fetch('questions.json')
+      .then(r => r.json())
+      .then(questions => {
+        const grid = document.getElementById('grid');
+        const diffLabel = { easy: '쉬움', medium: '보통', hard: '어려움' };
+        questions.forEach(q => {
+          grid.innerHTML += `
+            <a href="question.html?id=${q.id}" class="q-card">
+              <div class="q-num">Q${q.id}</div>
+              <div class="q-cat">${q.category}</div>
+              <div class="q-diff ${q.difficulty}">${diffLabel[q.difficulty]}</div>
+            </a>
+          `;
+        });
+      });
+  </script>
+</body>
+</html>
