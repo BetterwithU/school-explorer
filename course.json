@@ -1,0 +1,22 @@
+{
+  "title": "학교 캠핑 탐험대",
+  "subtitle": "QR을 찾아다니며 미션을 해결하세요!",
+  "teams": [
+    "1조",
+    "2조",
+    "3조",
+    "4조"
+  ],
+  "missions": [
+    {
+      "place": "A",
+      "placeName": "운동장 미끄럼틀",
+      "questionId": 1
+    },
+    {
+      "place": "B",
+      "placeName": "도서관 입구",
+      "questionId": 2
+    }
+  ]
+}
