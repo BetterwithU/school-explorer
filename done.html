@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>미션 완료!</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Apple SD Gothic Neo', 'Nanum Gothic', sans-serif;
+      background: #1a1a2e; color: #fff; min-height: 100vh;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 24px 16px; text-align: center;
+    }
+    .trophy { font-size: 5rem; margin-bottom: 12px; animation: pop 0.6s ease; }
+    @keyframes pop { 0% { transform: scale(0); } 70% { transform: scale(1.2); } 100% { transform: scale(1); } }
+    h1 { font-size: 2rem; color: #ffd166; margin-bottom: 10px; }
+    .team-name { font-size: 1.4rem; color: #e94560; font-weight: bold; margin-bottom: 8px; }
+    p { color: #a8dadc; font-size: 1.05rem; line-height: 1.7; margin-bottom: 24px; }
+    .summary {
+      background: #16213e; border-radius: 16px; padding: 20px; max-width: 420px; width: 100%;
+      margin-bottom: 24px;
+    }
+    .summary .row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 0.95rem; }
+    .summary .row .k { color: #a8dadc; }
+    .summary .row .v { color: #b7e4c7; font-weight: bold; }
+    .btn {
+      display: block; max-width: 420px; width: 100%;
+      background: #e94560; color: #fff; text-decoration: none;
+      padding: 15px; border-radius: 14px; font-size: 1.05rem; font-weight: bold;
+    }
+    .btn:hover { background: #c73652; }
+  </style>
+</head>
+<body>
+  <div class="trophy">🏆</div>
+  <h1>모든 미션 완료!</h1>
+  <div class="team-name" id="teamName"></div>
+  <p>학교 구석구석을 탐험하며<br>모든 문제를 해결했어요. 정말 멋져요!</p>
+
+  <div class="summary" id="summary"></div>
+
+  <a class="btn" href="index.html">처음으로</a>
+
+  <script src="app.js"></script>
+  <script>
+    const p = loadProgress();
+    if (!p || !p.team) {
+      location.href = 'index.html';
+    } else {
+      document.getElementById('teamName').textContent = p.team;
+      const total = p.order.length;
+      const solved = Object.keys(p.solved).length;
+      document.getElementById('summary').innerHTML = `
+        <div class="row"><span class="k">우리 조</span><span class="v">${p.team}</span></div>
+        <div class="row"><span class="k">해결한 미션</span><span class="v">${solved} / ${total}</span></div>
+      `;
+    }
+  </script>
+</body>
+</html>

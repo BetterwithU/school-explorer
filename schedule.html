@@ -123,51 +123,42 @@
   </style>
 </head>
 <body>
-  <h1>📋 조별 순서표</h1>
-  <p class="subtitle">각 조는 아래 순서대로 QR코드를 찾아다니세요!</p>
+  <h1>📋 조별 순서표 <span style="font-size:0.8rem;color:#a8dadc">(선생님용)</span></h1>
+  <p class="subtitle">각 조의 이동 순서입니다. 학생에겐 첫 장소만 알려주면 앱이 다음을 안내해요.</p>
 
   <div class="group-cards" id="groups"></div>
 
   <button class="print-btn" onclick="window.print()">🖨️ 순서표 인쇄하기</button>
   <a href="index.html" class="back-link">← 메인으로 돌아가기</a>
 
+  <script src="app.js"></script>
   <script>
-    const TOTAL_QUESTIONS = 9;
-    const TOTAL_GROUPS = 6;
     const GROUP_COLORS = ['#e94560', '#f4a261', '#2ec4b6', '#a8dadc', '#b7e4c7', '#ffb3c1'];
-    const GROUP_NAMES = ['1조', '2조', '3조', '4조', '5조', '6조'];
 
-    function generateSchedule(numGroups, numQuestions) {
-      const base = Array.from({ length: numQuestions }, (_, i) => i + 1);
-      const schedules = [];
-      for (let g = 0; g < numGroups; g++) {
-        const offset = Math.floor((g * numQuestions) / numGroups);
-        const order = [...base.slice(offset), ...base.slice(0, offset)];
-        schedules.push(order);
-      }
-      return schedules;
-    }
+    loadData().then(({ course }) => {
+      const container = document.getElementById('groups');
+      const placeName = s => (course.missions.find(m => m.set === s) || {}).placeName || ('세트' + s);
 
-    const schedules = generateSchedule(TOTAL_GROUPS, TOTAL_QUESTIONS);
-    const container = document.getElementById('groups');
-
-    schedules.forEach((order, i) => {
-      const items = order.map((qNum, step) => `
-        <div class="order-item">
-          <span class="order-step">${step + 1}</span>
-          Q${qNum}
-        </div>
-      `).join('');
-
-      container.innerHTML += `
-        <div class="group-card">
-          <div class="group-title">
-            <span class="group-color" style="background:${GROUP_COLORS[i]}"></span>
-            ${GROUP_NAMES[i]}
+      course.teams.forEach((team, i) => {
+        // 앱과 동일한 결정적 셔플(세트 단위) → 실제 학생이 보는 순서와 일치
+        const order = teamMissionOrder(course, team);
+        const items = order.map((setNo, step) => `
+          <div class="order-item">
+            <span class="order-step">${step + 1}</span>
+            ${placeName(setNo)}
           </div>
-          <div class="order-list">${items}</div>
-        </div>
-      `;
+        `).join('');
+
+        container.innerHTML += `
+          <div class="group-card">
+            <div class="group-title">
+              <span class="group-color" style="background:${GROUP_COLORS[i % GROUP_COLORS.length]}"></span>
+              ${team}
+            </div>
+            <div class="order-list">${items}</div>
+          </div>
+        `;
+      });
     });
   </script>
 </body>

@@ -124,8 +124,8 @@
   </style>
 </head>
 <body>
-  <h1>🔳 QR코드 생성</h1>
-  <p class="subtitle">URL을 입력하고 새로고침 버튼을 누르면 QR코드가 업데이트됩니다.</p>
+  <h1>🔳 장소별 QR코드</h1>
+  <p class="subtitle">장소마다 QR 2개(A·B)를 나란히 붙이세요. 두 명이 하나씩 스캔합니다.</p>
 
   <div class="base-url-row">
     <input type="text" id="baseUrl" placeholder="https://betterwithu.github.io/school-explorer">
@@ -145,25 +145,27 @@
       const grid = document.getElementById('grid');
       grid.innerHTML = '';
 
-      fetch('questions.json')
+      fetch('course.json')
         .then(r => r.json())
-        .then(questions => {
-          questions.forEach(q => {
-            const url = `${base}/question.html?id=${q.id}`;
-            const card = document.createElement('div');
-            card.className = 'qr-card';
-            card.innerHTML = `
-              <div class="qr-label">Q${q.id} — ${q.category}</div>
-              <div class="qr-box" id="qr-${q.id}"></div>
-              <div class="qr-cat">${url}</div>
-            `;
-            grid.appendChild(card);
-            new QRCode(document.getElementById(`qr-${q.id}`), {
-              text: url,
-              width: 150,
-              height: 150,
-              colorDark: '#1a1a2e',
-              colorLight: '#ffffff',
+        .then(course => {
+          course.missions.forEach(m => {
+            const qids = m.qids || [];
+            const isCommon = qids.length === 1;
+            qids.forEach((qid, i) => {
+              const tag = isCommon ? '공통' : String.fromCharCode(65 + i); // A,B,C,D
+              const url = `${base}/mission.html?q=${encodeURIComponent(qid)}`;
+              const card = document.createElement('div');
+              card.className = 'qr-card';
+              card.innerHTML = `
+                <div class="qr-label">${m.placeName} — ${qid} (${tag})</div>
+                <div class="qr-box" id="qr-${qid}"></div>
+                <div class="qr-cat">${url}</div>
+              `;
+              grid.appendChild(card);
+              new QRCode(document.getElementById(`qr-${qid}`), {
+                text: url, width: 150, height: 150,
+                colorDark: '#1a1a2e', colorLight: '#ffffff',
+              });
             });
           });
         });

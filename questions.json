@@ -1,38 +1,69 @@
 [
   {
-    "id": 1,
-    "type": "text",
-    "difficulty": "easy",
-    "category": "수학",
-    "format": "short",
-    "question": "캠핑장에 텐트 3개가 있어요. 한 텐트에 4명씩 자면 모두 몇 명일까요?",
-    "hints": [
-      "텐트 하나에 4명",
-      "같은 수를 여러 번 더해요",
-      "3 곱하기 4"
-    ],
-    "answer": "12",
-    "answerDisplay": "12명"
+    "id": "1A", "set": 1, "slot": "A", "category": "국어", "difficulty": "easy",
+    "question": "빨갛고 둥근 과일 '사과'의 첫 글자는?",
+    "image": "",
+    "hints": ["나무에서 열려요.", "백설공주 이야기에 나와요."],
+    "answer": "사", "combined": "사과"
   },
   {
-    "id": 2,
-    "type": "text",
-    "difficulty": "easy",
-    "category": "과학",
-    "format": "choice",
-    "question": "겨울에도 잎이 지지 않는 나무는 무엇일까요?",
-    "hints": [
-      "겨울 숲에서 초록 나무",
-      "바늘처럼 뾰족한 잎",
-      "크리스마스 트리"
-    ],
-    "answer": "소나무",
-    "answerDisplay": "소나무",
-    "choices": [
-      "은행나무",
-      "소나무",
-      "단풍나무",
-      "벚나무"
-    ]
+    "id": "1B", "set": 1, "slot": "B", "category": "수학", "difficulty": "easy",
+    "question": "'사＋＿' 1 더하기 1을 한자로 읽으면? (둘째 글자)",
+    "hints": ["1+1은 2예요.", "과일 이름의 둘째 글자."],
+    "answer": "과", "combined": "사과"
+  },
+  {
+    "id": "2", "set": 2, "slot": "", "category": "수학", "difficulty": "hard",
+    "question": "캠핑장에 텐트가 6개, 각 텐트에 7명씩 잤어요. 모두 몇 명일까요?",
+    "hints": ["6을 7번 더해요.", "6×7을 계산해요."],
+    "answer": "42", "combined": "42"
+  },
+  {
+    "id": "3A", "set": 3, "slot": "A", "category": "국어", "difficulty": "easy",
+    "question": "세 글자 단어를 완성해요. 첫 글자: 무지개의 '무'에서 첫 글자는?",
+    "hints": ["하늘에 뜨는 색 띠.", "'무'지개"],
+    "answer": "무", "combined": "무지개"
+  },
+  {
+    "id": "3B", "set": 3, "slot": "B", "category": "과학", "difficulty": "easy",
+    "question": "둘째 글자: 비 온 뒤 하늘에 뜨는 일곱 색깔 띠의 가운데 글자는?",
+    "hints": ["무○개", "빨주노초파남보 색깔의 띠"],
+    "answer": "지", "combined": "무지개"
+  },
+  {
+    "id": "3C", "set": 3, "slot": "C", "category": "수학", "difficulty": "easy",
+    "question": "셋째 글자: 문을 여닫는 '개＿문'의 첫 글자, 무지개의 끝 글자는?",
+    "hints": ["무지○", "문을 여는 동작 '○폐'"],
+    "answer": "개", "combined": "무지개"
+  },
+  {
+    "id": "4A", "set": 4, "slot": "A", "category": "국어", "difficulty": "easy",
+    "question": "네 글자 완성. 첫 글자: 산에 많은 '나무'의 첫 글자는?",
+    "hints": ["숲에 가득해요.", "'나'무"],
+    "answer": "나", "combined": "나무그늘"
+  },
+  {
+    "id": "4B", "set": 4, "slot": "B", "category": "과학", "difficulty": "easy",
+    "question": "둘째 글자: 나무의 끝 글자는?",
+    "hints": ["나○", "목재가 되는 식물"],
+    "answer": "무", "combined": "나무그늘"
+  },
+  {
+    "id": "4C", "set": 4, "slot": "C", "category": "사회", "difficulty": "easy",
+    "question": "셋째 글자: 햇빛을 가려 시원한 '그늘'의 첫 글자는?",
+    "hints": ["나무 아래 시원한 곳.", "'그'늘"],
+    "answer": "그", "combined": "나무그늘"
+  },
+  {
+    "id": "4D", "set": 4, "slot": "D", "category": "과학", "difficulty": "easy",
+    "question": "넷째 글자: 그늘의 끝 글자는?",
+    "hints": ["그○", "햇빛 가린 어두운 곳"],
+    "answer": "늘", "combined": "나무그늘"
+  },
+  {
+    "id": "5", "set": 5, "slot": "", "category": "과학", "difficulty": "hard",
+    "question": "다음 중 '광합성'에 꼭 필요한 것이 아닌 것은? 답을 한 단어로: (햇빛/물/이산화탄소/소금) 중 필요 없는 것",
+    "hints": ["식물이 밥 만드는 과정이에요.", "바닷물에 든 짠 성분은 필요 없어요."],
+    "answer": "소금", "combined": "소금"
   }
 ]

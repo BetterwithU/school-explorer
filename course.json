@@ -1,22 +1,12 @@
 {
   "title": "학교 캠핑 탐험대",
-  "subtitle": "QR을 찾아다니며 미션을 해결하세요!",
-  "teams": [
-    "1조",
-    "2조",
-    "3조",
-    "4조"
-  ],
+  "subtitle": "QR을 찾아 미션을 해결하고 다음 장소로!",
+  "teams": ["1조", "2조", "3조", "4조"],
   "missions": [
-    {
-      "place": "A",
-      "placeName": "운동장 미끄럼틀",
-      "questionId": 1
-    },
-    {
-      "place": "B",
-      "placeName": "도서관 입구",
-      "questionId": 2
-    }
+    { "set": 1, "placeName": "운동장 미끄럼틀", "mode": "combo", "qids": ["1A", "1B"] },
+    { "set": 2, "placeName": "급식실 앞", "mode": "common", "qids": ["2"] },
+    { "set": 3, "placeName": "도서관 입구", "mode": "combo", "qids": ["3A", "3B", "3C"] },
+    { "set": 4, "placeName": "체육관 문", "mode": "combo", "qids": ["4A", "4B", "4C", "4D"] },
+    { "set": 5, "placeName": "화단 옆 벤치", "mode": "common", "qids": ["5"] }
   ]
 }

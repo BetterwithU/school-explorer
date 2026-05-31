@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>미션</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Apple SD Gothic Neo', 'Nanum Gothic', sans-serif;
+      background: #1a1a2e; color: #fff; min-height: 100vh;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 20px;
+    }
+    .card {
+      background: #16213e; border-radius: 20px; padding: 28px 24px;
+      max-width: 480px; width: 100%; box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
+    .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; font-size: 0.85rem; }
+    .topbar .team { color: #ffd166; font-weight: bold; }
+    .topbar .step { color: #a8dadc; }
+
+    .badge-row { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+    .badge { padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; }
+    .badge-pair { background: #e94560; color: #fff; }
+    .badge-place { background: #0f3460; color: #a8dadc; }
+    .badge-cat { background: #0f3460; color: #ffd166; }
+
+    .question-text { font-size: 1.25rem; line-height: 1.7; margin-bottom: 18px; white-space: pre-line; }
+    .q-image { width: 100%; border-radius: 12px; margin-bottom: 16px; display: block; }
+
+    /* 협력 안내 박스 */
+    .pair-note {
+      background: #0f3460; border-left: 4px solid #e94560; border-radius: 10px;
+      padding: 12px 14px; margin-bottom: 18px; font-size: 0.92rem; color: #a8dadc; line-height: 1.5;
+    }
+    .pair-note b { color: #ffd166; }
+
+    .hint-btn {
+      background: none; border: 2px solid #0f3460; color: #a8dadc;
+      padding: 11px; border-radius: 12px; font-size: 0.9rem; cursor: pointer;
+      width: 100%; margin-bottom: 10px; transition: background 0.2s;
+    }
+    .hint-btn:hover { background: #0f3460; }
+    .hint-box { background: #0f3460; border-radius: 12px; padding: 12px 14px; margin-bottom: 10px; color: #a8dadc; font-size: 0.92rem; line-height: 1.6; }
+
+    .my-answer-label { font-size: 0.85rem; color: #74c69d; margin: 14px 0 6px; }
+    .combined-label { font-size: 0.9rem; color: #ffd166; margin: 8px 0 6px; font-weight: bold; }
+    .answer-input {
+      width: 100%; padding: 14px 16px; border-radius: 12px; border: 2px solid #0f3460;
+      background: #0f3460; color: #fff; font-size: 1.15rem; margin-bottom: 16px; text-align: center;
+    }
+    .answer-input::placeholder { color: #7a8aa5; font-size: 0.95rem; }
+
+    .submit-btn {
+      background: #e94560; border: none; color: #fff; padding: 15px;
+      border-radius: 12px; font-size: 1.05rem; font-weight: bold; cursor: pointer;
+      width: 100%; transition: background 0.2s;
+    }
+    .submit-btn:hover { background: #c73652; }
+
+    .feedback { margin-top: 14px; padding: 14px; border-radius: 12px; text-align: center; font-size: 1rem; display: none; }
+    .feedback.wrong { background: #6b1c2e; color: #ffb3c1; display: block; }
+    .feedback.right { background: #2d6a4f; color: #b7e4c7; display: block; }
+
+    .guide { text-align: center; }
+    .guide .ico { font-size: 2.4rem; margin-bottom: 8px; }
+    .guide .ttl { font-size: 1.2rem; font-weight: bold; margin-bottom: 12px; color: #e94560; }
+    .guide .place { background: #2d6a4f; border-radius: 14px; padding: 18px; margin: 16px 0; }
+    .guide .place .lbl { font-size: 0.8rem; color: #74c69d; }
+    .guide .place .nm { font-size: 1.5rem; font-weight: bold; color: #b7e4c7; margin-top: 4px; }
+    .share-box { background: #7b4f12; border-radius: 14px; padding: 16px; margin: 8px 0 4px; }
+    .share-box .share-lbl { font-size: 0.82rem; color: #ffd166; margin-bottom: 6px; }
+    .share-box .share-ans { font-size: 1.8rem; font-weight: bold; color: #fff; letter-spacing: 2px; }
+    .guide .desc { color: #a8dadc; font-size: 0.92rem; line-height: 1.6; }
+    .guide .btn { display: block; background: #0f3460; color: #a8dadc; text-decoration: none; padding: 13px; border-radius: 12px; margin-top: 16px; font-size: 0.95rem; }
+  </style>
+</head>
+<body>
+  <div class="card" id="card"><p style="text-align:center;color:#a8dadc">불러오는 중...</p></div>
+
+  <script src="app.js"></script>
+  <script>
+    const params = new URLSearchParams(location.search);
+    const scannedQid = params.get('q');   // 예: "1A" 또는 "1B"
+
+    let COURSE, QUESTIONS, PROGRESS, QUESTION, MISSION;
+    let hintsShown = 0;
+
+    loadData().then(({ course, questions }) => {
+      COURSE = course; QUESTIONS = questions;
+      PROGRESS = loadProgress();
+      route();
+    });
+
+    function route() {
+      if (!PROGRESS || !PROGRESS.team) {
+        guide('🚩', '먼저 조를 선택하세요', null,
+          '시작 화면에서 우리 조를 먼저 골라야 미션을 시작할 수 있어요.',
+          'index.html', '시작 화면으로 가기');
+        return;
+      }
+      if (!scannedQid) { showCurrentGuide(); return; }
+
+      QUESTION = findQuestion(QUESTIONS, scannedQid);
+      MISSION = missionByQuestionId(COURSE, scannedQid);
+      if (!QUESTION || !MISSION) {
+        guide('❓', '알 수 없는 QR이에요', null, '이 QR코드는 우리 탐험대 미션이 아니에요.',
+          'index.html', '시작 화면으로');
+        return;
+      }
+
+      const setNo = MISSION.set;
+
+      // 이미 푼 세트
+      if (PROGRESS.solved[setNo]) {
+        guide('✅', '이미 해결한 미션이에요', null,
+          `'${MISSION.placeName}' 미션은 이미 풀었어요. 다음 장소로 가요!`, null, null, true);
+        return;
+      }
+
+      const cur = currentSet(PROGRESS);
+      // 차례가 아닌 세트
+      if (setNo !== cur) {
+        const curM = missionBySet(COURSE, cur);
+        guide('🚧', '아직 여기 차례가 아니에요!', curM.placeName,
+          '우리 조는 정해진 순서대로 움직여요. 아래 장소로 먼저 가세요.',
+          `mission.html`, '현재 미션 보기');
+        return;
+      }
+
+      renderQuestion();
+    }
+
+    function showCurrentGuide() {
+      if (isAllDone(PROGRESS)) { location.href = 'done.html'; return; }
+      const m = missionBySet(COURSE, currentSet(PROGRESS));
+      const n = missionQrCount(m);
+      const stepNo = PROGRESS.step + 1, total = PROGRESS.order.length;
+      const scanMsg = n === 1
+        ? '이곳의 QR코드를 모두 스캔해서 공통 문제를 푸세요!'
+        : `이곳에서 QR코드 ${n}개를 ${n}명이 나눠 스캔하세요!`;
+      guide('📍', `${stepNo}번째 미션 장소`, m.placeName,
+        `${PROGRESS.team} · ${stepNo}/${total}\n${scanMsg}`, null, null, true);
+    }
+
+    function renderQuestion() {
+      const q = QUESTION;
+      const n = missionQrCount(MISSION);       // 이 세트 QR 개수
+      const isCommon = n === 1;
+      const stepNo = PROGRESS.step + 1, total = PROGRESS.order.length;
+      hintsShown = 0;
+
+      const myLabel = isCommon ? `${q.set}번 공통` : `${q.set}-${q.slot}`;
+      const len = isCommon ? null : n;          // 합본 글자 수
+
+      // 안내 문구 분기
+      let noteHtml, inputLabel, placeholder;
+      if (isCommon) {
+        noteHtml = `
+          <div class="pair-note">
+            이 장소는 <b>공통 문제</b>예요. 조원 모두 같은 문제를 풉니다.<br>
+            한 명이 먼저 풀면 <b>정답을 친구들에게 알려주세요!</b><br>
+            각자 자기 폰에 정답을 입력하면 다음 장소로 갈 수 있어요.
+          </div>`;
+        inputLabel = '정답 입력';
+        placeholder = '정답을 입력하세요';
+      } else {
+        const others = (MISSION.qids || []).filter(x => x !== q.id)
+          .map(x => `${q.set}-${x.replace(String(q.set), '')}`).join(', ');
+        noteHtml = `
+          <div class="pair-note">
+            이 문제의 답은 <b>한 글자</b>예요.<br>
+            짝꿍 <b>${others}</b> 친구들의 답과 <b>순서대로 합쳐야</b> ${len}글자가 완성돼요.<br>
+            서로 답을 알려주고, 아래에 <b>${len}글자 전체</b>를 입력하세요!
+          </div>`;
+        inputLabel = `${len}글자 정답 입력`;
+        placeholder = `${len}글자 모두 입력`;
+      }
+
+      const hintsHtml = (q.hints || []).map((h, i) =>
+        `<div class="hint-box" id="hint${i}" style="display:none">💡 ${h}</div>`
+      ).join('');
+
+      const imageHtml = q.image
+        ? `<img class="q-image" src="${q.image}" alt="문제 이미지" onerror="this.style.display='none'">`
+        : '';
+
+      document.getElementById('card').innerHTML = `
+        <div class="topbar">
+          <span class="team">${PROGRESS.team}</span>
+          <span class="step">미션 ${stepNo} / ${total}</span>
+        </div>
+        <div class="badge-row">
+          <span class="badge badge-pair">${myLabel}</span>
+          <span class="badge badge-place">${MISSION.placeName}</span>
+          <span class="badge badge-cat">${q.category}</span>
+        </div>
+        ${imageHtml}
+        <p class="question-text">${q.question}</p>
+
+        ${noteHtml}
+
+        ${hintsHtml}
+        <button class="hint-btn" id="hintBtn">💡 힌트 보기${q.hints && q.hints.length ? ' (' + q.hints.length + ')' : ''}</button>
+
+        <div class="combined-label">${inputLabel}</div>
+        <input class="answer-input" id="ans" placeholder="${placeholder}" autocomplete="off">
+        <button class="submit-btn" id="submitBtn">정답 제출</button>
+        <div class="feedback" id="feedback"></div>
+      `;
+
+      document.getElementById('hintBtn').onclick = () => {
+        const hints = q.hints || [];
+        if (hintsShown < hints.length) { document.getElementById('hint' + hintsShown).style.display = 'block'; hintsShown++; }
+        if (hintsShown >= hints.length) document.getElementById('hintBtn').style.display = 'none';
+      };
+
+      document.getElementById('submitBtn').onclick = () => {
+        const input = document.getElementById('ans').value || '';
+        const fb = document.getElementById('feedback');
+        if (!input.trim()) { fb.className = 'feedback wrong'; fb.textContent = '정답을 입력해주세요!'; return; }
+        if (checkCombined(q, input)) {
+          markSolved(PROGRESS, q.set, input.trim());
+          fb.className = 'feedback right';
+          fb.textContent = isCommon ? '🎉 정답이에요! 멋져요!' : '🎉 정답이에요! 모두 힘을 합쳤네요!';
+          setTimeout(() => showNextAfterSolve(q.combined, isCommon), 800);
+        } else {
+          fb.className = 'feedback wrong';
+          fb.textContent = isCommon ? '아쉬워요! 다시 생각해 볼까요?' : '아쉬워요! 친구들과 답을 다시 맞춰보세요.';
+        }
+      };
+    }
+
+    // 정답 후: 다음 장소 안내 + (방금 푼) 정답 공유 카드
+    function showNextAfterSolve(solvedAnswer, wasCommon) {
+      const allDone = isAllDone(PROGRESS);
+      const m = allDone ? null : missionBySet(COURSE, currentSet(PROGRESS));
+      const stepNo = PROGRESS.step + 1, total = PROGRESS.order.length;
+      const n = m ? missionQrCount(m) : 0;
+
+      const placeHtml = m
+        ? `<div class="place"><div class="lbl">다음 장소</div><div class="nm">${m.placeName}</div></div>`
+        : '';
+      const scanMsg = !m ? ''
+        : (n === 1 ? `${stepNo}/${total} · 이 장소의 QR을 스캔해 공통 문제를 푸세요!`
+                   : `${stepNo}/${total} · 이 장소에서 QR ${n}개를 ${n}명이 나눠 스캔!`);
+
+      // 정답 공유 카드 (친구에게 알려주라고)
+      const shareHtml = `
+        <div class="share-box">
+          <div class="share-lbl">✅ 우리 조 정답 (친구에게 알려주세요!)</div>
+          <div class="share-ans">${solvedAnswer}</div>
+        </div>`;
+
+      const ttl = allDone ? '마지막 미션 완료!' : '정답! 다음 미션으로 출발!';
+      const linkHtml = allDone
+        ? `<a class="btn" href="done.html">완료 화면으로 →</a>`
+        : `<a class="btn" href="index.html">← 시작 화면</a>`;
+
+      document.getElementById('card').innerHTML = `
+        <div class="guide">
+          <div class="ico">✅</div>
+          <div class="ttl">${ttl}</div>
+          ${shareHtml}
+          ${placeHtml}
+          <div class="desc">${scanMsg}</div>
+          ${linkHtml}
+        </div>`;
+    }
+
+    function guide(ico, ttl, placeName, desc, link, linkLabel, showHome) {
+      const placeHtml = placeName ? `<div class="place"><div class="lbl">다음 장소</div><div class="nm">${placeName}</div></div>` : '';
+      const linkHtml = link ? `<a class="btn" href="${link}">${linkLabel}</a>` : '';
+      const homeHtml = showHome ? `<a class="btn" href="index.html">← 시작 화면</a>` : '';
+      document.getElementById('card').innerHTML =
+        `<div class="guide"><div class="ico">${ico}</div><div class="ttl">${ttl}</div>${placeHtml}<div class="desc">${desc}</div>${linkHtml}${homeHtml}</div>`;
+    }
+  </script>
+</body>
+</html>
