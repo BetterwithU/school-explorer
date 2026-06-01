@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🛰️ 운영본부 (HQ)</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Apple SD Gothic Neo', 'Nanum Gothic', sans-serif;
+      background: #0f1424; color: #fff; min-height: 100dvh; padding: 20px 14px;
+    }
+    .wrap { max-width: 760px; margin: 0 auto; }
+    header { text-align: center; margin-bottom: 8px; }
+    header h1 { font-size: 1.5rem; color: #7dd3fc; }
+    header p { color: #8b9bb4; font-size: 0.82rem; margin-top: 4px; }
+
+    .controls { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 14px 0; }
+    .controls a {
+      background: #1e2840; color: #cfe3ff; text-decoration: none; padding: 9px 14px;
+      border-radius: 10px; font-size: 0.85rem;
+    }
+    .controls a.dev { background: #3b2d5e; color: #c4b5fd; }
+    .controls a:active { filter: brightness(1.25); }
+
+    .section-title { font-size: 0.9rem; color: #7dd3fc; margin: 22px 0 10px; font-weight: bold; }
+
+    .muted { color: #8b9bb4; font-size: 0.9rem; text-align: center; padding: 16px; }
+    .offline {
+      background: #2a1f15; border: 1px solid #7b4f12; border-radius: 12px; padding: 16px;
+      color: #ffe8b3; font-size: 0.88rem; line-height: 1.6;
+    }
+    .offline b { color: #ffd166; }
+    .offline code { background: #00000044; padding: 1px 6px; border-radius: 5px; }
+
+    .team-card { background: #16213e; border-radius: 14px; padding: 16px; margin-bottom: 10px; }
+    .tc-head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+    .tc-dot { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; }
+    .tc-name { font-weight: bold; font-size: 1.05rem; }
+    .tc-meta { margin-left: auto; font-size: 0.78rem; color: #8b9bb4; }
+    .tc-place { color: #ffd166; font-size: 0.9rem; margin-bottom: 8px; }
+    .bar { background: #0f3460; border-radius: 8px; height: 14px; overflow: hidden; }
+    .bar > span { display: block; height: 100%; background: #2ec4b6; transition: width 0.4s; }
+    .tc-prog { font-size: 0.8rem; color: #b7e4c7; margin-top: 6px; }
+    .tc-done { color: #ffd166; font-weight: bold; }
+    .tc-wait { color: #5b6b8a; }
+
+    details { background: #16213e; border-radius: 12px; padding: 12px 14px; margin-bottom: 10px; }
+    summary { cursor: pointer; color: #cfe3ff; font-size: 0.9rem; font-weight: bold; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.8rem; }
+    th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #1e2840; vertical-align: top; }
+    th { color: #7dd3fc; }
+    .ans { color: #ffd166; font-weight: bold; white-space: nowrap; }
+    .treasure-box { background: #7b4f12; border-radius: 12px; padding: 14px; font-size: 0.9rem; }
+    .treasure-box .place { font-size: 1.3rem; font-weight: bold; color: #fff; }
+    .pieces { color: #ffe8b3; letter-spacing: 3px; font-size: 1.1rem; }
+
+    @media (hover: hover) { .controls a:hover { filter: brightness(1.25); } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>🛰️ 운영본부 (HQ)</h1>
+      <p>게임 진행 현황 · 선생님 전용</p>
+    </header>
+
+    <div class="controls">
+      <a class="dev" href="dev.html">🛠️ 개발자 콘솔</a>
+      <a href="schedule.html">📋 조별 순서표</a>
+      <a href="qrcodes.html">🔳 QR 인쇄</a>
+      <a href="index.html">🏠 시작 화면</a>
+    </div>
+
+    <div class="section-title">📡 실시간 조별 진행</div>
+    <div id="live"><div class="muted">불러오는 중…</div></div>
+
+    <div class="section-title">💎 최종 보물</div>
+    <div id="treasure"></div>
+
+    <div class="section-title">📚 전체 문제·정답 (커닝지)</div>
+    <div id="bank"></div>
+  </div>
+
+  <script src="firebase-config.js"></script>
+  <script src="app.js"></script>
+  <script type="module" src="sync.js"></script>
+  <script>
+    const COLORS = ['#e94560', '#f4a261', '#2ec4b6', '#a8dadc', '#b7e4c7', '#ffb3c1'];
+    let COURSE, QUESTIONS;
+
+    loadData().then(({ course, questions }) => {
+      COURSE = course; QUESTIONS = questions;
+      renderTreasure();
+      renderBank();
+      bindRealtime();
+    });
+
+    /* ---------- 실시간 ---------- */
+    function aggregate(teamsData) {
+      const out = {};
+      for (const team in (teamsData || {})) {
+        const arr = Object.values(teamsData[team] || {});
+        if (!arr.length) continue;
+        const best = arr.reduce((a, b) => ((b.step || 0) > (a.step || 0) ? b : a));
+        out[team] = { ...best, deviceCount: arr.length };
+      }
+      return out;
+    }
+
+    function renderLive(agg) {
+      const cards = COURSE.teams.map((team, i) => {
+        const d = agg[team];
+        const color = COLORS[i % COLORS.length];
+        if (!d) {
+          return `<div class="team-card">
+            <div class="tc-head"><span class="tc-dot" style="background:${color}"></span>
+              <span class="tc-name">${team}</span><span class="tc-meta tc-wait">대기 중</span></div>
+            <div class="tc-prog tc-wait">아직 시작 전</div>
+          </div>`;
+        }
+        const total = d.total || COURSE.missions.length;
+        const pct = Math.round((d.step / total) * 100);
+        const place = d.finaleSolved ? '🏆 보물 발견 — 완주!' : d.placeName || '-';
+        const prog = d.finaleSolved
+          ? `<span class="tc-done">완주 🎉</span>`
+          : `${d.step} / ${total} 미션 해결`;
+        return `<div class="team-card">
+          <div class="tc-head"><span class="tc-dot" style="background:${color}"></span>
+            <span class="tc-name">${team}</span>
+            <span class="tc-meta">기기 ${d.deviceCount} · ${timeAgo(d.ts)}</span></div>
+          <div class="tc-place">📍 ${place}</div>
+          <div class="bar"><span style="width:${pct}%"></span></div>
+          <div class="tc-prog">${prog}</div>
+        </div>`;
+      }).join('');
+      document.getElementById('live').innerHTML = cards;
+    }
+
+    function timeAgo(ts) {
+      if (!ts) return '';
+      const s = Math.max(0, Math.round((Date.now() - ts) / 1000));
+      if (s < 60) return s + '초 전';
+      const m = Math.round(s / 60);
+      if (m < 60) return m + '분 전';
+      return Math.round(m / 60) + '시간 전';
+    }
+
+    function bindRealtime() {
+      const start = () => {
+        const live = document.getElementById('live');
+        if (window.SchoolExplorerSync && window.SchoolExplorerSync.online) {
+          live.innerHTML = '<div class="muted">실시간 연결됨 — 조 진행을 기다리는 중…</div>';
+          window.SchoolExplorerSync.subscribe((data) => renderLive(aggregate(data)));
+        } else {
+          live.innerHTML = `<div class="offline">
+            <b>오프라인 모드</b> — 실시간 조 위치가 비활성화돼 있어요.<br>
+            <code>firebase-config.js</code> 에 Firebase 설정을 넣으면 켜집니다.
+            설정법: <b>drafts/firebase-셋업.md</b><br>
+            <small>(설정 전에도 게임과 조별 순서표는 정상 동작합니다)</small>
+          </div>`;
+        }
+      };
+      if (window.SYNC_READY) start();
+      else window.addEventListener('sync-ready', start, { once: true });
+    }
+
+    /* ---------- 정적 정보 ---------- */
+    function renderTreasure() {
+      const f = COURSE.finale || {};
+      const pieces = COURSE.missions.filter(m => m.piece).map(m => m.piece);
+      document.getElementById('treasure').innerHTML = `
+        <div class="treasure-box">
+          최종 정답(보물 위치): <span class="place">${f.answer || '-'}</span><br>
+          <small>흩어진 글자(set 1→8 순): <span class="pieces">${pieces.join(' ')}</span></small>
+        </div>`;
+    }
+
+    function renderBank() {
+      const rows = COURSE.missions.map(m => {
+        const qs = (m.qids || []).map(qid => {
+          const q = findQuestion(QUESTIONS, qid) || {};
+          const label = m.qids.length === 1 ? '공통' : (q.slot || '');
+          return `<tr>
+            <td>${m.set}-${label} <small>(${qid})</small></td>
+            <td>${q.category || ''}</td>
+            <td>${(q.question || '').replace(/\n/g, ' ')}</td>
+            <td class="ans">${q.answer || ''}</td>
+            <td class="ans">${q.combined || ''}</td>
+          </tr>`;
+        }).join('');
+        return `<details>
+          <summary>${m.set}. ${m.placeName} — ${m.mode === 'common' ? '공통' : 'QR ' + m.qids.length + '개'} · 보물글자 「${m.piece}」</summary>
+          <table>
+            <tr><th>문제</th><th>분류</th><th>내용</th><th>답</th><th>합본</th></tr>
+            ${rows}
+          </table>
+        </details>`;
+      }).join('');
+      document.getElementById('bank').innerHTML = rows;
+    }
+  </script>
+</body>
+</html>

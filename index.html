@@ -11,7 +11,7 @@
       font-family: 'Apple SD Gothic Neo', 'Nanum Gothic', sans-serif;
       background: #1a1a2e;
       color: #fff;
-      min-height: 100vh;
+      min-height: 100dvh;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -70,7 +70,10 @@
       transition: transform 0.15s, background 0.15s;
     }
 
-    .team-btn:hover { transform: translateY(-3px); background: #1d4e8a; }
+    .team-btn:active { background: #1d4e8a; }
+    @media (hover: hover) {
+      .team-btn:hover { transform: translateY(-3px); background: #1d4e8a; }
+    }
 
     .resume-box {
       background: #0f3460;
@@ -114,7 +117,7 @@
     }
 
     .btn-primary { background: #e94560; color: #fff; margin-bottom: 10px; }
-    .btn-primary:hover { background: #c73652; }
+    .btn-primary:active { background: #c73652; }
 
     .btn-ghost {
       background: none;
@@ -123,7 +126,11 @@
       font-size: 0.85rem;
       padding: 10px;
     }
-    .btn-ghost:hover { background: #0f3460; }
+    .btn-ghost:active { background: #0f3460; }
+    @media (hover: hover) {
+      .btn-primary:hover { background: #c73652; }
+      .btn-ghost:hover { background: #0f3460; }
+    }
 
     .next-place {
       margin-top: 18px;
@@ -149,7 +156,9 @@
     <p style="text-align:center;color:#a8dadc">불러오는 중...</p>
   </div>
 
+  <script src="firebase-config.js"></script>
   <script src="app.js"></script>
+  <script type="module" src="sync.js"></script>
   <script>
     let COURSE = null;
 
@@ -167,6 +176,7 @@
       if (p && p.team) {
         const total = p.order.length;
         const done = p.step;
+        const finished = isAllDone(p); // 미션 완주 후에만 '새 시작' 허용 (조 고정·기록 보호)
         panel.innerHTML = `
           <div class="resume-box">
             <div class="label">진행 중인 조</div>
@@ -174,11 +184,12 @@
             <div class="progress">미션 ${done} / ${total} 완료</div>
             <a class="btn btn-primary" href="#" id="resumeBtn">이어서 하기 →</a>
           </div>
-          <button class="btn btn-ghost" id="restartBtn">다른 조로 새로 시작</button>
+          ${finished ? '<button class="btn btn-ghost" id="restartBtn">새 게임 시작 (다른 조)</button>' : ''}
         `;
         document.getElementById('resumeBtn').onclick = (e) => { e.preventDefault(); goToCurrent(p); };
-        document.getElementById('restartBtn').onclick = () => {
-          if (confirm('지금까지의 진행 기록이 사라집니다. 새로 시작할까요?')) {
+        const rb = document.getElementById('restartBtn');
+        if (rb) rb.onclick = () => {
+          if (confirm('이 기기의 진행 기록을 지우고 새로 시작할까요?')) {
             clearProgress();
             render();
           }
@@ -211,6 +222,7 @@
       btn.style.borderColor = '#e94560';
 
       const p = startGame(COURSE, team);
+      reportProgress(COURSE, p);
       const mission = missionBySet(COURSE, currentSet(p));
 
       document.getElementById('placeName').textContent = mission.placeName;
@@ -220,9 +232,23 @@
 
     // 현재 미션 안내 화면으로(스캔 전 안내)
     function goToCurrent(p) {
-      if (isAllDone(p)) { location.href = 'done.html'; return; }
+      if (isAllDone(p)) {
+        location.href = isFinalePending(COURSE, p) ? 'map.html' : 'done.html';
+        return;
+      }
       location.href = 'mission.html';
     }
+
+    // 🛠️ 히든: 제목을 1.5초 내 7번 탭하면 개발자 콘솔로
+    (function () {
+      let n = 0, t;
+      const h = document.querySelector('header h1');
+      if (!h) return;
+      h.addEventListener('click', () => {
+        n++; clearTimeout(t); t = setTimeout(() => { n = 0; }, 1500);
+        if (n >= 7) location.href = 'dev.html';
+      });
+    })();
   </script>
 </body>
 </html>

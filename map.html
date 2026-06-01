@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>보물 글자 모음</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Apple SD Gothic Neo', 'Nanum Gothic', sans-serif;
+      background: #1a1a2e; color: #fff; min-height: 100dvh;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 24px 16px;
+    }
+    .card {
+      background: #16213e; border-radius: 20px; padding: 28px 24px;
+      max-width: 480px; width: 100%; box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
+    header { text-align: center; margin-bottom: 18px; }
+    header h1 { font-size: 1.5rem; color: #ffd166; margin-bottom: 6px; }
+    header p { color: #a8dadc; font-size: 0.9rem; }
+
+    .progress { text-align: center; color: #b7e4c7; font-size: 0.9rem; margin-bottom: 16px; }
+
+    .chips { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 20px; }
+    .chip {
+      width: 56px; height: 56px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.8rem; font-weight: bold;
+    }
+    .chip.got { background: #2d6a4f; color: #fff; border: 2px solid #74c69d; }
+    .chip.empty { background: #0f3460; color: #5b6b8a; border: 2px dashed #2a4a7a; font-size: 1.6rem; }
+
+    .finale-box {
+      background: #0f3460; border-left: 4px solid #ffd166; border-radius: 12px;
+      padding: 14px 16px; margin-bottom: 16px; color: #a8dadc; line-height: 1.6; font-size: 0.95rem;
+    }
+    .finale-box b { color: #ffd166; }
+
+    .answer-input {
+      width: 100%; padding: 14px 16px; border-radius: 12px; border: 2px solid #0f3460;
+      background: #0f3460; color: #fff; font-size: 1.15rem; margin-bottom: 14px; text-align: center;
+    }
+    .answer-input::placeholder { color: #7a8aa5; font-size: 0.95rem; }
+
+    .btn {
+      display: block; width: 100%; border: none; padding: 15px; border-radius: 12px;
+      font-size: 1.05rem; font-weight: bold; cursor: pointer; text-decoration: none;
+      text-align: center; transition: background 0.2s; margin-bottom: 10px;
+    }
+    .btn-primary { background: #e94560; color: #fff; }
+    .btn-primary:active { background: #c73652; }
+    .btn-ghost { background: none; border: 1px solid #0f3460; color: #a8dadc; font-size: 0.9rem; padding: 12px; }
+    .btn-ghost:active { background: #0f3460; }
+    @media (hover: hover) {
+      .btn-primary:hover { background: #c73652; }
+      .btn-ghost:hover { background: #0f3460; }
+    }
+
+    .feedback { margin-bottom: 12px; padding: 13px; border-radius: 12px; text-align: center; font-size: 1rem; display: none; }
+    .feedback.wrong { background: #6b1c2e; color: #ffb3c1; display: block; }
+    .feedback.right { background: #2d6a4f; color: #b7e4c7; display: block; }
+  </style>
+</head>
+<body>
+  <div class="card" id="card"><p style="text-align:center;color:#a8dadc">불러오는 중...</p></div>
+
+  <script src="firebase-config.js"></script>
+  <script src="app.js"></script>
+  <script type="module" src="sync.js"></script>
+  <script>
+    let COURSE, PROGRESS;
+
+    loadData().then(({ course }) => {
+      COURSE = course;
+      PROGRESS = loadProgress();
+      render();
+      reportProgress(COURSE, PROGRESS);
+    });
+
+    function render() {
+      const card = document.getElementById('card');
+
+      // 조 선택 안 함
+      if (!PROGRESS || !PROGRESS.team) {
+        card.innerHTML = `
+          <header><h1>🔑 보물 글자 모음</h1></header>
+          <p style="text-align:center;color:#a8dadc;line-height:1.6">먼저 시작 화면에서 우리 조를 선택해야 해요.</p>
+          <a class="btn btn-primary" href="index.html" style="margin-top:16px">시작 화면으로 가기 →</a>`;
+        return;
+      }
+
+      // 이미 보물 찾음 → 완료 화면
+      if (PROGRESS.finaleSolved) { location.href = 'done.html'; return; }
+
+      const got = collectedPieces(COURSE, PROGRESS).length;
+      const need = totalPieces(COURSE);
+      const ready = isAllDone(PROGRESS); // 모든 미션 풀어 글자 다 모음
+
+      // 흩어진 글자 칩(획득분) + 빈 칩(미획득분) — 위치 힌트 제거 위해 항상 섞어서
+      const scrambled = scrambledPieces(COURSE, PROGRESS);
+      const chips =
+        scrambled.map(ch => `<div class="chip got">${ch}</div>`).join('') +
+        Array.from({ length: need - got }, () => `<div class="chip empty">❓</div>`).join('');
+
+      if (!ready) {
+        // 아직 수집 중
+        card.innerHTML = `
+          <header>
+            <h1>🔑 보물 글자 모음</h1>
+            <p>${PROGRESS.team} · 미션을 풀면 글자가 모여요</p>
+          </header>
+          <div class="progress">${got} / ${need} 글자 획득</div>
+          <div class="chips">${chips}</div>
+          <a class="btn btn-primary" href="mission.html">현재 미션 보러 가기 →</a>
+          <a class="btn btn-ghost" href="index.html">← 시작 화면</a>`;
+        return;
+      }
+
+      // 모든 글자 수집 완료 → 최종 조합 미션
+      const f = COURSE.finale || {};
+      card.innerHTML = `
+        <header>
+          <h1>🧩 ${f.title || '마지막 미션 · 보물 암호 조합'}</h1>
+          <p>${PROGRESS.team} · 글자 ${need}개를 모두 모았어요!</p>
+        </header>
+        <div class="chips">${chips}</div>
+        <div class="finale-box">
+          ${f.prompt || '모은 글자를 조합하면 보물이 숨겨진 장소가 드러나요!'}<br>
+          조원들과 <b>머리를 맞대고</b> 글자를 이리저리 맞춰보세요.
+        </div>
+        <div class="feedback" id="feedback"></div>
+        <input class="answer-input" id="ans" placeholder="보물이 숨은 장소를 입력하세요" autocomplete="off">
+        <button class="btn btn-primary" id="submitBtn">보물 위치 확인 →</button>
+        <a class="btn btn-ghost" href="index.html">← 시작 화면</a>`;
+
+      document.getElementById('submitBtn').onclick = () => {
+        const input = document.getElementById('ans').value || '';
+        const fb = document.getElementById('feedback');
+        if (!input.trim()) { fb.className = 'feedback wrong'; fb.textContent = '장소 이름을 입력해주세요!'; return; }
+        if (checkFinale(COURSE, input)) {
+          markFinaleSolved(PROGRESS);
+          reportProgress(COURSE, PROGRESS);
+          fb.className = 'feedback right';
+          fb.textContent = '🎉 정답! 보물을 찾았어요!';
+          setTimeout(() => { location.href = 'done.html'; }, 900);
+        } else {
+          fb.className = 'feedback wrong';
+          fb.textContent = '아쉬워요! 글자를 다시 조합해 보세요. (계속 도전 가능)';
+        }
+      };
+    }
+  </script>
+</body>
+</html>

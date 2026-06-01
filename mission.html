@@ -8,7 +8,7 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: 'Apple SD Gothic Neo', 'Nanum Gothic', sans-serif;
-      background: #1a1a2e; color: #fff; min-height: 100vh;
+      background: #1a1a2e; color: #fff; min-height: 100dvh;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       padding: 20px;
     }
@@ -19,6 +19,7 @@
     .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; font-size: 0.85rem; }
     .topbar .team { color: #ffd166; font-weight: bold; }
     .topbar .step { color: #a8dadc; }
+    .dev-badge { background: #7c3aed; color: #fff; font-size: 0.7rem; padding: 2px 8px; border-radius: 10px; margin-left: 6px; vertical-align: middle; }
 
     .badge-row { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
     .badge { padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; }
@@ -27,7 +28,11 @@
     .badge-cat { background: #0f3460; color: #ffd166; }
 
     .question-text { font-size: 1.25rem; line-height: 1.7; margin-bottom: 18px; white-space: pre-line; }
-    .q-image { width: 100%; border-radius: 12px; margin-bottom: 16px; display: block; }
+    .q-media { margin-bottom: 16px; }
+    .q-image { width: 100%; border-radius: 12px; display: block; }
+    .q-video { position: relative; width: 100%; padding-top: 56.25%; border-radius: 12px; overflow: hidden; background: #000; }
+    .q-video iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
+    .q-audio { width: 100%; display: block; }
 
     /* 협력 안내 박스 */
     .pair-note {
@@ -41,7 +46,7 @@
       padding: 11px; border-radius: 12px; font-size: 0.9rem; cursor: pointer;
       width: 100%; margin-bottom: 10px; transition: background 0.2s;
     }
-    .hint-btn:hover { background: #0f3460; }
+    .hint-btn:active { background: #0f3460; }
     .hint-box { background: #0f3460; border-radius: 12px; padding: 12px 14px; margin-bottom: 10px; color: #a8dadc; font-size: 0.92rem; line-height: 1.6; }
 
     .my-answer-label { font-size: 0.85rem; color: #74c69d; margin: 14px 0 6px; }
@@ -57,7 +62,11 @@
       border-radius: 12px; font-size: 1.05rem; font-weight: bold; cursor: pointer;
       width: 100%; transition: background 0.2s;
     }
-    .submit-btn:hover { background: #c73652; }
+    .submit-btn:active { background: #c73652; }
+    @media (hover: hover) {
+      .hint-btn:hover { background: #0f3460; }
+      .submit-btn:hover { background: #c73652; }
+    }
 
     .feedback { margin-top: 14px; padding: 14px; border-radius: 12px; text-align: center; font-size: 1rem; display: none; }
     .feedback.wrong { background: #6b1c2e; color: #ffb3c1; display: block; }
@@ -72,17 +81,26 @@
     .share-box { background: #7b4f12; border-radius: 14px; padding: 16px; margin: 8px 0 4px; }
     .share-box .share-lbl { font-size: 0.82rem; color: #ffd166; margin-bottom: 6px; }
     .share-box .share-ans { font-size: 1.8rem; font-weight: bold; color: #fff; letter-spacing: 2px; }
+    .piece-box { background: #1d3a2e; border: 2px solid #2d6a4f; border-radius: 14px; padding: 16px; margin: 8px 0; }
+    .piece-box .piece-lbl { font-size: 0.82rem; color: #74c69d; margin-bottom: 6px; }
+    .piece-box .piece-char { font-size: 2.6rem; font-weight: bold; color: #ffd166; }
     .guide .desc { color: #a8dadc; font-size: 0.92rem; line-height: 1.6; }
     .guide .btn { display: block; background: #0f3460; color: #a8dadc; text-decoration: none; padding: 13px; border-radius: 12px; margin-top: 16px; font-size: 0.95rem; }
+    .back-link { display: block; text-align: center; margin-top: 14px; color: #7a8aa5; text-decoration: none; font-size: 0.85rem; padding: 8px; }
+    .back-link:active { color: #a8dadc; }
+    @media (hover: hover) { .back-link:hover { color: #a8dadc; } }
   </style>
 </head>
 <body>
   <div class="card" id="card"><p style="text-align:center;color:#a8dadc">불러오는 중...</p></div>
 
+  <script src="firebase-config.js"></script>
   <script src="app.js"></script>
+  <script type="module" src="sync.js"></script>
   <script>
     const params = new URLSearchParams(location.search);
     const scannedQid = params.get('q');   // 예: "1A" 또는 "1B"
+    const DEV = params.get('dev') === '1'; // 🛠️ 개발자 모드(차례·잠금 무시)
 
     let COURSE, QUESTIONS, PROGRESS, QUESTION, MISSION;
     let hintsShown = 0;
@@ -91,9 +109,14 @@
       COURSE = course; QUESTIONS = questions;
       PROGRESS = loadProgress();
       route();
+      reportProgress(COURSE, PROGRESS);
     });
 
     function route() {
+      // 🛠️ DEV: 진행상태가 없으면 첫 조로 임시 세팅(QR 없이 바로 열람 가능)
+      if (DEV && (!PROGRESS || !PROGRESS.team)) {
+        PROGRESS = startGame(COURSE, COURSE.teams[0]);
+      }
       if (!PROGRESS || !PROGRESS.team) {
         guide('🚩', '먼저 조를 선택하세요', null,
           '시작 화면에서 우리 조를 먼저 골라야 미션을 시작할 수 있어요.',
@@ -111,6 +134,9 @@
       }
 
       const setNo = MISSION.set;
+
+      // 🛠️ DEV: 차례·이미풂 잠금 모두 무시하고 바로 문제 열람
+      if (DEV) { renderQuestion(); return; }
 
       // 이미 푼 세트
       if (PROGRESS.solved[setNo]) {
@@ -133,7 +159,10 @@
     }
 
     function showCurrentGuide() {
-      if (isAllDone(PROGRESS)) { location.href = 'done.html'; return; }
+      if (isAllDone(PROGRESS)) {
+        location.href = isFinalePending(COURSE, PROGRESS) ? 'map.html' : 'done.html';
+        return;
+      }
       const m = missionBySet(COURSE, currentSet(PROGRESS));
       const n = missionQrCount(m);
       const stepNo = PROGRESS.step + 1, total = PROGRESS.order.length;
@@ -182,13 +211,11 @@
         `<div class="hint-box" id="hint${i}" style="display:none">💡 ${h}</div>`
       ).join('');
 
-      const imageHtml = q.image
-        ? `<img class="q-image" src="${q.image}" alt="문제 이미지" onerror="this.style.display='none'">`
-        : '';
+      const mediaHtml = renderMediaHtml(questionMedia(q));
 
       document.getElementById('card').innerHTML = `
         <div class="topbar">
-          <span class="team">${PROGRESS.team}</span>
+          <span class="team">${PROGRESS.team}${DEV ? '<span class="dev-badge">🛠️ DEV</span>' : ''}</span>
           <span class="step">미션 ${stepNo} / ${total}</span>
         </div>
         <div class="badge-row">
@@ -196,7 +223,7 @@
           <span class="badge badge-place">${MISSION.placeName}</span>
           <span class="badge badge-cat">${q.category}</span>
         </div>
-        ${imageHtml}
+        ${mediaHtml}
         <p class="question-text">${q.question}</p>
 
         ${noteHtml}
@@ -208,6 +235,7 @@
         <input class="answer-input" id="ans" placeholder="${placeholder}" autocomplete="off">
         <button class="submit-btn" id="submitBtn">정답 제출</button>
         <div class="feedback" id="feedback"></div>
+        <a class="back-link" href="${DEV ? 'dev.html' : 'mission.html'}">${DEV ? '← 개발자 콘솔로' : '← 뒤로 (이 문제 접고 다른 QR 찍기)'}</a>
       `;
 
       document.getElementById('hintBtn').onclick = () => {
@@ -222,6 +250,7 @@
         if (!input.trim()) { fb.className = 'feedback wrong'; fb.textContent = '정답을 입력해주세요!'; return; }
         if (checkCombined(q, input)) {
           markSolved(PROGRESS, q.set, input.trim());
+          reportProgress(COURSE, PROGRESS);
           fb.className = 'feedback right';
           fb.textContent = isCommon ? '🎉 정답이에요! 멋져요!' : '🎉 정답이에요! 모두 힘을 합쳤네요!';
           setTimeout(() => showNextAfterSolve(q.combined, isCommon), 800);
@@ -232,19 +261,10 @@
       };
     }
 
-    // 정답 후: 다음 장소 안내 + (방금 푼) 정답 공유 카드
+    // 정답 후: 보물 글자 획득 + 다음 장소 안내(또는 최종 조합 미션)
     function showNextAfterSolve(solvedAnswer, wasCommon) {
       const allDone = isAllDone(PROGRESS);
-      const m = allDone ? null : missionBySet(COURSE, currentSet(PROGRESS));
       const stepNo = PROGRESS.step + 1, total = PROGRESS.order.length;
-      const n = m ? missionQrCount(m) : 0;
-
-      const placeHtml = m
-        ? `<div class="place"><div class="lbl">다음 장소</div><div class="nm">${m.placeName}</div></div>`
-        : '';
-      const scanMsg = !m ? ''
-        : (n === 1 ? `${stepNo}/${total} · 이 장소의 QR을 스캔해 공통 문제를 푸세요!`
-                   : `${stepNo}/${total} · 이 장소에서 QR ${n}개를 ${n}명이 나눠 스캔!`);
 
       // 정답 공유 카드 (친구에게 알려주라고)
       const shareHtml = `
@@ -253,19 +273,49 @@
           <div class="share-ans">${solvedAnswer}</div>
         </div>`;
 
-      const ttl = allDone ? '마지막 미션 완료!' : '정답! 다음 미션으로 출발!';
-      const linkHtml = allDone
-        ? `<a class="btn" href="done.html">완료 화면으로 →</a>`
-        : `<a class="btn" href="index.html">← 시작 화면</a>`;
+      // 방금 푼 미션의 보물 글자 획득 카드
+      const piece = MISSION && MISSION.piece;
+      const got = collectedPieces(COURSE, PROGRESS).length;
+      const need = totalPieces(COURSE);
+      const pieceHtml = piece ? `
+        <div class="piece-box">
+          <div class="piece-lbl">🔑 보물 글자 획득! (${got}/${need})</div>
+          <div class="piece-char">${piece}</div>
+        </div>` : '';
+
+      // 모든 장소 미션 완료 → 최종 글자조합 미션으로
+      if (allDone) {
+        document.getElementById('card').innerHTML = `
+          <div class="guide">
+            <div class="ico">🧩</div>
+            <div class="ttl">모든 미션 완료!</div>
+            ${shareHtml}
+            ${pieceHtml}
+            <div class="desc">이제 모은 글자 ${need}개를 조합해 보물이 숨은 곳을 찾을 차례예요!</div>
+            <a class="btn" href="map.html">🔑 보물 글자 조합하러 가기 →</a>
+            ${DEV ? '<a class="btn" href="dev.html">🛠️ 개발자 패널로</a>' : ''}
+          </div>`;
+        return;
+      }
+
+      const m = missionBySet(COURSE, currentSet(PROGRESS));
+      const n = missionQrCount(m);
+      const placeHtml = `<div class="place"><div class="lbl">다음 장소</div><div class="nm">${m.placeName}</div></div>`;
+      const scanMsg = n === 1
+        ? `${stepNo}/${total} · 이 장소의 QR을 스캔해 공통 문제를 푸세요!`
+        : `${stepNo}/${total} · 이 장소에서 QR ${n}개를 ${n}명이 나눠 스캔!`;
 
       document.getElementById('card').innerHTML = `
         <div class="guide">
           <div class="ico">✅</div>
-          <div class="ttl">${ttl}</div>
+          <div class="ttl">정답! 다음 미션으로 출발!</div>
           ${shareHtml}
+          ${pieceHtml}
           ${placeHtml}
           <div class="desc">${scanMsg}</div>
-          ${linkHtml}
+          <a class="btn" href="map.html">🔑 보물 글자 모음 보기</a>
+          ${DEV ? '<a class="btn" href="dev.html">🛠️ 개발자 패널로</a>' : ''}
+          <a class="btn" href="index.html">← 시작 화면</a>
         </div>`;
     }
 

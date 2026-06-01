@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🛠️ 개발자 콘솔</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Apple SD Gothic Neo', 'Nanum Gothic', sans-serif;
+      background: #14101f; color: #fff; min-height: 100dvh; padding: 20px 14px;
+    }
+    .wrap { max-width: 560px; margin: 0 auto; }
+    header { text-align: center; margin-bottom: 18px; }
+    header h1 { font-size: 1.4rem; color: #c4b5fd; }
+    header p { color: #8b80a8; font-size: 0.82rem; margin-top: 4px; }
+
+    .section-title { font-size: 0.85rem; color: #a8dadc; margin: 18px 0 8px; }
+
+    .team-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .team-btn {
+      background: #2a2140; border: 2px solid transparent; color: #fff;
+      padding: 12px 4px; border-radius: 10px; font-size: 0.95rem; font-weight: bold; cursor: pointer;
+    }
+    .team-btn.active { border-color: #7c3aed; background: #3b2d5e; }
+    .team-btn:active { background: #3b2d5e; }
+
+    .status {
+      background: #1d1730; border-radius: 12px; padding: 12px 14px; margin: 12px 0;
+      font-size: 0.85rem; color: #c4b5fd; line-height: 1.6;
+    }
+    .status b { color: #ffd166; }
+
+    .cheats { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+    .cheat-btn {
+      flex: 1 1 calc(50% - 4px); background: #0f3460; border: none; color: #cfe3ff;
+      padding: 11px; border-radius: 10px; font-size: 0.85rem; cursor: pointer;
+    }
+    .cheat-btn.danger { background: #5a1f2e; color: #ffb3c1; }
+    .cheat-btn:active { filter: brightness(1.2); }
+
+    .mission-card { background: #1d1730; border-radius: 12px; padding: 14px; margin-bottom: 10px; }
+    .mc-head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; font-size: 0.95rem; }
+    .mc-step { background: #7c3aed; color: #fff; border-radius: 50%; width: 22px; height: 22px;
+               display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: bold; flex-shrink: 0; }
+    .mc-place { font-weight: bold; }
+    .mc-mode { font-size: 0.72rem; color: #8b80a8; }
+    .mc-solved { color: #74c69d; font-size: 0.8rem; margin-left: auto; }
+    .qid-row { display: flex; flex-wrap: wrap; gap: 6px; }
+    .qid-btn {
+      background: #0f3460; color: #fff; text-decoration: none; padding: 8px 12px;
+      border-radius: 8px; font-size: 0.85rem; display: inline-flex; flex-direction: column; gap: 2px;
+    }
+    .qid-btn .qid-id { font-weight: bold; }
+    .qid-btn .qid-cat { font-size: 0.68rem; color: #a8dadc; }
+    .qid-btn:active { background: #1d4e8a; }
+
+    .nav { display: flex; gap: 8px; margin-top: 16px; }
+    .nav a { flex: 1; text-align: center; background: #2a2140; color: #c4b5fd; text-decoration: none;
+             padding: 11px; border-radius: 10px; font-size: 0.85rem; }
+
+    @media (hover: hover) {
+      .team-btn:hover { background: #3b2d5e; }
+      .cheat-btn:hover { filter: brightness(1.2); }
+      .qid-btn:hover { background: #1d4e8a; }
+      .nav a:hover { background: #3b2d5e; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>🛠️ 개발자 콘솔</h1>
+      <p>실제 QR 없이 모든 문제를 열람·테스트합니다</p>
+    </header>
+    <div id="content"><p style="text-align:center;color:#8b80a8">불러오는 중...</p></div>
+  </div>
+
+  <script src="firebase-config.js"></script>
+  <script src="app.js"></script>
+  <script type="module" src="sync.js"></script>
+  <script>
+    let COURSE, QUESTIONS;
+
+    loadData().then(({ course, questions }) => {
+      COURSE = course; QUESTIONS = questions;
+      render();
+    });
+
+    function render() {
+      const p = loadProgress();
+      const teamBtns = COURSE.teams.map(t =>
+        `<button class="team-btn ${p && p.team === t ? 'active' : ''}" data-team="${t}">${t}</button>`
+      ).join('');
+
+      let html = `
+        <div class="section-title">조 선택 (선택 시 그 조로 진행 초기화)</div>
+        <div class="team-row">${teamBtns}</div>`;
+
+      if (p && p.team) {
+        const total = p.order.length;
+        const solved = Object.keys(p.solved).length;
+        const pieces = collectedPieces(COURSE, p);
+        html += `
+          <div class="status">
+            현재 조: <b>${p.team}</b> · 해결 <b>${solved}/${total}</b> · 단계 ${p.step}/${total}<br>
+            보물 글자: <b>${pieces.length ? pieces.join(' ') : '(없음)'}</b> · 최종조합: <b>${p.finaleSolved ? '완료' : '미완'}</b>
+          </div>
+          <div class="cheats">
+            <button class="cheat-btn" id="cheatSolveAll">⚡ 이 조 전부 풀기</button>
+            <button class="cheat-btn" id="cheatClear">🏁 최종까지 클리어</button>
+            <button class="cheat-btn danger" id="cheatReset">♻️ 진행 초기화</button>
+            <button class="cheat-btn" id="cheatToMap">🔑 수집함(map)</button>
+          </div>
+          <div class="section-title">${p.team} 미션 순서 — QR을 눌러 바로 열람 (dev 모드)</div>
+          ${renderMissions(p)}`;
+      } else {
+        html += `<div class="status">위에서 조를 먼저 선택하세요. 선택하면 그 조의 미션 순서대로 모든 QR이 펼쳐집니다.</div>`;
+      }
+
+      html += `
+        <div class="nav">
+          <a href="hq.html">🛰️ HQ</a>
+          <a href="index.html">시작 화면</a>
+          <a href="map.html">수집함</a>
+          <a href="done.html">완료</a>
+        </div>`;
+
+      document.getElementById('content').innerHTML = html;
+      bind();
+      if (p && p.team) reportProgress(COURSE, p);
+    }
+
+    function renderMissions(p) {
+      return p.order.map((setNo, idx) => {
+        const m = missionBySet(COURSE, setNo);
+        const isCommon = missionQrCount(m) === 1;
+        const solvedMark = p.solved[setNo] ? `<span class="mc-solved">✅ 해결</span>` : '';
+        const qids = (m.qids || []).map((qid, i) => {
+          const q = findQuestion(QUESTIONS, qid);
+          const label = isCommon ? '공통' : (m.set + '-' + String.fromCharCode(65 + i));
+          const cat = q ? q.category : '?';
+          return `<a class="qid-btn" href="mission.html?q=${encodeURIComponent(qid)}&dev=1">
+                    <span class="qid-id">${label} <small>(${qid})</small></span>
+                    <span class="qid-cat">${cat}</span>
+                  </a>`;
+        }).join('');
+        return `
+          <div class="mission-card">
+            <div class="mc-head">
+              <span class="mc-step">${idx + 1}</span>
+              <span class="mc-place">${m.placeName}</span>
+              <span class="mc-mode">${isCommon ? '공통 1개' : 'QR ' + missionQrCount(m) + '개'}</span>
+              ${solvedMark}
+            </div>
+            <div class="qid-row">${qids}</div>
+          </div>`;
+      }).join('');
+    }
+
+    function bind() {
+      document.querySelectorAll('.team-btn').forEach(btn => {
+        btn.onclick = () => { startGame(COURSE, btn.dataset.team); render(); };
+      });
+
+      const solveAll = () => {
+        const p = loadProgress(); if (!p) return;
+        COURSE.missions.forEach(m => {
+          p.solved[m.set] = true;
+          const q = findQuestion(QUESTIONS, (m.qids || [])[0]);
+          p.answers[m.set] = q ? q.combined : '';
+        });
+        p.step = p.order.length;
+        saveProgress(p);
+      };
+
+      const byId = id => document.getElementById(id);
+      if (byId('cheatSolveAll')) byId('cheatSolveAll').onclick = () => { solveAll(); render(); };
+      if (byId('cheatClear')) byId('cheatClear').onclick = () => {
+        solveAll();
+        const p = loadProgress(); p.finaleSolved = true; saveProgress(p);
+        render();
+      };
+      if (byId('cheatReset')) byId('cheatReset').onclick = () => { clearProgress(); render(); };
+      if (byId('cheatToMap')) byId('cheatToMap').onclick = () => { location.href = 'map.html'; };
+    }
+  </script>
+</body>
+</html>

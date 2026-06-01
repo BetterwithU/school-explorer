@@ -1,12 +1,21 @@
 {
   "title": "학교 캠핑 탐험대",
-  "subtitle": "QR을 찾아 미션을 해결하고 다음 장소로!",
+  "subtitle": "QR을 찾아 미션을 해결하고 보물을 찾아라!",
   "teams": ["1조", "2조", "3조", "4조"],
+  "finale": {
+    "answer": "운동장큰은행나무",
+    "title": "마지막 미션 · 보물 암호 조합",
+    "prompt": "미션마다 모은 글자 8개를 모두 조합하면, 보물이 숨겨진 장소가 드러나요!",
+    "reveal": "보물은 그곳에 숨겨져 있어요. 선생님께 가서 \"우리 조 보물 찾았어요!\"라고 외치세요!"
+  },
   "missions": [
-    { "set": 1, "placeName": "운동장 미끄럼틀", "mode": "combo", "qids": ["1A", "1B"] },
-    { "set": 2, "placeName": "급식실 앞", "mode": "common", "qids": ["2"] },
-    { "set": 3, "placeName": "도서관 입구", "mode": "combo", "qids": ["3A", "3B", "3C"] },
-    { "set": 4, "placeName": "체육관 문", "mode": "combo", "qids": ["4A", "4B", "4C", "4D"] },
-    { "set": 5, "placeName": "화단 옆 벤치", "mode": "common", "qids": ["5"] }
+    { "set": 1, "placeName": "운동장 미끄럼틀", "mode": "common", "qids": ["1"], "piece": "운" },
+    { "set": 2, "placeName": "급식실 앞", "mode": "combo", "qids": ["2A", "2B"], "piece": "동" },
+    { "set": 3, "placeName": "도서관 입구", "mode": "combo", "qids": ["3A", "3B", "3C"], "piece": "장" },
+    { "set": 4, "placeName": "체육관 문", "mode": "common", "qids": ["4"], "piece": "큰" },
+    { "set": 5, "placeName": "화단 옆 벤치", "mode": "combo", "qids": ["5A", "5B", "5C", "5D"], "piece": "은" },
+    { "set": 6, "placeName": "본관 계단", "mode": "combo", "qids": ["6A", "6B"], "piece": "행" },
+    { "set": 7, "placeName": "강당 입구", "mode": "common", "qids": ["7"], "piece": "나" },
+    { "set": 8, "placeName": "놀이터 정글짐", "mode": "combo", "qids": ["8A", "8B", "8C"], "piece": "무" }
   ]
 }

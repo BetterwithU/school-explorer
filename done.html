@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>미션 완료!</title>
+  <title>보물 발견!</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: 'Apple SD Gothic Neo', 'Nanum Gothic', sans-serif;
-      background: #1a1a2e; color: #fff; min-height: 100vh;
+      background: #1a1a2e; color: #fff; min-height: 100dvh;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       padding: 24px 16px; text-align: center;
     }
@@ -16,7 +16,16 @@
     @keyframes pop { 0% { transform: scale(0); } 70% { transform: scale(1.2); } 100% { transform: scale(1); } }
     h1 { font-size: 2rem; color: #ffd166; margin-bottom: 10px; }
     .team-name { font-size: 1.4rem; color: #e94560; font-weight: bold; margin-bottom: 8px; }
-    p { color: #a8dadc; font-size: 1.05rem; line-height: 1.7; margin-bottom: 24px; }
+    p { color: #a8dadc; font-size: 1.05rem; line-height: 1.7; margin-bottom: 20px; }
+
+    .treasure {
+      background: #7b4f12; border-radius: 16px; padding: 22px 18px; max-width: 420px; width: 100%;
+      margin-bottom: 20px;
+    }
+    .treasure .lbl { font-size: 0.85rem; color: #ffd166; margin-bottom: 8px; }
+    .treasure .place { font-size: 1.8rem; font-weight: bold; color: #fff; letter-spacing: 1px; margin-bottom: 10px; }
+    .treasure .reveal { font-size: 0.95rem; color: #ffe8b3; line-height: 1.6; }
+
     .summary {
       background: #16213e; border-radius: 16px; padding: 20px; max-width: 420px; width: 100%;
       margin-bottom: 24px;
@@ -29,33 +38,53 @@
       background: #e94560; color: #fff; text-decoration: none;
       padding: 15px; border-radius: 14px; font-size: 1.05rem; font-weight: bold;
     }
-    .btn:hover { background: #c73652; }
+    .btn:active { background: #c73652; }
+    @media (hover: hover) { .btn:hover { background: #c73652; } }
   </style>
 </head>
 <body>
-  <div class="trophy">🏆</div>
-  <h1>모든 미션 완료!</h1>
+  <div class="trophy">🎉</div>
+  <h1 id="title">보물을 찾았다!</h1>
   <div class="team-name" id="teamName"></div>
-  <p>학교 구석구석을 탐험하며<br>모든 문제를 해결했어요. 정말 멋져요!</p>
+  <p id="lead">학교 구석구석을 탐험하며<br>모든 미션을 해결하고 보물 암호까지 풀었어요!</p>
 
+  <div class="treasure" id="treasure"></div>
   <div class="summary" id="summary"></div>
 
   <a class="btn" href="index.html">처음으로</a>
 
+  <script src="firebase-config.js"></script>
   <script src="app.js"></script>
+  <script type="module" src="sync.js"></script>
   <script>
-    const p = loadProgress();
-    if (!p || !p.team) {
-      location.href = 'index.html';
-    } else {
+    loadData().then(({ course }) => {
+      const p = loadProgress();
+      if (!p || !p.team) { location.href = 'index.html'; return; }
+
+      // 모든 미션은 끝났지만 최종 조합을 아직 안 풀었으면 → 조합 미션으로
+      if (isFinalePending(course, p)) { location.href = 'map.html'; return; }
+
+      reportProgress(course, p);
       document.getElementById('teamName').textContent = p.team;
+
+      const f = course.finale || {};
+      if (p.finaleSolved && f.answer) {
+        document.getElementById('treasure').innerHTML = `
+          <div class="lbl">💎 보물이 숨겨진 곳</div>
+          <div class="place">${f.answer}</div>
+          <div class="reveal">${f.reveal || '선생님께 가서 보물을 찾았다고 외치세요!'}</div>`;
+      } else {
+        document.getElementById('treasure').style.display = 'none';
+      }
+
       const total = p.order.length;
       const solved = Object.keys(p.solved).length;
       document.getElementById('summary').innerHTML = `
         <div class="row"><span class="k">우리 조</span><span class="v">${p.team}</span></div>
         <div class="row"><span class="k">해결한 미션</span><span class="v">${solved} / ${total}</span></div>
+        <div class="row"><span class="k">보물 암호</span><span class="v">${p.finaleSolved ? '해독 완료 ✅' : '미해독'}</span></div>
       `;
-    }
+    });
   </script>
 </body>
 </html>

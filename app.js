@@ -107,6 +107,7 @@ function startGame(course, teamName) {
     step: 0,        // 현재 몇 번째 세트(0-based)
     solved: {},     // { set: true }
     answers: {},    // { set: "입력한 합본답" }
+    finaleSolved: false, // 최종 글자조합 미션 해결 여부
   };
   saveProgress(p);
   return p;
@@ -144,4 +145,123 @@ function checkCombined(question, input) {
   const correct = normalizeAnswer(question.combined);
   const given = normalizeAnswer(input);
   return given === correct;
+}
+
+/* ---------- 멀티미디어 ----------
+ * question.media: [{ type: "image"|"youtube"|"audio", url }]
+ * 구버전 question.image(문자열)도 하위호환 지원.
+ */
+function questionMedia(question) {
+  if (Array.isArray(question.media)) {
+    return question.media.filter(m => m && m.type && m.url);
+  }
+  if (question.image) return [{ type: 'image', url: question.image }];
+  return [];
+}
+
+// 유튜브 URL/ID → 임베드 주소
+function youtubeEmbed(url) {
+  const s = String(url).trim();
+  if (!s) return '';
+  // 이미 임베드면 그대로
+  if (s.indexOf('/embed/') !== -1) return s;
+  let id = '';
+  const m1 = s.match(/[?&]v=([\w-]{6,})/);          // watch?v=ID
+  const m2 = s.match(/youtu\.be\/([\w-]{6,})/);      // youtu.be/ID
+  const m3 = s.match(/\/shorts\/([\w-]{6,})/);       // shorts/ID
+  if (m1) id = m1[1]; else if (m2) id = m2[1]; else if (m3) id = m3[1];
+  else if (/^[\w-]{6,}$/.test(s)) id = s;            // 순수 ID
+  return id ? 'https://www.youtube.com/embed/' + id : '';
+}
+
+// media 배열 → HTML 문자열 (mission.html에서 사용)
+function renderMediaHtml(media) {
+  return (media || []).map(m => {
+    if (m.type === 'image') {
+      return `<img class="q-media q-image" src="${m.url}" alt="문제 이미지" onerror="this.style.display='none'">`;
+    }
+    if (m.type === 'youtube') {
+      const src = youtubeEmbed(m.url);
+      if (!src) return '';
+      return `<div class="q-media q-video"><iframe src="${src}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`;
+    }
+    if (m.type === 'audio') {
+      if (!m.url) return '';
+      return `<audio class="q-media q-audio" controls preload="none" src="${m.url}"></audio>`;
+    }
+    return '';
+  }).join('');
+}
+
+/* ---------- 최종 글자조합 미션 ----------
+ * 미션마다 course.missions[].piece(암호 글자 1개)를 무순서로 수집.
+ * 모든 미션을 풀면(8개) 흩어진 글자를 조합해 course.finale.answer 맞히기.
+ */
+
+// 지금까지 푼 미션의 암호 글자 목록(원래 set 순)
+function collectedPieces(course, p) {
+  return course.missions
+    .filter(m => p.solved[m.set] && m.piece)
+    .map(m => m.piece);
+}
+
+// 전체 암호 글자 수
+function totalPieces(course) {
+  return course.missions.filter(m => m.piece).length;
+}
+
+// 흩어진 글자(조마다 결정적으로 다른 순서) — 최종 미션 표시용
+function scrambledPieces(course, p) {
+  const arr = collectedPieces(course, p);
+  const rng = mulberry32(hashSeed('PIECES:' + (p.team || '')));
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+// 최종 미션 차례인가? (모든 장소 미션 완료 + 아직 조합 안 풂)
+function isFinalePending(course, p) {
+  return isAllDone(p) && !p.finaleSolved;
+}
+
+// 최종 조합 정답 비교
+function checkFinale(course, input) {
+  const ans = course.finale && course.finale.answer ? course.finale.answer : '';
+  return ans !== '' && normalizeAnswer(input) === normalizeAnswer(ans);
+}
+
+// 최종 미션 해결 처리
+function markFinaleSolved(p) {
+  p.finaleSolved = true;
+  saveProgress(p);
+  return p;
+}
+
+/* ---------- 실시간 진행 보고 (HQ 대시보드용) ----------
+ * window.SchoolExplorerSync(sync.js)가 있으면 Firebase로 보고, 없으면 조용히 무시(오프라인).
+ * 보고 실패는 게임 진행에 절대 영향 주지 않음.
+ */
+function reportProgress(course, p) {
+  try {
+    if (!p || !p.team || !window.SchoolExplorerSync) return;
+    const total = p.order.length;
+    const cur = currentSet(p);
+    const m = cur != null ? missionBySet(course, cur) : null;
+    const placeName = p.finaleSolved
+      ? '🏆 보물 발견'
+      : isAllDone(p)
+        ? '🧩 최종 조합 미션'
+        : m ? m.placeName : '-';
+    window.SchoolExplorerSync.report(p.team, {
+      step: p.step,
+      total,
+      solvedCount: Object.keys(p.solved).length,
+      placeName,
+      finaleSolved: !!p.finaleSolved,
+    });
+  } catch (e) {
+    /* 무시 */
+  }
 }

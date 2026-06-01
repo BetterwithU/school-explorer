@@ -1,69 +1,128 @@
 [
   {
-    "id": "1A", "set": 1, "slot": "A", "category": "국어", "difficulty": "easy",
-    "question": "빨갛고 둥근 과일 '사과'의 첫 글자는?",
-    "image": "",
-    "hints": ["나무에서 열려요.", "백설공주 이야기에 나와요."],
-    "answer": "사", "combined": "사과"
+    "id": "1", "set": 1, "slot": "", "category": "추론", "difficulty": "easy",
+    "question": "탐험대 암호 해독! 자음에 번호를 붙여요.\nㄱ=1, ㄴ=2, ㄷ=3, ㄹ=4 …\n그렇다면 'ㅂ'은 몇 번일까요?",
+    "media": [],
+    "hints": ["ㄱ부터 손가락으로 순서대로 세어봐요.", "ㄱ(1) ㄴ(2) ㄷ(3) ㄹ(4) ㅁ(5) ㅂ(?)"],
+    "answer": "6", "combined": "6"
+  },
+
+  {
+    "id": "2A", "set": 2, "slot": "A", "category": "국어", "difficulty": "easy",
+    "question": "두 글자를 모아 탐험 도구를 완성해요!\n[첫 글자] 보물이 어디 있는지 그려놓은 종이를 'O도'라고 해요. 그 첫 글자는?",
+    "media": [],
+    "hints": ["보물찾기에 꼭 필요한 종이예요.", "땅과 길이 그려져 있어요."],
+    "answer": "지", "combined": "지도"
   },
   {
-    "id": "1B", "set": 1, "slot": "B", "category": "수학", "difficulty": "easy",
-    "question": "'사＋＿' 1 더하기 1을 한자로 읽으면? (둘째 글자)",
-    "hints": ["1+1은 2예요.", "과일 이름의 둘째 글자."],
-    "answer": "과", "combined": "사과"
+    "id": "2B", "set": 2, "slot": "B", "category": "사회", "difficulty": "easy",
+    "question": "[둘째 글자] 위에서 내려다본 땅의 모습을 그린 'O도'. 세계 O도, 우리나라 O도. 짝꿍의 첫 글자와 합치면 두 글자가 돼요. 이 둘째 글자는?",
+    "media": [],
+    "hints": ["'지O'의 둘째 글자예요.", "첫 글자는 짝꿍이 알아요. 서로 알려주세요!"],
+    "answer": "도", "combined": "지도"
+  },
+
+  {
+    "id": "3A", "set": 3, "slot": "A", "category": "상식", "difficulty": "normal",
+    "question": "세 친구가 각자 다른 문제를 풀어요!\n[첫 글자] 추울 때 장갑을 끼는 신체 부위는? 한 글자로!",
+    "media": [],
+    "hints": ["손가락이 다섯 개 달려 있어요.", "박수 칠 때 쓰는 곳."],
+    "answer": "손", "combined": "손전등"
   },
   {
-    "id": "2", "set": 2, "slot": "", "category": "수학", "difficulty": "hard",
-    "question": "캠핑장에 텐트가 6개, 각 텐트에 7명씩 잤어요. 모두 몇 명일까요?",
-    "hints": ["6을 7번 더해요.", "6×7을 계산해요."],
-    "answer": "42", "combined": "42"
+    "id": "3B", "set": 3, "slot": "B", "category": "과학", "difficulty": "normal",
+    "question": "[둘째 글자] 콘센트에서 나오는, 불을 켜는 힘을 'O기'라고 해요. 그 첫 글자는?",
+    "media": [],
+    "hints": ["'O기'를 아끼자 = 절약!", "번개도 이것의 한 종류예요."],
+    "answer": "전", "combined": "손전등"
   },
   {
-    "id": "3A", "set": 3, "slot": "A", "category": "국어", "difficulty": "easy",
-    "question": "세 글자 단어를 완성해요. 첫 글자: 무지개의 '무'에서 첫 글자는?",
-    "hints": ["하늘에 뜨는 색 띠.", "'무'지개"],
-    "answer": "무", "combined": "무지개"
+    "id": "3C", "set": 3, "slot": "C", "category": "국어", "difficulty": "normal",
+    "question": "[셋째 글자] 밤을 밝히는 'O불', 가로OO, 책상 위 스탠드… 빛을 내는 물건을 뜻하는 한 글자는?",
+    "media": [],
+    "hints": ["'O대'에 올려놓고 불을 켜요.", "호롱O, 가로O."],
+    "answer": "등", "combined": "손전등"
+  },
+
+  {
+    "id": "4", "set": 4, "slot": "", "category": "과학", "difficulty": "normal",
+    "question": "위 그림은 국자 모양의 별자리예요. 그림 속 별은 모두 몇 개일까요?",
+    "media": [{ "type": "image", "url": "images/bigdipper.png" }],
+    "hints": ["이름에 숫자가 숨어 있어요 — '북두칠성'.", "손가락으로 별을 하나씩 짚어보세요."],
+    "answer": "7", "combined": "7"
+  },
+
+  {
+    "id": "5A", "set": 5, "slot": "A", "category": "국어", "difficulty": "normal",
+    "question": "네 친구가 각자 다른 문제를 풀어요!\n[첫 글자] 숨겨진 귀한 것을 'O물'이라 해요. 'O물찾기'의 첫 글자는?",
+    "media": [],
+    "hints": ["'O배'롭다 = 귀하다.", "해적이 찾아다니는 것."],
+    "answer": "보", "combined": "보물상자"
   },
   {
-    "id": "3B", "set": 3, "slot": "B", "category": "과학", "difficulty": "easy",
-    "question": "둘째 글자: 비 온 뒤 하늘에 뜨는 일곱 색깔 띠의 가운데 글자는?",
-    "hints": ["무○개", "빨주노초파남보 색깔의 띠"],
-    "answer": "지", "combined": "무지개"
+    "id": "5B", "set": 5, "slot": "B", "category": "상식", "difficulty": "normal",
+    "question": "[둘째 글자] 목마를 때 마시고, 강과 바다에 가득한 것은? 한 글자로!",
+    "media": [],
+    "hints": ["0℃에서 얼면 얼음이 돼요.", "우리 몸의 70%가 이것."],
+    "answer": "물", "combined": "보물상자"
   },
   {
-    "id": "3C", "set": 3, "slot": "C", "category": "수학", "difficulty": "easy",
-    "question": "셋째 글자: 문을 여닫는 '개＿문'의 첫 글자, 무지개의 끝 글자는?",
-    "hints": ["무지○", "문을 여는 동작 '○폐'"],
-    "answer": "개", "combined": "무지개"
+    "id": "5C", "set": 5, "slot": "C", "category": "사회", "difficulty": "normal",
+    "question": "[셋째 글자] 공부할 때 앉는 책'O', 밥 먹는 식'O' — 위에 물건을 올려놓는 가구의 끝 글자는?",
+    "media": [],
+    "hints": ["'책O', '밥O'.", "다리가 네 개, 위가 평평해요."],
+    "answer": "상", "combined": "보물상자"
   },
   {
-    "id": "4A", "set": 4, "slot": "A", "category": "국어", "difficulty": "easy",
-    "question": "네 글자 완성. 첫 글자: 산에 많은 '나무'의 첫 글자는?",
-    "hints": ["숲에 가득해요.", "'나'무"],
-    "answer": "나", "combined": "나무그늘"
+    "id": "5D", "set": 5, "slot": "D", "category": "국어", "difficulty": "normal",
+    "question": "[넷째 글자] 사'O', 모'O', 의'O' — 이 단어들의 공통 끝 글자는?",
+    "media": [],
+    "hints": ["사O(동물), 모O(쓰는 것), 의O(앉는 것).", "'ㅈ'으로 시작해요."],
+    "answer": "자", "combined": "보물상자"
+  },
+
+  {
+    "id": "6A", "set": 6, "slot": "A", "category": "현장관찰", "difficulty": "normal",
+    "question": "[현장 미션 · 선생님 설정] [첫 글자] 지금 서 있는 이 건물은 몇 층짜리일까요? 세어보고 'O층'의 첫 글자를 답하세요. (예: 3층이면 '삼')",
+    "media": [],
+    "hints": ["계단을 보고 층수를 세어봐요.", "숫자를 한글로 적어요 (3→삼)."],
+    "answer": "삼", "combined": "삼층"
   },
   {
-    "id": "4B", "set": 4, "slot": "B", "category": "과학", "difficulty": "easy",
-    "question": "둘째 글자: 나무의 끝 글자는?",
-    "hints": ["나○", "목재가 되는 식물"],
-    "answer": "무", "combined": "나무그늘"
+    "id": "6B", "set": 6, "slot": "B", "category": "현장관찰", "difficulty": "normal",
+    "question": "[현장 미션 · 선생님 설정] [둘째 글자] '몇 O'에서 건물 높이를 세는 단위 글자는? (1O, 2O, 3O…)",
+    "media": [],
+    "hints": ["'O수'를 센다고 할 때 그 글자.", "첫 글자는 짝꿍이 알아요. 합치면 두 글자!"],
+    "answer": "층", "combined": "삼층"
+  },
+
+  {
+    "id": "7", "set": 7, "slot": "", "category": "자연", "difficulty": "normal",
+    "question": "영상 속 소리를 들어보세요. 가을밤 풀숲에서 '귀뚤귀뚤' 우는 이 곤충의 이름은?",
+    "media": [{ "type": "youtube", "url": "" }],
+    "hints": ["가을밤에 풀숲에서 울어요.", "이름이 울음소리('귀뚤')와 비슷해요."],
+    "answer": "귀뚜라미", "combined": "귀뚜라미"
+  },
+
+  {
+    "id": "8A", "set": 8, "slot": "A", "category": "국어", "difficulty": "hard",
+    "question": "마지막 미션! 세 친구가 각자 풀어요.\n[첫 글자] 동굴이나 정글을 살펴보며 찾아 나서는 걸 'O험'이라 해요 ('OO대'!). 그 첫 글자는?",
+    "media": [],
+    "hints": ["우리 이름이 '캠핑 OO대'예요.", "'O정'은 사건을 조사하는 사람."],
+    "answer": "탐", "combined": "탐험가"
   },
   {
-    "id": "4C", "set": 4, "slot": "C", "category": "사회", "difficulty": "easy",
-    "question": "셋째 글자: 햇빛을 가려 시원한 '그늘'의 첫 글자는?",
-    "hints": ["나무 아래 시원한 곳.", "'그'늘"],
-    "answer": "그", "combined": "나무그늘"
+    "id": "8B", "set": 8, "slot": "B", "category": "국어", "difficulty": "hard",
+    "question": "[둘째 글자] 위험, 모험, 험난 — 험한 산을 넘는다의 한 글자는?",
+    "media": [],
+    "hints": ["'위O', '모O'에 공통으로 들어가요.", "'O악한 산길'."],
+    "answer": "험", "combined": "탐험가"
   },
   {
-    "id": "4D", "set": 4, "slot": "D", "category": "과학", "difficulty": "easy",
-    "question": "넷째 글자: 그늘의 끝 글자는?",
-    "hints": ["그○", "햇빛 가린 어두운 곳"],
-    "answer": "늘", "combined": "나무그늘"
-  },
-  {
-    "id": "5", "set": 5, "slot": "", "category": "과학", "difficulty": "hard",
-    "question": "다음 중 '광합성'에 꼭 필요한 것이 아닌 것은? 답을 한 단어로: (햇빛/물/이산화탄소/소금) 중 필요 없는 것",
-    "hints": ["식물이 밥 만드는 과정이에요.", "바닷물에 든 짠 성분은 필요 없어요."],
-    "answer": "소금", "combined": "소금"
+    "id": "8C", "set": 8, "slot": "C", "category": "국어", "difficulty": "hard",
+    "question": "[셋째 글자] 노래하는 '가수', 그림 그리는 '화O', 요리하는 'O' — '-가'로 끝나는 직업의 끝 글자는?",
+    "media": [],
+    "hints": ["'O수', '화O', '음악O'.", "어떤 일을 잘하는 사람."],
+    "answer": "가", "combined": "탐험가"
   }
 ]
