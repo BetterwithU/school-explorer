@@ -9,8 +9,8 @@
 
     body {
       font-family: 'Apple SD Gothic Neo', 'Nanum Gothic', sans-serif;
-      background: #060d0a;
-      color: #fff;
+      background: #2c1f0e;
+      color: #2c1a05;
       min-height: 100dvh;
       display: flex;
       flex-direction: column;
@@ -18,46 +18,30 @@
       justify-content: center;
       padding: 20px;
       position: relative;
-      overflow-x: hidden;
     }
 
-    /* 손전등 비추는 효과 */
+    /* 양피지 배경 텍스처 */
     body::before {
       content: '';
       position: fixed;
       inset: 0;
-      background: radial-gradient(ellipse 55% 55% at 50% 45%, transparent 0%, rgba(0,0,0,0.7) 60%, rgba(0,0,0,0.92) 100%);
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    /* 초록 스캔라인 효과 */
-    body::after {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background: repeating-linear-gradient(
-        0deg,
-        transparent,
-        transparent 3px,
-        rgba(0,255,100,0.015) 3px,
-        rgba(0,255,100,0.015) 4px
-      );
-      pointer-events: none;
-      z-index: 0;
+      background:
+        radial-gradient(ellipse at 30% 20%, rgba(210,175,110,0.3) 0%, transparent 60%),
+        radial-gradient(ellipse at 70% 80%, rgba(180,140,80,0.2) 0%, transparent 60%),
+        linear-gradient(160deg, #e8d5a3 0%, #dcc48a 40%, #d4b870 100%);
+      z-index: -1;
     }
 
     .card {
       position: relative;
       z-index: 1;
-      background: rgba(8,20,14,0.88);
-      border: 1px solid #1a4a2e;
-      border-radius: 20px;
+      background: rgba(245,235,200,0.82);
+      border: 2px solid rgba(100,65,20,0.4);
+      border-radius: 6px;
       padding: 24px 20px;
       max-width: 480px;
       width: 100%;
-      box-shadow: 0 0 40px rgba(0,255,100,0.06), 0 8px 40px rgba(0,0,0,0.7);
-      backdrop-filter: blur(6px);
+      box-shadow: 3px 4px 18px rgba(60,30,5,0.25), inset 0 0 30px rgba(180,140,70,0.08);
     }
 
     .topbar {
@@ -65,183 +49,281 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(100,65,20,0.25);
       font-size: 0.85rem;
-      padding-bottom: 12px;
-      border-bottom: 1px solid #1a4a2e;
     }
-    .topbar .team { color: #39ff8f; font-weight: bold; text-shadow: 0 0 8px rgba(57,255,143,0.5); }
-    .topbar .step { color: #7a9a8a; }
+    .topbar .team { color: #5c2e05; font-weight: bold; }
+    .topbar .step { color: rgba(80,50,15,0.65); }
     .dev-badge { background: #7c3aed; color: #fff; font-size: 0.7rem; padding: 2px 8px; border-radius: 10px; margin-left: 6px; vertical-align: middle; }
 
     .badge-row { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
-    .badge { padding: 4px 12px; border-radius: 20px; font-size: 0.78rem; font-weight: bold; border: 1px solid transparent; }
-    .badge-pair { background: rgba(233,69,96,0.2); color: #ff6b7a; border-color: #e94560; }
-    .badge-place { background: rgba(57,255,143,0.1); color: #39ff8f; border-color: #1a6a40; }
-    .badge-cat { background: rgba(255,209,102,0.1); color: #ffd166; border-color: #7a6020; }
+    .badge {
+      padding: 3px 10px;
+      border-radius: 3px;
+      font-size: 0.75rem;
+      font-weight: bold;
+      border: 1px solid rgba(100,65,20,0.35);
+      background: rgba(100,65,20,0.08);
+      color: rgba(60,30,5,0.85);
+    }
+    .badge-pair { background: rgba(160,50,30,0.1); border-color: rgba(160,50,30,0.4); color: rgba(140,40,20,0.9); }
+    .badge-place { background: rgba(60,100,40,0.1); border-color: rgba(60,100,40,0.35); color: rgba(40,80,20,0.85); }
 
     .question-text {
-      font-size: 1.22rem;
-      line-height: 1.75;
+      font-size: 1.15rem;
+      line-height: 1.8;
       margin-bottom: 18px;
       white-space: pre-line;
-      color: #e8f5ee;
+      color: #2c1a05;
     }
 
     .q-media { margin-bottom: 16px; }
-    .q-image { width: 100%; border-radius: 12px; display: block; border: 1px solid #1a4a2e; }
-    .q-video { position: relative; width: 100%; padding-top: 56.25%; border-radius: 12px; overflow: hidden; background: #000; }
+    .q-image { width: 100%; border-radius: 6px; display: block; border: 1px solid rgba(100,65,20,0.3); }
+    .q-video { position: relative; width: 100%; padding-top: 56.25%; border-radius: 6px; overflow: hidden; background: #000; }
     .q-video iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
     .q-audio { width: 100%; display: block; }
 
     .pair-note {
-      background: rgba(57,255,143,0.06);
-      border-left: 3px solid #39ff8f;
-      border-radius: 10px;
+      background: rgba(100,65,20,0.07);
+      border-left: 3px solid rgba(130,80,20,0.6);
+      border-radius: 4px;
       padding: 12px 14px;
       margin-bottom: 18px;
-      font-size: 0.9rem;
-      color: #a8e6b8;
-      line-height: 1.6;
+      font-size: 0.88rem;
+      color: rgba(60,30,5,0.8);
+      line-height: 1.65;
     }
-    .pair-note b { color: #ffd166; }
+    .pair-note b { color: #7a3a10; }
 
     .hint-btn {
       background: none;
-      border: 1px solid #1a4a2e;
-      color: #7a9a8a;
-      padding: 11px;
-      border-radius: 12px;
-      font-size: 0.9rem;
+      border: 1px solid rgba(100,65,20,0.35);
+      color: rgba(80,50,15,0.7);
+      padding: 10px;
+      border-radius: 4px;
+      font-size: 0.88rem;
       cursor: pointer;
       width: 100%;
       margin-bottom: 10px;
-      transition: background 0.2s, color 0.2s;
+      transition: background 0.2s;
     }
-    .hint-btn:active { background: rgba(57,255,143,0.08); color: #39ff8f; }
-    @media (hover: hover) { .hint-btn:hover { background: rgba(57,255,143,0.08); color: #39ff8f; } }
+    .hint-btn:active { background: rgba(100,65,20,0.1); }
+    @media (hover: hover) { .hint-btn:hover { background: rgba(100,65,20,0.1); } }
 
     .hint-box {
-      background: rgba(57,255,143,0.06);
-      border: 1px solid #1a4a2e;
-      border-radius: 12px;
-      padding: 12px 14px;
+      background: rgba(100,65,20,0.07);
+      border: 1px solid rgba(100,65,20,0.2);
+      border-radius: 4px;
+      padding: 10px 14px;
       margin-bottom: 10px;
-      color: #a8e6b8;
-      font-size: 0.9rem;
+      color: rgba(60,30,5,0.75);
+      font-size: 0.88rem;
       line-height: 1.6;
     }
 
-    .my-answer-label { font-size: 0.85rem; color: #74c69d; margin: 14px 0 6px; }
-    .combined-label { font-size: 0.88rem; color: #ffd166; margin: 8px 0 6px; font-weight: bold; letter-spacing: 0.5px; }
+    .combined-label {
+      font-size: 0.85rem;
+      color: #7a3a10;
+      margin: 10px 0 6px;
+      font-weight: bold;
+    }
 
     .answer-input {
       width: 100%;
-      padding: 14px 16px;
-      border-radius: 12px;
-      border: 1px solid #1a6a40;
-      background: rgba(57,255,143,0.06);
-      color: #39ff8f;
-      font-size: 1.2rem;
-      margin-bottom: 16px;
+      padding: 13px 16px;
+      border-radius: 4px;
+      border: 1px solid rgba(100,65,20,0.45);
+      background: rgba(255,248,225,0.7);
+      color: #2c1a05;
+      font-size: 1.15rem;
+      margin-bottom: 14px;
       text-align: center;
-      caret-color: #39ff8f;
-      transition: border-color 0.2s, box-shadow 0.2s;
     }
     .answer-input:focus {
       outline: none;
-      border-color: #39ff8f;
-      box-shadow: 0 0 12px rgba(57,255,143,0.2);
+      border-color: rgba(130,70,20,0.7);
+      background: rgba(255,250,230,0.9);
     }
-    .answer-input::placeholder { color: #3a6a4a; font-size: 0.95rem; }
+    .answer-input::placeholder { color: rgba(100,65,20,0.4); font-size: 0.95rem; }
 
     .submit-btn {
-      background: linear-gradient(135deg, #39ff8f 0%, #20d97a 100%);
+      background: linear-gradient(135deg, #8b4513 0%, #6b3410 100%);
       border: none;
-      color: #060d0a;
-      padding: 15px;
-      border-radius: 12px;
-      font-size: 1.05rem;
+      color: #f5deb3;
+      padding: 14px;
+      border-radius: 4px;
+      font-size: 1rem;
       font-weight: bold;
       cursor: pointer;
       width: 100%;
-      transition: transform 0.15s, box-shadow 0.2s;
-      box-shadow: 0 4px 16px rgba(57,255,143,0.3);
+      transition: transform 0.15s;
+      box-shadow: 2px 3px 8px rgba(60,30,5,0.3);
     }
     .submit-btn:active { transform: scale(0.97); }
-    @media (hover: hover) { .submit-btn:hover { box-shadow: 0 6px 20px rgba(57,255,143,0.4); } }
+    @media (hover: hover) { .submit-btn:hover { background: linear-gradient(135deg, #a0521a 0%, #7a3d12 100%); } }
 
-    .feedback { margin-top: 14px; padding: 14px; border-radius: 12px; text-align: center; font-size: 1rem; display: none; }
-    .feedback.wrong { background: rgba(233,69,96,0.15); border: 1px solid #e94560; color: #ff9aaa; display: block; }
-    .feedback.right { background: rgba(57,255,143,0.12); border: 1px solid #39ff8f; color: #39ff8f; display: block; }
+    .feedback { margin-top: 12px; padding: 12px; border-radius: 4px; text-align: center; font-size: 0.95rem; display: none; }
+    .feedback.wrong { background: rgba(160,50,30,0.1); border: 1px solid rgba(160,50,30,0.4); color: #8b2010; display: block; }
+    .feedback.right { background: rgba(60,100,40,0.1); border: 1px solid rgba(60,100,40,0.4); color: #2d6010; display: block; }
 
     /* 안내 화면 */
     .guide { text-align: center; }
-    .guide .ico { font-size: 2.6rem; margin-bottom: 10px; filter: drop-shadow(0 0 10px rgba(57,255,143,0.4)); }
-    .guide .ttl { font-size: 1.15rem; font-weight: bold; margin-bottom: 12px; color: #39ff8f; text-shadow: 0 0 10px rgba(57,255,143,0.4); }
+    .guide .ico { font-size: 2.4rem; margin-bottom: 10px; }
+    .guide .ttl { font-size: 1.1rem; font-weight: bold; margin-bottom: 12px; color: #7a3a10; }
     .guide .place {
-      background: rgba(57,255,143,0.08);
-      border: 1px solid #1a6a40;
-      border-radius: 14px;
-      padding: 18px;
+      background: rgba(100,65,20,0.08);
+      border: 1px solid rgba(100,65,20,0.3);
+      border-radius: 6px;
+      padding: 16px;
       margin: 14px 0;
     }
-    .guide .place .lbl { font-size: 0.78rem; color: #74c69d; letter-spacing: 1px; }
-    .guide .place .nm { font-size: 1.5rem; font-weight: bold; color: #39ff8f; margin-top: 4px; text-shadow: 0 0 8px rgba(57,255,143,0.3); }
+    .guide .place .lbl { font-size: 0.75rem; color: rgba(80,50,15,0.65); letter-spacing: 1px; }
+    .guide .place .nm { font-size: 1.45rem; font-weight: bold; color: #5c2e05; margin-top: 4px; }
 
     .share-box {
-      background: rgba(255,209,102,0.1);
-      border: 1px solid #7a6020;
-      border-radius: 14px;
-      padding: 16px;
+      background: rgba(130,80,20,0.1);
+      border: 1px solid rgba(130,80,20,0.35);
+      border-radius: 6px;
+      padding: 14px;
       margin: 8px 0 4px;
     }
-    .share-box .share-lbl { font-size: 0.8rem; color: #ffd166; margin-bottom: 6px; letter-spacing: 0.5px; }
-    .share-box .share-ans { font-size: 1.8rem; font-weight: bold; color: #fff; letter-spacing: 3px; text-shadow: 0 0 8px rgba(255,209,102,0.3); }
+    .share-box .share-lbl { font-size: 0.78rem; color: #7a3a10; margin-bottom: 6px; }
+    .share-box .share-ans { font-size: 1.7rem; font-weight: bold; color: #2c1a05; letter-spacing: 3px; }
 
     .piece-box {
-      background: rgba(57,255,143,0.06);
-      border: 1px solid #1a6a40;
-      border-radius: 14px;
-      padding: 16px;
+      background: rgba(60,100,40,0.08);
+      border: 1px solid rgba(60,100,40,0.3);
+      border-radius: 6px;
+      padding: 14px;
       margin: 8px 0;
     }
-    .piece-box .piece-lbl { font-size: 0.8rem; color: #74c69d; margin-bottom: 6px; }
-    .piece-box .piece-char { font-size: 2.6rem; font-weight: bold; color: #ffd166; text-shadow: 0 0 12px rgba(255,209,102,0.5); }
+    .piece-box .piece-lbl { font-size: 0.78rem; color: rgba(40,80,20,0.8); margin-bottom: 6px; }
+    .piece-box .piece-char { font-size: 2.4rem; font-weight: bold; color: #5c2e05; }
 
-    .guide .desc { color: #7a9a8a; font-size: 0.9rem; line-height: 1.7; white-space: pre-line; }
-    .guide .btn {
+    .guide .desc { color: rgba(60,30,5,0.7); font-size: 0.88rem; line-height: 1.7; white-space: pre-line; }
+
+    .guide .btn, .scan-guide-btn {
       display: block;
-      background: rgba(57,255,143,0.1);
-      border: 1px solid #1a6a40;
-      color: #39ff8f;
+      background: rgba(100,65,20,0.1);
+      border: 1px solid rgba(100,65,20,0.35);
+      color: #5c2e05;
       text-decoration: none;
-      padding: 13px;
-      border-radius: 12px;
-      margin-top: 12px;
-      font-size: 0.95rem;
+      padding: 12px;
+      border-radius: 4px;
+      margin-top: 10px;
+      font-size: 0.92rem;
+      cursor: pointer;
+      width: 100%;
+      text-align: center;
       transition: background 0.2s;
     }
-    .guide .btn:active { background: rgba(57,255,143,0.18); }
-    @media (hover: hover) { .guide .btn:hover { background: rgba(57,255,143,0.18); } }
+    .guide .btn:active, .scan-guide-btn:active { background: rgba(100,65,20,0.18); }
+    @media (hover: hover) {
+      .guide .btn:hover, .scan-guide-btn:hover { background: rgba(100,65,20,0.18); }
+    }
+
+    /* QR 스캔 버튼 — 강조 */
+    .scan-guide-btn.primary {
+      background: linear-gradient(135deg, #8b4513 0%, #6b3410 100%);
+      border-color: transparent;
+      color: #f5deb3;
+      font-weight: bold;
+      font-size: 1rem;
+      padding: 14px;
+      box-shadow: 2px 3px 8px rgba(60,30,5,0.25);
+      margin-top: 14px;
+    }
+    .scan-guide-btn.primary:active { transform: scale(0.97); }
 
     .back-link {
       display: block;
       position: relative;
       z-index: 1;
       text-align: center;
-      margin-top: 14px;
-      color: #3a6a4a;
+      margin-top: 12px;
+      color: rgba(100,65,20,0.55);
       text-decoration: none;
       font-size: 0.82rem;
       padding: 8px;
+      cursor: pointer;
+      background: none;
+      border: none;
+      width: 100%;
     }
-    .back-link:active { color: #74c69d; }
-    @media (hover: hover) { .back-link:hover { color: #74c69d; } }
+    .back-link:active { color: #7a3a10; }
+    @media (hover: hover) { .back-link:hover { color: #7a3a10; } }
+
+    /* ── QR 스캐너 오버레이 ── */
+    .scanner-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(20,10,0,0.95);
+      z-index: 100;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .scanner-overlay.active { display: flex; }
+    .scanner-title { color: #f5deb3; font-size: 1.05rem; font-weight: bold; margin-bottom: 16px; }
+    #qr-video {
+      width: min(90vw, 360px); height: min(90vw, 360px);
+      object-fit: cover; border-radius: 8px;
+      border: 2px solid rgba(139,69,19,0.8);
+    }
+    .scanner-frame {
+      position: relative;
+      width: min(90vw, 360px); height: min(90vw, 360px);
+    }
+    .scanner-corner {
+      position: absolute; width: 24px; height: 24px;
+      border-color: #c8a050; border-style: solid; border-width: 0;
+    }
+    .scanner-corner.tl { top: 6px; left: 6px; border-top-width: 3px; border-left-width: 3px; }
+    .scanner-corner.tr { top: 6px; right: 6px; border-top-width: 3px; border-right-width: 3px; }
+    .scanner-corner.bl { bottom: 6px; left: 6px; border-bottom-width: 3px; border-left-width: 3px; }
+    .scanner-corner.br { bottom: 6px; right: 6px; border-bottom-width: 3px; border-right-width: 3px; }
+    .scanner-line {
+      position: absolute; left: 10px; right: 10px; height: 2px;
+      background: linear-gradient(90deg, transparent, #c8a050, transparent);
+      animation: scan-line 2s linear infinite; top: 0;
+    }
+    @keyframes scan-line {
+      0%   { top: 10px; opacity: 1; }
+      90%  { top: calc(100% - 10px); opacity: 1; }
+      100% { top: calc(100% - 10px); opacity: 0; }
+    }
+    .scanner-msg { color: #c8a050; font-size: 0.88rem; margin-top: 14px; text-align: center; line-height: 1.6; }
+    .scanner-cancel {
+      margin-top: 20px; padding: 12px 36px;
+      background: rgba(100,65,20,0.3); color: #f5deb3;
+      border: 1px solid rgba(139,69,19,0.5); border-radius: 6px;
+      font-size: 0.95rem; cursor: pointer;
+    }
+    #qr-canvas { display: none; }
   </style>
 </head>
 <body>
-  <div class="card" id="card"><p style="text-align:center;color:#39ff8f;opacity:0.6">불러오는 중...</p></div>
+  <div class="card" id="card"><p style="text-align:center;color:rgba(100,65,20,0.6)">불러오는 중...</p></div>
 
+  <!-- QR 스캐너 오버레이 -->
+  <div class="scanner-overlay" id="scannerOverlay">
+    <div class="scanner-title">📜 QR 코드를 비춰주세요</div>
+    <div class="scanner-frame">
+      <video id="qr-video" autoplay playsinline muted></video>
+      <div class="scanner-corner tl"></div>
+      <div class="scanner-corner tr"></div>
+      <div class="scanner-corner bl"></div>
+      <div class="scanner-corner br"></div>
+      <div class="scanner-line"></div>
+    </div>
+    <canvas id="qr-canvas"></canvas>
+    <p class="scanner-msg" id="scannerMsg">QR코드를 화면 안에 맞춰주세요</p>
+    <button class="scanner-cancel" id="scannerCancel">✕ 취소</button>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
   <script src="firebase-config.js"></script>
   <script src="app.js"></script>
   <script type="module" src="sync.js"></script>
@@ -252,6 +334,7 @@
 
     let COURSE, QUESTIONS, PROGRESS, QUESTION, MISSION;
     let hintsShown = 0;
+    let scanStream = null, scanRAF = null, scanDone = false;
 
     loadData().then(({ course, questions }) => {
       COURSE = course; QUESTIONS = questions;
@@ -281,7 +364,6 @@
       }
 
       const setNo = MISSION.set;
-
       if (DEV) { renderQuestion(); return; }
 
       if (PROGRESS.solved[setNo]) {
@@ -295,13 +377,14 @@
         const curM = missionBySet(COURSE, cur);
         guide('🚧', '아직 여기 차례가 아니에요!', curM.placeName,
           '우리 조는 정해진 순서대로 움직여요. 아래 장소로 먼저 가세요.',
-          `mission.html`, '현재 미션 보기');
+          'mission.html', '현재 미션 보기');
         return;
       }
 
       renderQuestion();
     }
 
+    /* ── 장소 안내 화면 (QR 스캔 버튼 포함) ── */
     function showCurrentGuide() {
       if (isAllDone(PROGRESS)) {
         location.href = isFinalePending(COURSE, PROGRESS) ? 'map.html' : 'done.html';
@@ -311,10 +394,23 @@
       const n = missionQrCount(m);
       const stepNo = PROGRESS.step + 1, total = PROGRESS.order.length;
       const scanMsg = n === 1
-        ? '이곳의 QR코드를 모두 스캔해서 공통 문제를 푸세요!'
+        ? '이곳의 QR코드를 스캔해서 공통 문제를 푸세요!'
         : `이곳에서 QR코드 ${n}개를 ${n}명이 나눠 스캔하세요!`;
-      guide('📍', `${stepNo}번째 미션 장소`, m.placeName,
-        `${PROGRESS.team} · ${stepNo}/${total}\n${scanMsg}`, null, null, true);
+
+      document.getElementById('card').innerHTML = `
+        <div class="guide">
+          <div class="ico">📍</div>
+          <div class="ttl">${stepNo}번째 미션 장소</div>
+          <div class="place">
+            <div class="lbl">📜 ${PROGRESS.team} · ${stepNo} / ${total}</div>
+            <div class="nm">${m.placeName}</div>
+          </div>
+          <div class="desc">${scanMsg}</div>
+          <button class="scan-guide-btn primary" id="scanBtn">📷 QR 스캔하기</button>
+          <a class="guide btn" href="home.html">🏠 미션 홈으로</a>
+        </div>`;
+
+      document.getElementById('scanBtn').onclick = openScanner;
     }
 
     function renderQuestion() {
@@ -358,13 +454,13 @@
 
       document.getElementById('card').innerHTML = `
         <div class="topbar">
-          <span class="team">🔦 ${PROGRESS.team}${DEV ? '<span class="dev-badge">🛠️ DEV</span>' : ''}</span>
+          <span class="team">📜 ${PROGRESS.team}${DEV ? '<span class="dev-badge">🛠️ DEV</span>' : ''}</span>
           <span class="step">미션 ${stepNo} / ${total}</span>
         </div>
         <div class="badge-row">
           <span class="badge badge-pair">${myLabel}</span>
           <span class="badge badge-place">${MISSION.placeName}</span>
-          <span class="badge badge-cat">${q.category}</span>
+          <span class="badge">${q.category}</span>
         </div>
         ${mediaHtml}
         <p class="question-text">${q.question}</p>
@@ -375,7 +471,7 @@
         <input class="answer-input" id="ans" placeholder="${placeholder}" autocomplete="off">
         <button class="submit-btn" id="submitBtn">✅ 정답 제출</button>
         <div class="feedback" id="feedback"></div>
-        <a class="back-link" href="${DEV ? 'dev.html' : 'mission.html'}">${DEV ? '← 개발자 콘솔로' : '← 뒤로 (이 문제 접고 다른 QR 찍기)'}</a>
+        <button class="back-link" onclick="showCurrentGuide()">${DEV ? '← 개발자 콘솔로' : '← 다른 QR 찍기'}</button>
       `;
 
       document.getElementById('hintBtn').onclick = () => {
@@ -399,6 +495,10 @@
           fb.textContent = isCommon ? '아쉬워요! 다시 생각해 볼까요?' : '아쉬워요! 친구들과 답을 다시 맞춰보세요.';
         }
       };
+
+      if (DEV) {
+        document.querySelector('.back-link').onclick = () => location.href = 'dev.html';
+      }
     }
 
     function showNextAfterSolve(solvedAnswer, wasCommon) {
@@ -428,8 +528,8 @@
             ${shareHtml}
             ${pieceHtml}
             <div class="desc">이제 모은 글자 ${need}개를 조합해 보물이 숨은 곳을 찾을 차례예요!</div>
-            <a class="btn" href="map.html">🔑 보물 글자 조합하러 가기 →</a>
-            ${DEV ? '<a class="btn" href="dev.html">🛠️ 개발자 패널로</a>' : ''}
+            <a class="guide btn" href="map.html">🔑 보물 글자 조합하러 가기 →</a>
+            ${DEV ? '<a class="guide btn" href="dev.html">🛠️ 개발자 패널로</a>' : ''}
           </div>`;
         return;
       }
@@ -449,18 +549,82 @@
           ${pieceHtml}
           ${placeHtml}
           <div class="desc">${scanMsg}</div>
-          <a class="btn" href="map.html">🔑 보물 글자 모음 보기</a>
-          ${DEV ? '<a class="btn" href="dev.html">🛠️ 개발자 패널로</a>' : ''}
-          <a class="btn" href="home.html">🏠 미션 홈으로</a>
+          <a class="guide btn" href="map.html">🔑 보물 글자 모음 보기</a>
+          ${DEV ? '<a class="guide btn" href="dev.html">🛠️ 개발자 패널로</a>' : ''}
+          <a class="guide btn" href="home.html">🏠 미션 홈으로</a>
         </div>`;
     }
 
     function guide(ico, ttl, placeName, desc, link, linkLabel, showHome) {
       const placeHtml = placeName ? `<div class="place"><div class="lbl">다음 장소</div><div class="nm">${placeName}</div></div>` : '';
-      const linkHtml = link ? `<a class="btn" href="${link}">${linkLabel}</a>` : '';
-      const homeHtml = showHome ? `<a class="btn" href="home.html">🏠 미션 홈으로</a>` : '';
+      const linkHtml = link ? `<a class="guide btn" href="${link}">${linkLabel}</a>` : '';
+      const homeHtml = showHome ? `<a class="guide btn" href="home.html">🏠 미션 홈으로</a>` : '';
       document.getElementById('card').innerHTML =
         `<div class="guide"><div class="ico">${ico}</div><div class="ttl">${ttl}</div>${placeHtml}<div class="desc">${desc}</div>${linkHtml}${homeHtml}</div>`;
+    }
+
+    /* ── QR 스캐너 ── */
+    function openScanner() {
+      scanDone = false;
+      document.getElementById('scannerOverlay').classList.add('active');
+      startCamera();
+    }
+    function closeScanner() {
+      stopCamera();
+      document.getElementById('scannerOverlay').classList.remove('active');
+      document.getElementById('scannerMsg').textContent = 'QR코드를 화면 안에 맞춰주세요';
+    }
+    document.getElementById('scannerCancel').onclick = closeScanner;
+
+    async function startCamera() {
+      try {
+        scanStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 1280 } }
+        });
+        const video = document.getElementById('qr-video');
+        video.srcObject = scanStream;
+        video.onloadedmetadata = () => { video.play(); requestAnimationFrame(scanTick); };
+      } catch {
+        document.getElementById('scannerMsg').textContent = '카메라 권한이 필요해요. 브라우저 설정에서 허용해주세요.';
+      }
+    }
+    function stopCamera() {
+      if (scanRAF) { cancelAnimationFrame(scanRAF); scanRAF = null; }
+      if (scanStream) { scanStream.getTracks().forEach(t => t.stop()); scanStream = null; }
+      document.getElementById('qr-video').srcObject = null;
+    }
+    function scanTick() {
+      if (scanDone) return;
+      const video = document.getElementById('qr-video');
+      const canvas = document.getElementById('qr-canvas');
+      if (video.readyState !== video.HAVE_ENOUGH_DATA) { scanRAF = requestAnimationFrame(scanTick); return; }
+      const size = Math.min(video.videoWidth, video.videoHeight);
+      canvas.width = size; canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      const ox = (video.videoWidth - size) / 2, oy = (video.videoHeight - size) / 2;
+      ctx.drawImage(video, ox, oy, size, size, 0, 0, size, size);
+      const imageData = ctx.getImageData(0, 0, size, size);
+      const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: 'dontInvert' });
+      if (code) { handleQrResult(code.data); } else { scanRAF = requestAnimationFrame(scanTick); }
+    }
+    function handleQrResult(url) {
+      scanDone = true;
+      closeScanner();
+      try {
+        let qid = null;
+        if (url.includes('mission.html')) {
+          qid = new URL(url, location.href).searchParams.get('q');
+        } else if (/^[0-9]+[A-Z]?$/i.test(url.trim())) {
+          qid = url.trim().toUpperCase();
+        }
+        if (qid) {
+          location.href = `mission.html?q=${encodeURIComponent(qid)}`;
+        } else {
+          alert('이 QR코드는 우리 탐험대 미션이 아니에요 🙅');
+        }
+      } catch {
+        alert('QR코드를 읽을 수 없어요. 다시 시도해주세요.');
+      }
     }
   </script>
 </body>

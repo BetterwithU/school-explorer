@@ -9,8 +9,8 @@
 
     body {
       font-family: 'Apple SD Gothic Neo', 'Nanum Gothic', sans-serif;
-      background: #0a0a1a;
-      color: #fff;
+      background: #2c1f0e;
+      color: #2c1a05;
       min-height: 100dvh;
       display: flex;
       flex-direction: column;
@@ -20,6 +20,15 @@
       text-align: center;
       position: relative;
       overflow: hidden;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at 50% 30%, rgba(220,185,120,0.4) 0%, transparent 60%),
+        linear-gradient(160deg, #e8d5a3 0%, #dcc48a 40%, #d4b870 100%);
+      z-index: 0;
     }
 
     /* 폭죽 파티클 */
@@ -74,16 +83,16 @@
       position: relative;
       z-index: 1;
       font-size: 2rem;
-      color: #ffd166;
+      color: #5c2e05;
       margin-bottom: 8px;
-      text-shadow: 0 0 20px rgba(255,209,102,0.6);
+      text-shadow: 1px 1px 0 rgba(255,240,200,0.5);
       animation: slide-up 0.5s ease 0.3s both;
     }
     .team-name {
       position: relative;
       z-index: 1;
       font-size: 1.4rem;
-      color: #ff6b7a;
+      color: #7a3a10;
       font-weight: bold;
       margin-bottom: 8px;
       animation: slide-up 0.5s ease 0.4s both;
@@ -91,7 +100,7 @@
     p {
       position: relative;
       z-index: 1;
-      color: #a8dadc;
+      color: rgba(60,30,5,0.7);
       font-size: 0.95rem;
       line-height: 1.7;
       margin-bottom: 20px;
@@ -105,36 +114,36 @@
     .treasure {
       position: relative;
       z-index: 1;
-      background: linear-gradient(135deg, #3d2005 0%, #7b4f12 100%);
-      border: 2px solid #ffd166;
-      border-radius: 20px;
+      background: rgba(100,65,20,0.1);
+      border: 1px solid rgba(130,80,20,0.45);
+      border-radius: 6px;
       padding: 22px 18px;
       max-width: 420px;
       width: 100%;
       margin-bottom: 16px;
-      box-shadow: 0 0 30px rgba(255,209,102,0.2), 0 8px 30px rgba(0,0,0,0.5);
+      box-shadow: 2px 3px 12px rgba(60,30,5,0.2);
       animation: slide-up 0.5s ease 0.6s both;
     }
-    .treasure .lbl { font-size: 0.82rem; color: #ffd166; margin-bottom: 8px; letter-spacing: 1px; }
-    .treasure .place { font-size: 1.8rem; font-weight: bold; color: #fff; letter-spacing: 1px; margin-bottom: 10px; text-shadow: 0 0 10px rgba(255,209,102,0.4); }
-    .treasure .reveal { font-size: 0.92rem; color: #ffe8b3; line-height: 1.6; }
+    .treasure .lbl { font-size: 0.8rem; color: #7a3a10; margin-bottom: 8px; letter-spacing: 1px; }
+    .treasure .place { font-size: 1.8rem; font-weight: bold; color: #5c2e05; letter-spacing: 1px; margin-bottom: 10px; }
+    .treasure .reveal { font-size: 0.92rem; color: rgba(60,30,5,0.75); line-height: 1.6; }
 
     .summary {
       position: relative;
       z-index: 1;
-      background: rgba(22,33,62,0.8);
-      border: 1px solid #1d3a6a;
-      border-radius: 18px;
+      background: rgba(245,235,200,0.6);
+      border: 1px solid rgba(100,65,20,0.3);
+      border-radius: 6px;
       padding: 20px;
       max-width: 420px;
       width: 100%;
       margin-bottom: 24px;
       animation: slide-up 0.5s ease 0.7s both;
     }
-    .summary .row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 0.95rem; border-bottom: 1px solid #1d3a6a; }
+    .summary .row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 0.95rem; border-bottom: 1px solid rgba(100,65,20,0.15); }
     .summary .row:last-child { border-bottom: none; }
-    .summary .row .k { color: #a8dadc; }
-    .summary .row .v { color: #ffd166; font-weight: bold; }
+    .summary .row .k { color: rgba(60,30,5,0.65); }
+    .summary .row .v { color: #5c2e05; font-weight: bold; }
 
     .btn {
       position: relative;
@@ -142,19 +151,19 @@
       display: block;
       max-width: 420px;
       width: 100%;
-      background: linear-gradient(135deg, #e94560 0%, #c73652 100%);
-      color: #fff;
+      background: linear-gradient(135deg, #8b4513 0%, #6b3410 100%);
+      color: #f5deb3;
       text-decoration: none;
       padding: 16px;
-      border-radius: 16px;
+      border-radius: 4px;
       font-size: 1.05rem;
       font-weight: bold;
-      box-shadow: 0 4px 20px rgba(233,69,96,0.4);
+      box-shadow: 2px 3px 8px rgba(60,30,5,0.3);
       animation: slide-up 0.5s ease 0.8s both;
       transition: transform 0.15s;
     }
     .btn:active { transform: scale(0.97); }
-    @media (hover: hover) { .btn:hover { background: linear-gradient(135deg, #c73652 0%, #a82843 100%); } }
+    @media (hover: hover) { .btn:hover { background: linear-gradient(135deg, #a0521a 0%, #7a3d12 100%); } }
   </style>
 </head>
 <body>
