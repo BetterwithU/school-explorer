@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>탐험 지도</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Apple SD Gothic Neo', 'Nanum Gothic', sans-serif;
+      background: #2c1a0e;
+      min-height: 100dvh;
+      overflow-x: hidden;
+    }
+
+    /* ── 상단 헤더 ── */
+    .header {
+      background: rgba(195,155,90,0.92);
+      padding: 14px 20px 10px;
+      text-align: center;
+      border-bottom: 2px solid rgba(80,45,10,0.4);
+      position: relative;
+    }
+    .header-team {
+      font-size: 0.78rem;
+      color: rgba(60,30,5,0.75);
+      letter-spacing: 1px;
+      margin-bottom: 2px;
+    }
+    .header-title {
+      font-size: 1.35rem;
+      font-weight: 900;
+      color: rgba(40,20,5,0.9);
+      text-shadow: 1px 1px 0 rgba(255,240,200,0.3);
+    }
+    .header-progress {
+      font-size: 0.8rem;
+      color: rgba(60,30,5,0.65);
+      margin-top: 3px;
+    }
+    .header-compass {
+      position: absolute;
+      top: 12px;
+      right: 16px;
+      font-size: 1.5rem;
+      opacity: 0.6;
+      filter: sepia(1);
+    }
+
+    /* ── 지도 영역 ── */
+    .map-wrap {
+      position: relative;
+      width: 100%;
+      background:
+        url('images/Gemini_Generated_Image_6ttam6ttam6ttam6.png') center top/100% auto no-repeat;
+      background-color: #c8a97a;
+      padding: 20px 16px 28px;
+      /* 이미지 비율 9:20 → padding-top으로 높이 확보 */
+      min-height: calc(100vw * 20 / 9);
+    }
+
+    /* 양피지 노이즈 텍스처 오버레이 */
+    .map-wrap::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E");
+      pointer-events: none;
+      opacity: 0.4;
+    }
+
+    /* 가장자리 그을린 효과 */
+    .map-wrap::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      box-shadow: inset 0 0 20px rgba(44,26,14,0.2);
+      pointer-events: none;
+    }
+
+    /* 점선 경로 SVG */
+    .path-svg {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* ── 미션 노드 그리드 ── */
+    .mission-grid {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: calc(100vw * 20 / 9 - 48px);
+    }
+
+    /* 행: 2개씩, 홀수행은 왼쪽→오른쪽, 짝수행은 오른쪽→왼쪽 (구불구불) */
+    .mission-row {
+      display: flex;
+      justify-content: space-around;
+      margin-bottom: 8px;
+    }
+    .mission-row.reverse {
+      flex-direction: row-reverse;
+    }
+
+    /* ── 미션 노드 ── */
+    .node {
+      width: 44%;
+      background: transparent;
+      border-radius: 4px;
+      padding: 10px 8px;
+      text-align: center;
+      border: 2px solid rgba(80,45,10,0.55);
+      position: relative;
+      cursor: default;
+      transition: transform 0.15s;
+    }
+
+    /* 완료 */
+    .node.done {
+      background: rgba(200,169,122,0.18);
+      cursor: pointer;
+      border-color: rgba(80,45,10,0.6);
+    }
+    .node.done:active { transform: scale(0.97); }
+    @media (hover:hover) { .node.done:hover { transform: translateY(-2px); } }
+
+    /* 현재 진행 중 */
+    .node.current {
+      background: rgba(200,169,122,0.25);
+      border: 2px solid rgba(160,60,40,0.8);
+      cursor: pointer;
+      animation: pulse-border 1.8s ease-in-out infinite;
+    }
+    .node.current:active { transform: scale(0.97); }
+    @media (hover:hover) { .node.current:hover { transform: translateY(-2px); } }
+
+    @keyframes pulse-border {
+      0%   { box-shadow: 0 0 0 0 rgba(160,60,40,0.5); }
+      50%  { box-shadow: 0 0 0 6px rgba(160,60,40,0); }
+      100% { box-shadow: 0 0 0 0 rgba(160,60,40,0); }
+    }
+
+    /* 잠긴 미션 */
+    .node.locked {
+      background: transparent;
+      border: 2px dashed rgba(80,45,10,0.3);
+      opacity: 0.6;
+    }
+
+    .node-number {
+      font-size: 0.65rem;
+      font-weight: bold;
+      color: rgba(80,45,10,0.7);
+      margin-bottom: 3px;
+      letter-spacing: 0.5px;
+    }
+
+    .node-icon {
+      font-size: 1.6rem;
+      margin-bottom: 3px;
+      line-height: 1;
+      filter: sepia(0.4);
+    }
+    .node.locked .node-icon {
+      filter: grayscale(1) sepia(0.3);
+      opacity: 0.4;
+    }
+
+    .node-name {
+      font-size: 0.75rem;
+      font-weight: bold;
+      color: rgba(50,25,5,0.85);
+      line-height: 1.3;
+    }
+    .node.locked .node-name {
+      color: rgba(80,45,10,0.4);
+    }
+
+    /* ??? 잠금 표시 */
+    .node-locked-label {
+      font-size: 1rem;
+      color: rgba(80,45,10,0.45);
+      font-weight: bold;
+      letter-spacing: 2px;
+    }
+
+    /* 완료 도장 — 낡은 스탬프 */
+    .stamp {
+      position: absolute;
+      top: -10px;
+      right: -10px;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: 2.5px solid rgba(160,30,30,0.75);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.55rem;
+      font-weight: 900;
+      color: rgba(160,30,30,0.85);
+      letter-spacing: -0.5px;
+      transform: rotate(15deg);
+      line-height: 1.1;
+      text-align: center;
+      background: transparent;
+      text-shadow: none;
+    }
+
+    /* 현재 미션 핀 */
+    .current-pin {
+      position: absolute;
+      top: -14px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 1.3rem;
+      animation: bounce-pin 1s ease-in-out infinite;
+      filter: drop-shadow(0 1px 3px rgba(0,0,0,0.3));
+    }
+    @keyframes bounce-pin {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50%       { transform: translateX(-50%) translateY(-5px); }
+    }
+
+    /* QR 스캔 버튼 — 잉크 느낌 */
+    .scan-btn {
+      display: block;
+      width: 100%;
+      margin-top: 7px;
+      padding: 7px 0;
+      background: rgba(130,50,30,0.75);
+      color: rgba(245,235,210,0.95);
+      border: 1px solid rgba(130,50,30,0.5);
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: bold;
+      cursor: pointer;
+      letter-spacing: 0.3px;
+    }
+    .scan-btn:active { background: rgba(100,35,20,0.85); }
+
+    /* 보물 글자 획득 배지 */
+    .piece-badge {
+      display: inline-block;
+      background: rgba(130,80,20,0.2);
+      color: rgba(80,45,10,0.85);
+      border-radius: 3px;
+      border: 1px solid rgba(130,80,20,0.4);
+      font-size: 0.65rem;
+      font-weight: bold;
+      padding: 2px 6px;
+      margin-top: 4px;
+    }
+
+    /* ── QR 스캐너 오버레이 ── */
+    .scanner-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.95);
+      z-index: 100;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .scanner-overlay.active { display: flex; }
+
+    .scanner-title {
+      color: #fff;
+      font-size: 1.1rem;
+      font-weight: bold;
+      margin-bottom: 16px;
+    }
+
+    #qr-video {
+      width: min(90vw, 360px);
+      height: min(90vw, 360px);
+      object-fit: cover;
+      border-radius: 16px;
+      border: 3px solid #e94560;
+    }
+
+    .scanner-frame {
+      position: relative;
+      width: min(90vw, 360px);
+      height: min(90vw, 360px);
+    }
+
+    .scanner-corner {
+      position: absolute;
+      width: 28px; height: 28px;
+      border-color: #e94560;
+      border-style: solid;
+      border-width: 0;
+    }
+    .scanner-corner.tl { top: 8px; left: 8px; border-top-width: 4px; border-left-width: 4px; }
+    .scanner-corner.tr { top: 8px; right: 8px; border-top-width: 4px; border-right-width: 4px; }
+    .scanner-corner.bl { bottom: 8px; left: 8px; border-bottom-width: 4px; border-left-width: 4px; }
+    .scanner-corner.br { bottom: 8px; right: 8px; border-bottom-width: 4px; border-right-width: 4px; }
+
+    .scanner-line {
+      position: absolute;
+      left: 12px; right: 12px;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #e94560, transparent);
+      animation: scan-line 2s linear infinite;
+      top: 0;
+    }
+    @keyframes scan-line {
+      0%   { top: 12px; opacity: 1; }
+      90%  { top: calc(100% - 12px); opacity: 1; }
+      100% { top: calc(100% - 12px); opacity: 0; }
+    }
+
+    .scanner-msg {
+      color: #a8dadc;
+      font-size: 0.88rem;
+      margin-top: 14px;
+      text-align: center;
+      line-height: 1.6;
+    }
+    .scanner-cancel {
+      margin-top: 20px;
+      padding: 13px 40px;
+      background: #1e2840;
+      color: #cfe3ff;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    .scanner-cancel:active { background: #2a3a5e; }
+
+    #qr-canvas { display: none; }
+
+    /* ── 하단 안내 ── */
+    .footer-note {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      color: rgba(61,31,10,0.6);
+      font-size: 0.72rem;
+      padding: 8px 0 16px;
+    }
+
+    /* ── 미션 복습 모달 ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+      z-index: 200;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal-sheet {
+      background: #16213e;
+      border-radius: 24px 24px 0 0;
+      padding: 24px 20px 36px;
+      width: 100%;
+      max-width: 480px;
+      max-height: 80dvh;
+      overflow-y: auto;
+      animation: slide-up 0.25s ease;
+    }
+    @keyframes slide-up {
+      from { transform: translateY(100%); }
+      to   { transform: translateY(0); }
+    }
+    .modal-handle {
+      width: 40px; height: 4px;
+      background: #2a3a5e;
+      border-radius: 2px;
+      margin: 0 auto 18px;
+    }
+    .modal-badge-row { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+    .modal-badge {
+      padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: bold;
+    }
+    .modal-badge-place { background: #0f3460; color: #a8dadc; }
+    .modal-badge-cat   { background: #0f3460; color: #ffd166; }
+    .modal-q { font-size: 1.1rem; color: #fff; line-height: 1.7; margin-bottom: 14px; white-space: pre-line; }
+    .modal-ans-label { font-size: 0.82rem; color: #74c69d; margin-bottom: 6px; }
+    .modal-ans { font-size: 1.4rem; font-weight: bold; color: #ffd166; letter-spacing: 2px; margin-bottom: 16px; }
+    .modal-piece { font-size: 0.88rem; color: #f4a261; margin-bottom: 20px; }
+    .modal-close {
+      display: block; width: 100%; padding: 14px;
+      background: #0f3460; color: #a8dadc; border: none;
+      border-radius: 12px; font-size: 1rem; cursor: pointer;
+    }
+    .modal-close:active { background: #1d4e8a; }
+  </style>
+</head>
+<body>
+
+  <!-- 상단 헤더 -->
+  <div class="header" id="header">
+    <div class="header-team" id="headerTeam">탐험대</div>
+    <div class="header-title">🗺️ 탐험 지도</div>
+    <div class="header-progress" id="headerProgress">불러오는 중…</div>
+    <div class="header-compass">🧭</div>
+  </div>
+
+  <!-- 지도 영역 -->
+  <div class="map-wrap" id="mapWrap">
+    <!-- 점선 경로 (JS로 그림) -->
+    <svg class="path-svg" id="pathSvg" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
+
+    <!-- 미션 노드들 -->
+    <div class="mission-grid" id="missionGrid">
+      <p style="text-align:center;color:#8b5e2a;padding:40px 0">불러오는 중…</p>
+    </div>
+
+    <div class="footer-note">발자국을 따라 탐험하세요! 🐾</div>
+  </div>
+
+  <!-- QR 스캐너 오버레이 -->
+  <div class="scanner-overlay" id="scannerOverlay">
+    <div class="scanner-title">📷 QR 코드를 비춰주세요</div>
+    <div class="scanner-frame">
+      <video id="qr-video" autoplay playsinline muted></video>
+      <div class="scanner-corner tl"></div>
+      <div class="scanner-corner tr"></div>
+      <div class="scanner-corner bl"></div>
+      <div class="scanner-corner br"></div>
+      <div class="scanner-line"></div>
+    </div>
+    <canvas id="qr-canvas"></canvas>
+    <p class="scanner-msg" id="scannerMsg">QR코드를 화면 안에 맞춰주세요</p>
+    <button class="scanner-cancel" id="scannerCancel">✕ 취소</button>
+  </div>
+
+  <!-- 미션 복습 모달 -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal-sheet" id="modalSheet">
+      <div class="modal-handle"></div>
+      <div id="modalContent"></div>
+    </div>
+  </div>
+
+  <script src="firebase-config.js"></script>
+  <script src="app.js"></script>
+  <script type="module" src="sync.js"></script>
+
+  <!-- jsQR CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+
+  <script>
+    const PLACE_ICONS = ['⚽','🌳','📚','🏃','🌸','🪜','🎭','🛝'];
+
+    let COURSE, QUESTIONS, PROGRESS;
+    let scanStream = null;
+    let scanRAF = null;
+    let scanDone = false;
+
+    loadData().then(({ course, questions }) => {
+      COURSE = course;
+      QUESTIONS = questions;
+      PROGRESS = loadProgress();
+
+      if (!PROGRESS || !PROGRESS.team) {
+        location.href = 'index.html';
+        return;
+      }
+
+      renderHeader();
+      renderMap();
+      reportProgress(COURSE, PROGRESS);
+    });
+
+    /* ── 헤더 렌더링 ── */
+    function renderHeader() {
+      document.getElementById('headerTeam').textContent = `🏕️ ${PROGRESS.team}`;
+      const done = PROGRESS.step;
+      const total = PROGRESS.order.length;
+      const allDone = isAllDone(PROGRESS);
+      document.getElementById('headerProgress').textContent =
+        allDone ? '🎉 모든 미션 완료!' : `미션 ${done} / ${total} 완료`;
+    }
+
+    /* ── 지도 렌더링 ── */
+    function renderMap() {
+      const grid = document.getElementById('missionGrid');
+      const order = PROGRESS.order; // 이 조의 세트 순서
+      const total = order.length;
+
+      let html = '';
+      for (let i = 0; i < total; i += 2) {
+        const isReverse = Math.floor(i / 2) % 2 === 1;
+        html += `<div class="mission-row${isReverse ? ' reverse' : ''}">`;
+        html += nodeHtml(order[i], i);
+        if (i + 1 < total) html += nodeHtml(order[i + 1], i + 1);
+        html += `</div>`;
+
+        // 행 사이 발자국 연결
+        if (i + 2 < total) {
+          html += `<div style="text-align:center;font-size:1rem;color:rgba(139,94,42,0.5);margin:2px 0;position:relative;z-index:2">🐾 · · · · · · 🐾</div>`;
+        }
+      }
+      grid.innerHTML = html;
+
+      // 이벤트 바인딩
+      grid.querySelectorAll('.node.done, .node.current').forEach(el => {
+        el.addEventListener('click', () => handleNodeClick(parseInt(el.dataset.step)));
+      });
+    }
+
+    function nodeHtml(setNo, stepIdx) {
+      const mission = missionBySet(COURSE, setNo);
+      const curStep = PROGRESS.step;
+      const isDone = !!PROGRESS.solved[setNo];
+      const isCurrent = stepIdx === curStep && !isDone;
+      const isLocked = stepIdx > curStep;
+
+      const icon = PLACE_ICONS[stepIdx % PLACE_ICONS.length];
+      const stepLabel = `${stepIdx + 1}번째 미션`;
+
+      let stateClass = isLocked ? 'locked' : isDone ? 'done' : 'current';
+
+      let stampHtml = '';
+      if (isDone) {
+        stampHtml = `<div class="stamp">미션<br>완료!</div>`;
+      }
+
+      let pinHtml = '';
+      if (isCurrent) {
+        pinHtml = `<div class="current-pin">📍</div>`;
+      }
+
+      let nameHtml = '';
+      let scanHtml = '';
+      let pieceHtml = '';
+
+      if (isLocked) {
+        nameHtml = `<div class="node-locked-label">???</div>`;
+      } else {
+        nameHtml = `<div class="node-name">${mission.placeName}</div>`;
+        if (isDone && mission.piece) {
+          pieceHtml = `<div class="piece-badge">🔑 ${mission.piece}</div>`;
+        }
+        if (isCurrent) {
+          const n = missionQrCount(mission);
+          const scanLabel = n === 1 ? '📷 QR 스캔' : `📷 QR 스캔 (${n}개)`;
+          scanHtml = `<button class="scan-btn" data-step="${stepIdx}">` + scanLabel + `</button>`;
+        }
+      }
+
+      return `<div class="node ${stateClass}" data-step="${stepIdx}" data-set="${setNo}">
+        ${pinHtml}
+        ${stampHtml}
+        <div class="node-number">${stepLabel}</div>
+        <div class="node-icon">${icon}</div>
+        ${nameHtml}
+        ${pieceHtml}
+        ${scanHtml}
+      </div>`;
+    }
+
+    /* ── 노드 클릭 ── */
+    function handleNodeClick(stepIdx) {
+      const setNo = PROGRESS.order[stepIdx];
+      const isDone = !!PROGRESS.solved[setNo];
+      const isCurrent = stepIdx === PROGRESS.step && !isDone;
+
+      if (isCurrent) return; // scan-btn이 처리
+      if (isDone) showReview(setNo);
+    }
+
+    // scan-btn 이벤트 (이벤트 위임)
+    document.addEventListener('click', e => {
+      const btn = e.target.closest('.scan-btn');
+      if (btn) {
+        e.stopPropagation();
+        openScanner();
+      }
+    });
+
+    /* ── QR 스캐너 ── */
+    function openScanner() {
+      scanDone = false;
+      const overlay = document.getElementById('scannerOverlay');
+      overlay.classList.add('active');
+      startCamera();
+    }
+
+    function closeScanner() {
+      stopCamera();
+      document.getElementById('scannerOverlay').classList.remove('active');
+      document.getElementById('scannerMsg').textContent = 'QR코드를 화면 안에 맞춰주세요';
+    }
+
+    document.getElementById('scannerCancel').onclick = closeScanner;
+
+    async function startCamera() {
+      try {
+        const constraints = {
+          video: {
+            facingMode: { ideal: 'environment' },
+            width: { ideal: 1280 },
+            height: { ideal: 1280 }
+          }
+        };
+        scanStream = await navigator.mediaDevices.getUserMedia(constraints);
+        const video = document.getElementById('qr-video');
+        video.srcObject = scanStream;
+        video.onloadedmetadata = () => {
+          video.play();
+          requestAnimationFrame(scanTick);
+        };
+      } catch (err) {
+        document.getElementById('scannerMsg').textContent =
+          '카메라 권한이 필요해요. 브라우저 설정에서 허용해주세요.';
+      }
+    }
+
+    function stopCamera() {
+      if (scanRAF) { cancelAnimationFrame(scanRAF); scanRAF = null; }
+      if (scanStream) {
+        scanStream.getTracks().forEach(t => t.stop());
+        scanStream = null;
+      }
+      const video = document.getElementById('qr-video');
+      video.srcObject = null;
+    }
+
+    function scanTick() {
+      if (scanDone) return;
+      const video = document.getElementById('qr-video');
+      const canvas = document.getElementById('qr-canvas');
+
+      if (video.readyState !== video.HAVE_ENOUGH_DATA) {
+        scanRAF = requestAnimationFrame(scanTick);
+        return;
+      }
+
+      const size = Math.min(video.videoWidth, video.videoHeight);
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      const ox = (video.videoWidth - size) / 2;
+      const oy = (video.videoHeight - size) / 2;
+      ctx.drawImage(video, ox, oy, size, size, 0, 0, size, size);
+
+      const imageData = ctx.getImageData(0, 0, size, size);
+      const code = jsQR(imageData.data, imageData.width, imageData.height, {
+        inversionAttempts: 'dontInvert'
+      });
+
+      if (code) {
+        handleQrResult(code.data);
+      } else {
+        scanRAF = requestAnimationFrame(scanTick);
+      }
+    }
+
+    function handleQrResult(url) {
+      scanDone = true;
+      closeScanner();
+
+      // URL에서 ?q= 파라미터 추출
+      try {
+        let qid = null;
+        if (url.includes('mission.html')) {
+          const u = new URL(url, location.href);
+          qid = u.searchParams.get('q');
+        } else if (/^[0-9]+[A-Z]?$/i.test(url.trim())) {
+          // QR에 순수 ID만 담긴 경우 (예: "3A")
+          qid = url.trim().toUpperCase();
+        }
+
+        if (qid) {
+          location.href = `mission.html?q=${encodeURIComponent(qid)}`;
+        } else {
+          alert('이 QR코드는 우리 탐험대 미션이 아니에요 🙅');
+        }
+      } catch {
+        alert('QR코드를 읽을 수 없어요. 다시 시도해주세요.');
+      }
+    }
+
+    /* ── 완료 미션 복습 모달 ── */
+    function showReview(setNo) {
+      const mission = missionBySet(COURSE, setNo);
+      const stepIdx = PROGRESS.order.indexOf(setNo);
+      const answer = PROGRESS.answers && PROGRESS.answers[setNo];
+
+      // 이 세트의 문제들
+      const qCards = (mission.qids || []).map(qid => {
+        const q = findQuestion(QUESTIONS, qid);
+        if (!q) return '';
+        const label = mission.qids.length === 1 ? '공통' : (q.slot || qid.replace(String(setNo), ''));
+        return `
+          <div style="background:#0f3460;border-radius:12px;padding:12px 14px;margin-bottom:10px">
+            <div class="modal-badge-row">
+              <span class="modal-badge modal-badge-cat">${label} 문제</span>
+              <span class="modal-badge modal-badge-cat" style="background:#1d3a2e;color:#74c69d">${q.category || ''}</span>
+            </div>
+            <div class="modal-q">${q.question}</div>
+            <div class="modal-ans-label">정답</div>
+            <div class="modal-ans">${q.answer || '-'}</div>
+          </div>`;
+      }).join('');
+
+      document.getElementById('modalContent').innerHTML = `
+        <div class="modal-badge-row">
+          <span class="modal-badge modal-badge-place">${stepIdx + 1}번째 미션</span>
+          <span class="modal-badge modal-badge-place">${mission.placeName}</span>
+          ${mission.piece ? `<span class="modal-badge" style="background:#7b4f12;color:#ffd166">🔑 ${mission.piece}</span>` : ''}
+        </div>
+        ${qCards}
+        ${answer ? `<div class="modal-piece">우리 조 정답: <b>${answer}</b></div>` : ''}
+        <button class="modal-close" id="modalCloseBtn">닫기</button>
+      `;
+
+      document.getElementById('modalOverlay').classList.add('active');
+      document.getElementById('modalCloseBtn').onclick = closeModal;
+    }
+
+    function closeModal() {
+      document.getElementById('modalOverlay').classList.remove('active');
+    }
+    document.getElementById('modalOverlay').addEventListener('click', e => {
+      if (e.target === document.getElementById('modalOverlay')) closeModal();
+    });
+  </script>
+</body>
+</html>

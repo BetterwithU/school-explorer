@@ -2,14 +2,14 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>학교 캠핑 탐험대</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       font-family: 'Apple SD Gothic Neo', 'Nanum Gothic', sans-serif;
-      background: #1a1a2e;
+      background: #1a3a2a;
       color: #fff;
       min-height: 100dvh;
       display: flex;
@@ -17,38 +17,83 @@
       align-items: center;
       justify-content: center;
       padding: 24px 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* 별 배경 */
+    .stars {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .star {
+      position: absolute;
+      background: #fff;
+      border-radius: 50%;
+      animation: twinkle var(--d, 3s) ease-in-out infinite;
+      opacity: 0;
+    }
+    @keyframes twinkle {
+      0%, 100% { opacity: 0; }
+      50% { opacity: var(--o, 0.8); }
+    }
+
+    /* 캠프파이어 불꽃 */
+    .fire-wrap {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+    .fire-emoji {
+      font-size: 4rem;
+      display: inline-block;
+      animation: fire-sway 1.2s ease-in-out infinite alternate;
+      filter: drop-shadow(0 0 16px rgba(255,160,50,0.8));
+    }
+    @keyframes fire-sway {
+      from { transform: scale(1) rotate(-3deg); }
+      to   { transform: scale(1.08) rotate(3deg); }
     }
 
     header {
+      position: relative;
+      z-index: 1;
       text-align: center;
-      margin-bottom: 28px;
+      margin-bottom: 24px;
     }
-
     header h1 {
-      font-size: 2.1rem;
-      color: #e94560;
-      margin-bottom: 8px;
+      font-size: 2rem;
+      color: #ffd166;
+      margin-bottom: 6px;
+      text-shadow: 0 2px 12px rgba(255,160,50,0.6);
     }
-
     header p {
-      color: #a8dadc;
-      font-size: 1rem;
+      color: #a8e6b8;
+      font-size: 0.95rem;
     }
 
     .panel {
-      background: #16213e;
-      border-radius: 20px;
-      padding: 28px 24px;
-      max-width: 480px;
+      position: relative;
+      z-index: 1;
+      background: rgba(10,40,25,0.85);
+      border: 2px solid #2d6a4f;
+      border-radius: 24px;
+      padding: 28px 22px;
+      max-width: 420px;
       width: 100%;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+      box-shadow: 0 8px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05);
+      backdrop-filter: blur(8px);
     }
 
     .panel h2 {
-      font-size: 1.1rem;
-      color: #a8dadc;
+      font-size: 1rem;
+      color: #74c69d;
       margin-bottom: 16px;
       text-align: center;
+      letter-spacing: 1px;
     }
 
     .team-grid {
@@ -59,107 +104,144 @@
     }
 
     .team-btn {
-      background: #0f3460;
-      border: 2px solid transparent;
-      color: #fff;
-      padding: 18px;
-      border-radius: 14px;
-      font-size: 1.2rem;
+      background: linear-gradient(135deg, #0d3320 0%, #1a5c38 100%);
+      border: 2px solid #2d6a4f;
+      color: #b7e4c7;
+      padding: 18px 12px;
+      border-radius: 16px;
+      font-size: 1.15rem;
       font-weight: bold;
       cursor: pointer;
-      transition: transform 0.15s, background 0.15s;
+      transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     }
-
-    .team-btn:active { background: #1d4e8a; }
+    .team-btn:active { transform: scale(0.96); }
     @media (hover: hover) {
-      .team-btn:hover { transform: translateY(-3px); background: #1d4e8a; }
+      .team-btn:hover {
+        border-color: #ffd166;
+        color: #ffd166;
+        transform: translateY(-3px);
+        box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+      }
     }
 
     .resume-box {
-      background: #0f3460;
-      border-radius: 16px;
-      padding: 20px;
-      margin-bottom: 20px;
+      background: linear-gradient(135deg, #0d3320 0%, #1a5c38 100%);
+      border: 2px solid #2d6a4f;
+      border-radius: 18px;
+      padding: 22px;
+      margin-bottom: 18px;
       text-align: center;
     }
-
     .resume-box .label {
-      font-size: 0.85rem;
-      color: #a8dadc;
+      font-size: 0.8rem;
+      color: #74c69d;
+      letter-spacing: 1px;
       margin-bottom: 6px;
     }
-
     .resume-box .team-name {
-      font-size: 1.4rem;
+      font-size: 1.5rem;
       font-weight: bold;
       color: #ffd166;
-      margin-bottom: 4px;
+      margin-bottom: 6px;
+      text-shadow: 0 1px 8px rgba(255,209,102,0.4);
     }
-
     .resume-box .progress {
       font-size: 0.9rem;
-      color: #b7e4c7;
-      margin-bottom: 16px;
+      color: #a8e6b8;
+      margin-bottom: 18px;
     }
 
     .btn {
       display: block;
       width: 100%;
       border: none;
-      padding: 15px;
+      padding: 16px;
       border-radius: 14px;
       font-size: 1.05rem;
       font-weight: bold;
       cursor: pointer;
       text-decoration: none;
       text-align: center;
-      transition: background 0.2s;
+      transition: transform 0.15s, background 0.2s;
     }
-
-    .btn-primary { background: #e94560; color: #fff; margin-bottom: 10px; }
-    .btn-primary:active { background: #c73652; }
+    .btn-primary {
+      background: linear-gradient(135deg, #e94560 0%, #c73652 100%);
+      color: #fff;
+      margin-bottom: 10px;
+      box-shadow: 0 4px 16px rgba(233,69,96,0.4);
+    }
+    .btn-primary:active { transform: scale(0.97); }
+    @media (hover: hover) { .btn-primary:hover { background: linear-gradient(135deg, #c73652 0%, #a82843 100%); } }
 
     .btn-ghost {
       background: none;
-      border: 1px solid #0f3460;
-      color: #a8dadc;
+      border: 1px solid #2d6a4f;
+      color: #74c69d;
       font-size: 0.85rem;
       padding: 10px;
     }
-    .btn-ghost:active { background: #0f3460; }
-    @media (hover: hover) {
-      .btn-primary:hover { background: #c73652; }
-      .btn-ghost:hover { background: #0f3460; }
-    }
+    .btn-ghost:active { background: #0d3320; }
+    @media (hover: hover) { .btn-ghost:hover { background: #0d3320; } }
 
     .next-place {
-      margin-top: 18px;
-      background: #2d6a4f;
-      border-radius: 14px;
-      padding: 18px;
+      margin-top: 20px;
+      background: linear-gradient(135deg, #0d3320 0%, #1a5c38 100%);
+      border: 2px solid #ffd166;
+      border-radius: 16px;
+      padding: 20px;
       text-align: center;
       display: none;
+      animation: fade-in 0.3s ease;
     }
-    .next-place .ico { font-size: 1.8rem; }
-    .next-place .ttl { color: #74c69d; font-size: 0.85rem; margin: 4px 0; }
-    .next-place .nm  { font-size: 1.5rem; font-weight: bold; color: #b7e4c7; }
-    .next-place .hint { color: #a8dadc; font-size: 0.85rem; margin-top: 10px; }
+    @keyframes fade-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+    .next-place .ico { font-size: 2rem; margin-bottom: 6px; }
+    .next-place .ttl { color: #74c69d; font-size: 0.82rem; margin-bottom: 4px; letter-spacing: 1px; }
+    .next-place .nm  { font-size: 1.5rem; font-weight: bold; color: #ffd166; margin-bottom: 8px; }
+    .next-place .hint { color: #a8e6b8; font-size: 0.82rem; line-height: 1.6; margin-bottom: 14px; }
   </style>
 </head>
 <body>
+
+  <!-- 별 배경 (JS로 생성) -->
+  <div class="stars" id="stars"></div>
+
+  <div class="fire-wrap">
+    <span class="fire-emoji">🔥</span>
+  </div>
+
   <header>
     <h1>🏕️ 캠핑 탐험대</h1>
     <p id="subtitle">QR을 찾아다니며 미션을 해결하세요!</p>
   </header>
 
   <div class="panel" id="panel">
-    <p style="text-align:center;color:#a8dadc">불러오는 중...</p>
+    <p style="text-align:center;color:#74c69d">불러오는 중...</p>
   </div>
 
   <script src="firebase-config.js"></script>
   <script src="app.js"></script>
   <script type="module" src="sync.js"></script>
   <script>
+    // 별 생성
+    (function() {
+      const wrap = document.getElementById('stars');
+      for (let i = 0; i < 60; i++) {
+        const s = document.createElement('div');
+        s.className = 'star';
+        const size = Math.random() * 3 + 1;
+        s.style.cssText = `
+          width:${size}px; height:${size}px;
+          left:${Math.random()*100}%;
+          top:${Math.random()*100}%;
+          --d:${(Math.random()*3+2).toFixed(1)}s;
+          --o:${(Math.random()*0.6+0.3).toFixed(2)};
+          animation-delay:${(Math.random()*4).toFixed(1)}s;
+        `;
+        wrap.appendChild(s);
+      }
+    })();
+
     let COURSE = null;
 
     loadData().then(({ course }) => {
@@ -172,19 +254,18 @@
       const panel = document.getElementById('panel');
       const p = loadProgress();
 
-      // 진행 중인 게임이 있으면 "이어하기" 우선 노출
       if (p && p.team) {
         const total = p.order.length;
         const done = p.step;
-        const finished = isAllDone(p); // 미션 완주 후에만 '새 시작' 허용 (조 고정·기록 보호)
+        const finished = isAllDone(p);
         panel.innerHTML = `
           <div class="resume-box">
-            <div class="label">진행 중인 조</div>
+            <div class="label">🏕️ 진행 중인 조</div>
             <div class="team-name">${p.team}</div>
-            <div class="progress">미션 ${done} / ${total} 완료</div>
-            <a class="btn btn-primary" href="#" id="resumeBtn">이어서 하기 →</a>
+            <div class="progress">⭐ 미션 ${done} / ${total} 완료</div>
+            <a class="btn btn-primary" href="#" id="resumeBtn">🗺️ 이어서 하기 →</a>
           </div>
-          ${finished ? '<button class="btn btn-ghost" id="restartBtn">새 게임 시작 (다른 조)</button>' : ''}
+          ${finished ? '<button class="btn btn-ghost" id="restartBtn">🔄 새 게임 시작 (다른 조)</button>' : ''}
         `;
         document.getElementById('resumeBtn').onclick = (e) => { e.preventDefault(); goToCurrent(p); };
         const rb = document.getElementById('restartBtn');
@@ -197,19 +278,18 @@
         return;
       }
 
-      // 새 시작: 조 선택
       const teams = COURSE.teams.map(t =>
         `<button class="team-btn" data-team="${t}">${t}</button>`
       ).join('');
       panel.innerHTML = `
-        <h2>우리 조를 선택하세요</h2>
+        <h2>🏕️ 우리 조를 선택하세요</h2>
         <div class="team-grid">${teams}</div>
         <div class="next-place" id="nextPlace">
           <div class="ico">📍</div>
           <div class="ttl">첫 번째 미션 장소</div>
           <div class="nm" id="placeName"></div>
           <div class="hint">이곳에서 두 명이 QR코드(A·B)를 나눠 스캔하세요!</div>
-          <a class="btn btn-primary" href="#" id="startBtn" style="margin-top:14px">시작하기 →</a>
+          <a class="btn btn-primary" href="#" id="startBtn">🚀 탐험 시작! →</a>
         </div>
       `;
       panel.querySelectorAll('.team-btn').forEach(btn => {
@@ -218,8 +298,12 @@
     }
 
     function selectTeam(team, btn) {
-      document.querySelectorAll('.team-btn').forEach(b => b.style.borderColor = 'transparent');
-      btn.style.borderColor = '#e94560';
+      document.querySelectorAll('.team-btn').forEach(b => {
+        b.style.borderColor = '#2d6a4f';
+        b.style.color = '#b7e4c7';
+      });
+      btn.style.borderColor = '#ffd166';
+      btn.style.color = '#ffd166';
 
       const p = startGame(COURSE, team);
       reportProgress(COURSE, p);
@@ -230,13 +314,12 @@
       document.getElementById('startBtn').onclick = (e) => { e.preventDefault(); goToCurrent(p); };
     }
 
-    // 현재 미션 안내 화면으로(스캔 전 안내)
     function goToCurrent(p) {
       if (isAllDone(p)) {
         location.href = isFinalePending(COURSE, p) ? 'map.html' : 'done.html';
         return;
       }
-      location.href = 'mission.html';
+      location.href = 'home.html';
     }
 
     // 🛠️ 히든: 제목을 1.5초 내 7번 탭하면 개발자 콘솔로
