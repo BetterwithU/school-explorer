@@ -214,6 +214,15 @@
       text-shadow: none;
     }
 
+    /* 현재 미션 노드 깜박임 */
+    .node.current {
+      animation: pulse-border 1.8s ease-in-out infinite, node-blink 2s ease-in-out infinite;
+    }
+    @keyframes node-blink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.7; }
+    }
+
     /* 현재 미션 핀 */
     .current-pin {
       position: absolute;
@@ -227,6 +236,21 @@
     @keyframes bounce-pin {
       0%, 100% { transform: translateX(-50%) translateY(0); }
       50%       { transform: translateX(-50%) translateY(-5px); }
+    }
+
+    /* 화살표 (완료 → 현재 미션) */
+    .mission-arrow {
+      text-align: center;
+      font-size: 1.4rem;
+      position: relative;
+      z-index: 2;
+      margin: 2px 0;
+      animation: arrow-blink 1.2s ease-in-out infinite;
+      filter: drop-shadow(0 1px 3px rgba(130,50,20,0.4));
+    }
+    @keyframes arrow-blink {
+      0%, 100% { opacity: 1; transform: translateY(0); }
+      50%       { opacity: 0.4; transform: translateY(3px); }
     }
 
     /* QR 스캔 버튼 — 잉크 느낌 */
@@ -489,20 +513,34 @@
     /* ── 지도 렌더링 ── */
     function renderMap() {
       const grid = document.getElementById('missionGrid');
-      const order = PROGRESS.order; // 이 조의 세트 순서
+      const order = PROGRESS.order;
       const total = order.length;
+
+      // 현재 스텝 계산 (버그 방어)
+      const actualDoneCount = order.filter(s => !!PROGRESS.solved[s]).length;
+      const curStep = Math.max(PROGRESS.step, actualDoneCount);
+
+      // 화살표가 필요한 행 간격: 직전 완료 행(row) → 현재 행(row)
+      const prevDoneRow = curStep > 0 ? Math.floor((curStep - 1) / 2) : -1;
+      const curRow = Math.floor(curStep / 2);
+      const needArrowAfterRow = (prevDoneRow !== curRow && curStep > 0) ? prevDoneRow : -1;
 
       let html = '';
       for (let i = 0; i < total; i += 2) {
-        const isReverse = Math.floor(i / 2) % 2 === 1;
+        const rowIdx = Math.floor(i / 2);
+        const isReverse = rowIdx % 2 === 1;
         html += `<div class="mission-row${isReverse ? ' reverse' : ''}">`;
         html += nodeHtml(order[i], i);
         if (i + 1 < total) html += nodeHtml(order[i + 1], i + 1);
         html += `</div>`;
 
-        // 행 사이 발자국 연결
         if (i + 2 < total) {
-          html += `<div style="text-align:center;font-size:1rem;color:rgba(139,94,42,0.5);margin:2px 0;position:relative;z-index:2">🐾 · · · · · · 🐾</div>`;
+          if (rowIdx === needArrowAfterRow) {
+            // 화살표: 직전 완료 → 현재 미션 방향
+            html += `<div class="mission-arrow">⬇️</div>`;
+          } else {
+            html += `<div style="text-align:center;font-size:1rem;color:rgba(139,94,42,0.5);margin:2px 0;position:relative;z-index:2">🐾 · · · · · · 🐾</div>`;
+          }
         }
       }
       grid.innerHTML = html;
@@ -515,8 +553,12 @@
 
     function nodeHtml(setNo, stepIdx) {
       const mission = missionBySet(COURSE, setNo);
-      const curStep = PROGRESS.step;
       const isDone = !!PROGRESS.solved[setNo];
+
+      // step이 solved 상태와 어긋날 수 있으므로 실제 완료 수로 curStep 재계산
+      const actualDoneCount = PROGRESS.order.filter(s => !!PROGRESS.solved[s]).length;
+      const curStep = Math.max(PROGRESS.step, actualDoneCount);
+
       const isCurrent = stepIdx === curStep && !isDone;
       const isLocked = stepIdx > curStep;
 

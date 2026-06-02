@@ -254,6 +254,15 @@
     .back-link:active { color: #7a3a10; }
     @media (hover: hover) { .back-link:hover { color: #7a3a10; } }
 
+    /* 자동 이동 카운트다운 */
+    .redirect-bar {
+      margin-top: 16px;
+      font-size: 0.82rem;
+      color: rgba(100,65,20,0.6);
+      text-align: center;
+    }
+    .redirect-bar span { font-weight: bold; color: #7a3a10; }
+
     /* ── QR 스캐너 오버레이 ── */
     .scanner-overlay {
       display: none;
@@ -552,7 +561,20 @@
           <a class="guide btn" href="map.html">🔑 보물 글자 모음 보기</a>
           ${DEV ? '<a class="guide btn" href="dev.html">🛠️ 개발자 패널로</a>' : ''}
           <a class="guide btn" href="home.html">🏠 미션 홈으로</a>
+          <div class="redirect-bar">🗺️ <span id="redirectCount">3</span>초 후 지도로 이동합니다</div>
         </div>`;
+
+      // 3초 카운트다운 후 home.html로 자동 이동
+      let count = 3;
+      const timer = setInterval(() => {
+        count--;
+        const el = document.getElementById('redirectCount');
+        if (el) el.textContent = count;
+        if (count <= 0) {
+          clearInterval(timer);
+          location.href = 'home.html';
+        }
+      }, 1000);
     }
 
     function guide(ico, ttl, placeName, desc, link, linkLabel, showHome) {
