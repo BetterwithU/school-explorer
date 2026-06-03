@@ -9,13 +9,13 @@
     "reveal": "보물은 그곳에 숨겨져 있어요. 선생님께 가서 \"우리 조 보물 찾았어요!\"라고 외치세요!"
   },
   "missions": [
-    { "set": 1, "placeName": "운동장 미끄럼틀", "mode": "common", "qids": ["1"], "piece": "운" },
-    { "set": 2, "placeName": "급식실 앞", "mode": "combo", "qids": ["2A", "2B"], "piece": "동" },
-    { "set": 3, "placeName": "도서관 입구", "mode": "combo", "qids": ["3A", "3B", "3C"], "piece": "장" },
-    { "set": 4, "placeName": "체육관 문", "mode": "common", "qids": ["4"], "piece": "큰" },
-    { "set": 5, "placeName": "화단 옆 벤치", "mode": "combo", "qids": ["5A", "5B", "5C", "5D"], "piece": "은" },
-    { "set": 6, "placeName": "본관 계단", "mode": "combo", "qids": ["6A", "6B"], "piece": "행" },
-    { "set": 7, "placeName": "강당 입구", "mode": "common", "qids": ["7"], "piece": "나" },
-    { "set": 8, "placeName": "놀이터 정글짐", "mode": "combo", "qids": ["8A", "8B", "8C"], "piece": "무" }
+    { "set": 1, "placeName": "도서관 입구 (1층)", "mode": "combo", "qids": ["1A", "1B"], "piece": "운", "inputGuide": "#1, #2번 문제의 답을 더한 숫자를 입력하세요" },
+    { "set": 2, "placeName": "솔빛길 (3~4층 사이)", "mode": "combo", "qids": ["2A", "2B"], "piece": "동", "inputGuide": "#1, #2번 문제의 답을 순서대로 합친 글자를 입력하세요" },
+    { "set": 3, "placeName": "다람쥐 쉼터 (3층)", "mode": "combo", "qids": ["3A", "3B", "3C"], "piece": "장", "inputGuide": "#1, #2, #3번 문제의 답을 순서대로 합친 글자를 입력하세요" },
+    { "set": 4, "placeName": "단비 쉼터 (3층)", "mode": "common", "qids": ["4"], "piece": "큰" },
+    { "set": 5, "placeName": "틈새공간 (운동장 옆)", "mode": "combo", "qids": ["5A", "5B", "5C", "5D"], "piece": "은", "inputGuide": "#1, #2, #3, #4번 문제의 답을 순서대로 합친 글자를 입력하세요" },
+    { "set": 6, "placeName": "강당 입구", "mode": "combo", "qids": ["6A", "6B"], "piece": "행", "inputGuide": "#1, #2번 문제의 답을 순서대로 합친 글자를 입력하세요" },
+    { "set": 7, "placeName": "음악2실 (2층)", "mode": "common", "qids": ["7"], "piece": "나" },
+    { "set": 8, "placeName": "시청각실 (0층)", "mode": "combo", "qids": ["8A", "8B", "8C"], "piece": "무", "inputGuide": "#1, #2, #3번 문제의 답을 순서대로 합친 글자를 입력하세요" }
   ]
 }

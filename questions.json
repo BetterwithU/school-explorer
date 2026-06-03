@@ -1,10 +1,18 @@
 [
   {
-    "id": "1", "set": 1, "slot": "", "category": "추론", "difficulty": "easy",
-    "question": "탐험대 암호 해독! 자음에 번호를 붙여요.\nㄱ=1, ㄴ=2, ㄷ=3, ㄹ=4 …\n그렇다면 'ㅂ'은 몇 번일까요?",
+    "id": "1A", "set": 1, "slot": "A", "category": "상식", "difficulty": "easy",
+    "question": "요즘 전 세계 아이들이 아무 이유 없이 외치는 숫자 밈은?",
     "media": [],
-    "hints": ["ㄱ부터 손가락으로 순서대로 세어봐요.", "ㄱ(1) ㄴ(2) ㄷ(3) ㄹ(4) ㅁ(5) ㅂ(?)"],
-    "answer": "6", "combined": "6"
+    "hints": ["식* 세*", "숫자 6과 7로 이루어진 두 자릿수예요."],
+    "answer": "67", "combined": "115"
+  },
+
+  {
+    "id": "1B", "set": 1, "slot": "B", "category": "상식", "difficulty": "easy",
+    "question": "2026 북중미 월드컵 본선에 참가하는 나라는 몇 개국일까요?",
+    "media": [],
+    "hints": ["지난 번 대회까지는 32개국이었는데 올해는 1.5배로 늘었어요.", "32 × 1.5 = ?"],
+    "answer": "48", "combined": "115"
   },
 
   {
@@ -24,24 +32,24 @@
 
   {
     "id": "3A", "set": 3, "slot": "A", "category": "상식", "difficulty": "normal",
-    "question": "세 친구가 각자 다른 문제를 풀어요!\n[첫 글자] 추울 때 장갑을 끼는 신체 부위는? 한 글자로!",
+    "question": "42.195km를 달리는 육상 종목, \"OO톤\"의 첫 글자는?",
     "media": [],
-    "hints": ["손가락이 다섯 개 달려 있어요.", "박수 칠 때 쓰는 곳."],
-    "answer": "손", "combined": "손전등"
+    "hints": ["올림픽 대표 장거리 달리기 종목이에요.", "\"O라톤\"이라고도 해요."],
+    "answer": "마", "combined": "마라탕"
   },
   {
-    "id": "3B", "set": 3, "slot": "B", "category": "과학", "difficulty": "normal",
-    "question": "[둘째 글자] 콘센트에서 나오는, 불을 켜는 힘을 'O기'라고 해요. 그 첫 글자는?",
+    "id": "3B", "set": 3, "slot": "B", "category": "음악", "difficulty": "easy",
+    "question": "도 레 미 파 솔 O 시 도 — 빈칸에 들어갈 음계는?",
     "media": [],
-    "hints": ["'O기'를 아끼자 = 절약!", "번개도 이것의 한 종류예요."],
-    "answer": "전", "combined": "손전등"
+    "hints": ["솔 다음에 오는 음이에요.", "\"솔O시\"로 이어지는 음계예요."],
+    "answer": "라", "combined": "마라탕"
   },
   {
-    "id": "3C", "set": 3, "slot": "C", "category": "국어", "difficulty": "normal",
-    "question": "[셋째 글자] 밤을 밝히는 'O불', 가로OO, 책상 위 스탠드… 빛을 내는 물건을 뜻하는 한 글자는?",
+    "id": "3C", "set": 3, "slot": "C", "category": "상식", "difficulty": "easy",
+    "question": "더운 여름, 어린 닭 한 마리에 인삼·대추·찹쌀을 넣고 푹 끓여낸 한국 대표 보양식은? \"삼계O\"의 마지막 글자는?",
     "media": [],
-    "hints": ["'O대'에 올려놓고 불을 켜요.", "호롱O, 가로O."],
-    "answer": "등", "combined": "손전등"
+    "hints": ["뜨거운 국물 요리를 부르는 한 글자예요.", "설렁O, 갈비O에도 들어가요."],
+    "answer": "탕", "combined": "마라탕"
   },
 
   {

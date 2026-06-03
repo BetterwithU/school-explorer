@@ -85,31 +85,96 @@
     .q-audio { width: 100%; display: block; }
 
     .pair-note {
-      background: rgba(100,65,20,0.07);
-      border-left: 3px solid rgba(130,80,20,0.6);
-      border-radius: 4px;
-      padding: 12px 14px;
+      background: rgba(130,60,10,0.08);
+      border: 2px solid rgba(160,70,20,0.5);
+      border-radius: 6px;
+      padding: 14px 16px;
       margin-bottom: 18px;
       font-size: 0.88rem;
-      color: rgba(60,30,5,0.8);
-      line-height: 1.65;
+      color: rgba(60,30,5,0.85);
+      line-height: 1.75;
     }
     .pair-note b { color: #7a3a10; }
+    .pair-note .warn {
+      display: block;
+      margin-top: 10px;
+      font-size: 0.95rem;
+      font-weight: 900;
+      color: #cc3300;
+      background: rgba(200,50,0,0.08);
+      border-radius: 4px;
+      padding: 6px 10px;
+      text-align: center;
+    }
 
     .hint-btn {
-      background: none;
-      border: 1px solid rgba(100,65,20,0.35);
-      color: rgba(80,50,15,0.7);
-      padding: 10px;
-      border-radius: 4px;
-      font-size: 0.88rem;
+      background: rgba(100,65,20,0.08);
+      border: 1px solid rgba(100,65,20,0.3);
+      color: rgba(80,50,15,0.75);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.78rem;
       cursor: pointer;
-      width: 100%;
-      margin-bottom: 10px;
+      display: inline-block;
+      width: auto;
+      margin-bottom: 14px;
       transition: background 0.2s;
     }
-    .hint-btn:active { background: rgba(100,65,20,0.1); }
-    @media (hover: hover) { .hint-btn:hover { background: rgba(100,65,20,0.1); } }
+    .hint-btn:active { background: rgba(100,65,20,0.16); }
+    @media (hover: hover) { .hint-btn:hover { background: rgba(100,65,20,0.16); } }
+
+    /* 힌트 팝업 오버레이 */
+    .hint-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(40,20,5,0.5);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .hint-overlay.active { display: flex; }
+    .hint-popup {
+      background: #f5ead0;
+      border: 2px solid rgba(100,65,20,0.4);
+      border-radius: 10px;
+      padding: 22px 20px;
+      max-width: 360px;
+      width: 100%;
+      box-shadow: 3px 4px 20px rgba(40,20,5,0.35);
+      position: relative;
+    }
+    .hint-popup-title {
+      font-size: 0.82rem;
+      color: rgba(80,50,15,0.6);
+      font-weight: bold;
+      letter-spacing: 1px;
+      margin-bottom: 14px;
+    }
+    .hint-popup-item {
+      background: rgba(100,65,20,0.07);
+      border-left: 3px solid rgba(130,80,20,0.5);
+      border-radius: 3px;
+      padding: 9px 12px;
+      margin-bottom: 8px;
+      font-size: 0.9rem;
+      color: rgba(50,25,5,0.85);
+      line-height: 1.6;
+    }
+    .hint-popup-close {
+      display: block;
+      width: 100%;
+      margin-top: 14px;
+      padding: 10px;
+      background: rgba(100,65,20,0.1);
+      border: 1px solid rgba(100,65,20,0.3);
+      border-radius: 4px;
+      font-size: 0.85rem;
+      color: rgba(80,50,15,0.8);
+      cursor: pointer;
+      text-align: center;
+    }
 
     .hint-box {
       background: rgba(100,65,20,0.07);
@@ -123,10 +188,14 @@
     }
 
     .combined-label {
-      font-size: 0.85rem;
-      color: #7a3a10;
-      margin: 10px 0 6px;
-      font-weight: bold;
+      font-size: 1.05rem;
+      color: #cc3300;
+      margin: 14px 0 8px;
+      font-weight: 900;
+      padding: 8px 12px;
+      background: rgba(200,50,0,0.07);
+      border-radius: 4px;
+      border-left: 3px solid #cc3300;
     }
 
     .answer-input {
@@ -332,6 +401,15 @@
     <button class="scanner-cancel" id="scannerCancel">✕ 취소</button>
   </div>
 
+  <!-- 힌트 팝업 오버레이 -->
+  <div class="hint-overlay" id="hintOverlay">
+    <div class="hint-popup" id="hintPopup">
+      <div class="hint-popup-title">💡 힌트</div>
+      <div id="hintPopupItems"></div>
+      <button class="hint-popup-close" id="hintPopupClose">닫기</button>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
   <script src="firebase-config.js"></script>
   <script src="app.js"></script>
@@ -453,21 +531,16 @@
           .map(x => `${q.set}-${x.replace(String(q.set), '')}`).join(', ');
         noteHtml = `
           <div class="pair-note">
-            내 답은 <b>한 글자</b>예요. 혼자 제출하면 안 돼요!<br><br>
-            <span style="font-size:1rem;color:#7a3a10;font-weight:900;display:block;margin-bottom:6px">
-              ⚠️ QR ${len}개의 답을 모두 모아서<br>순서대로 합친 ${len}글자를 입력하세요!
-            </span>
-            짝꿍 <b>${others}</b> 의 답을 서로 알려주고<br>
-            아래 칸에 <b>${len}글자 전체</b>를 함께 입력하세요.
+            🤝 <b>이 장소는 조원이 함께 푸는 협력 미션이에요!</b><br>
+            각자 다른 QR을 찍어 문제를 풀고, 조원끼리 답을 알려주세요.<br>
+            모든 답을 모아서 최종 정답을 완성한 뒤 입력하세요.<br>
+            <span class="warn">⚠️ 내 답만 입력하는 게 아니에요!</span>
           </div>`;
-        inputLabel = `⚠️ ${len}글자 전체 입력 (내 답 + 짝꿍 답 합치기)`;
-        placeholder = `${len}글자 모두 합쳐서 입력`;
+        inputLabel = MISSION.inputGuide || `#1~#${len}번 문제의 답을 모아서 입력하세요`;
+        placeholder = `조원 ${len}명의 답을 모아서 입력`;
       }
 
-      const hintsHtml = (q.hints || []).map((h, i) =>
-        `<div class="hint-box" id="hint${i}" style="display:none">💡 ${h}</div>`
-      ).join('');
-
+      const hasHints = q.hints && q.hints.length > 0;
       const mediaHtml = renderMediaHtml(questionMedia(q));
 
       document.getElementById('card').innerHTML = `
@@ -476,15 +549,12 @@
           <span class="step">미션 ${stepNo} / ${total}</span>
         </div>
         <div class="badge-row">
-          <span class="badge badge-pair">${myLabel}</span>
-          <span class="badge badge-place">${MISSION.placeName}</span>
-          <span class="badge">${q.category}</span>
+          <span class="badge badge-pair">${isCommon ? '공통 문제' : `#${MISSION.qids.indexOf(q.id) + 1}번 문제`} / ${MISSION.placeName}${isCommon ? '' : ` (총 ${n}문제)`}</span>
         </div>
         ${mediaHtml}
         <p class="question-text">${q.question}</p>
         ${noteHtml}
-        ${hintsHtml}
-        <button class="hint-btn" id="hintBtn">💡 힌트 보기${q.hints && q.hints.length ? ' (' + q.hints.length + ')' : ''}</button>
+        ${hasHints ? (q.hints.map((_, i) => `<button class="hint-btn" data-hint="${i}">💡 힌트 ${i+1}</button>`).join('')) : ''}
         <div class="combined-label">${inputLabel}</div>
         <input class="answer-input" id="ans" placeholder="${placeholder}" autocomplete="off">
         <button class="submit-btn" id="submitBtn">✅ 정답 제출</button>
@@ -492,11 +562,16 @@
         <button class="back-link" onclick="showCurrentGuide()">${DEV ? '← 개발자 콘솔로' : '← 다른 QR 찍기'}</button>
       `;
 
-      document.getElementById('hintBtn').onclick = () => {
-        const hints = q.hints || [];
-        if (hintsShown < hints.length) { document.getElementById('hint' + hintsShown).style.display = 'block'; hintsShown++; }
-        if (hintsShown >= hints.length) document.getElementById('hintBtn').style.display = 'none';
-      };
+      if (hasHints) {
+        document.querySelectorAll('.hint-btn').forEach(btn => {
+          btn.onclick = () => {
+            const idx = parseInt(btn.dataset.hint);
+            document.getElementById('hintPopupItems').innerHTML =
+              `<div class="hint-popup-item">💡 ${q.hints[idx]}</div>`;
+            document.getElementById('hintOverlay').classList.add('active');
+          };
+        });
+      }
 
       document.getElementById('submitBtn').onclick = () => {
         const input = document.getElementById('ans').value || '';
@@ -584,6 +659,15 @@
           location.href = 'home.html';
         }
       }, 1000);
+    }
+
+    // 힌트 팝업 닫기 — 닫기 버튼 or 오버레이 클릭
+    document.getElementById('hintPopupClose').onclick = closeHintPopup;
+    document.getElementById('hintOverlay').addEventListener('click', e => {
+      if (e.target === document.getElementById('hintOverlay')) closeHintPopup();
+    });
+    function closeHintPopup() {
+      document.getElementById('hintOverlay').classList.remove('active');
     }
 
     function guide(ico, ttl, placeName, desc, link, linkLabel, showHome) {
