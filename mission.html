@@ -469,7 +469,7 @@
 
     loadData().then(({ course, questions }) => {
       COURSE = course; QUESTIONS = questions;
-      PROGRESS = loadProgress();
+      PROGRESS = loadProgress(course);
       gateByGameState();
       reportProgress(COURSE, PROGRESS);
     });

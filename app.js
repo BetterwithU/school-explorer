@@ -82,12 +82,30 @@ function teamMissionOrder(course, teamName) {
 }
 
 /* ---------- 진행상태 (localStorage) ---------- */
-function loadProgress() {
+// course를 넘기면, 저장된 order가 현재 미션 구성과 다를 때 자동 보정한다.
+// (미션을 추가·변경해도 이미 게임을 시작한 플레이어 화면이 옛 order에 박제되지 않도록)
+function loadProgress(course) {
+  let p;
   try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || null;
+    p = JSON.parse(localStorage.getItem(STORAGE_KEY)) || null;
   } catch {
     return null;
   }
+  if (p && course && p.team) {
+    const curOrder = teamMissionOrder(course, p.team);
+    const same = Array.isArray(p.order)
+      && p.order.length === curOrder.length
+      && p.order.every((s, i) => s === curOrder[i]);
+    if (!same) {
+      // solved/answers/notes 등 진행 기록은 유지하고 order만 현재 기준으로 교체.
+      // step은 아직 안 푼 첫 칸으로 재계산.
+      p.order = curOrder;
+      p.step = curOrder.findIndex(s => !p.solved || !p.solved[s]);
+      if (p.step === -1) p.step = curOrder.length;
+      saveProgress(p);
+    }
+  }
+  return p;
 }
 
 function saveProgress(p) {

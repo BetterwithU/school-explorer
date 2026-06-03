@@ -73,7 +73,7 @@
 
     loadData().then(({ course }) => {
       COURSE = course;
-      PROGRESS = loadProgress();
+      PROGRESS = loadProgress(course);
       render();
       reportProgress(COURSE, PROGRESS);
     });

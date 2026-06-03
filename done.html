@@ -210,7 +210,7 @@
     })();
 
     loadData().then(({ course }) => {
-      const p = loadProgress();
+      const p = loadProgress(course);
       if (!p || !p.team) { location.href = 'index.html'; return; }
 
       if (isFinalePending(course, p)) { location.href = 'map.html'; return; }

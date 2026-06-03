@@ -77,8 +77,9 @@
       background:
         url('images/bg_map.webp') center top/100% auto no-repeat;
       background-color: #c8a97a;
-      /* 높이는 뷰포트(100vw)가 아니라 컨테이너 너비 기준이어야 함 — 이미지 비율 9:20 */
-      aspect-ratio: 9 / 20;
+      /* 높이는 컨테이너 너비 기준 — 배경 이미지 실제 픽셀 비율(1080×2412)과 정확히 일치시켜야
+         동그라미가 아래로 갈수록 밀리는 누적오차가 안 생김 */
+      aspect-ratio: 1080 / 2412;
     }
 
     /* 양피지 노이즈 텍스처 오버레이 */
@@ -229,6 +230,18 @@
       }
     }
 
+    /* current 노드의 장소명+버튼은 박스 아래로 띄워서,
+       박스 본체(번호+아이콘) 크기·중심을 잠긴 직사각형과 완전히 동일하게 유지 */
+    .node.current .current-extra {
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      margin-top: 4px;
+      z-index: 4;
+    }
+
     /* 현재 미션 핀 */
     .current-pin {
       position: absolute;
@@ -374,14 +387,16 @@
     #qr-canvas { display: none; }
 
     /* ── 하단 안내 (배경 위 절대배치 하단 고정) ── */
+    /* 지도(map-wrap) 아래 별도 줄 — 노드/파도 그림에 가리지 않도록 컨테이너 밖으로 뺌.
+       배경이 body의 진한 갈색(#2c1a0e)이므로 글자는 밝은 양피지색으로 */
     .footer-note {
-      position: absolute;
-      left: 0; right: 0; bottom: 8px;
-      z-index: 2;
+      max-width: 480px;
+      margin: 0 auto;
       text-align: center;
-      color: rgba(61,31,10,0.6);
-      font-size: 0.72rem;
-      padding: 8px 0;
+      color: rgba(235,210,165,0.9);
+      font-size: 0.85rem;
+      font-weight: bold;
+      padding: 14px 0 20px;
     }
 
     /* ── 미션 복습 모달 ── */
@@ -538,8 +553,8 @@
       <p style="text-align:center;color:#8b5e2a;padding:40px 0">불러오는 중…</p>
     </div>
 
-    <div class="footer-note">발자국을 따라 탐험하세요! 🐾</div>
   </div>
+  <div class="footer-note">발자국을 따라 탐험하세요! 🐾</div>
 
   <!-- QR 스캐너 오버레이 -->
   <div class="scanner-overlay" id="scannerOverlay">
@@ -587,14 +602,14 @@
     // 배경 지도(bg_map.webp)의 로마자 동그라미 I~VIII 중심 좌표 (가로%, 세로%)
     // 노드 카드의 중심을 이 좌표에 일치시킨다 (translate -50%,-50%).
     const SPOT_COORDS = [
-      { x: 26, y: 9 },   // I
-      { x: 70, y: 21 },  // II
-      { x: 27, y: 33 },  // III
-      { x: 70, y: 44 },  // IV
-      { x: 28, y: 56 },  // V
-      { x: 72, y: 64 },  // VI
-      { x: 25, y: 78 },  // VII
-      { x: 58, y: 89 },  // VIII
+      { x: 28, y: 14 },  // I   왼쪽 상단 (책장)
+      { x: 73, y: 25 },  // II  오른쪽 (철봉)
+      { x: 28, y: 34 },  // III 왼쪽 (급식실)
+      { x: 73, y: 45 },  // IV  오른쪽 (교실)
+      { x: 28, y: 54 },  // V   왼쪽 (나선계단)
+      { x: 73, y: 64 },  // VI  오른쪽 (옥상)
+      { x: 28, y: 74 },  // VII 왼쪽 (그네) — 1·3·5번과 같은 왼쪽 중심라인
+      { x: 73, y: 83 },  // VIII 오른쪽아래 (나무) — 2·4·6번과 같은 오른쪽 중심라인
     ];
 
     let COURSE, QUESTIONS, PROGRESS;
@@ -708,14 +723,18 @@
         }
       }
 
+      // current: 장소명+버튼은 박스 아래로 띄워(.current-extra) 박스 본체 크기를 잠긴 노드와 동일하게 유지
+      // done/locked: 기존대로 박스 안에 포함
+      const bodyExtra = isCurrent
+        ? `<div class="current-extra">${nameHtml}${scanHtml}</div>`
+        : `${nameHtml}${pieceHtml}${scanHtml}`;
+
       return `<div class="node ${stateClass}" data-step="${stepIdx}" data-set="${setNo}">
         ${pinHtml}
         ${stampHtml}
         <div class="node-number">${stepLabel}</div>
         <div class="node-icon">${icon}</div>
-        ${nameHtml}
-        ${pieceHtml}
-        ${scanHtml}
+        ${bodyExtra}
       </div>`;
     }
 
