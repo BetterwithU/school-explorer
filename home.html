@@ -71,12 +71,14 @@
     .map-wrap {
       position: relative;
       width: 100%;
+      /* PC에서 지도가 가로로 늘어나 노드 좌표가 어긋나는 것 방지 — 모바일 폭으로 고정 + 가운데 정렬 */
+      max-width: 480px;
+      margin: 0 auto;
       background:
         url('images/bg_map.webp') center top/100% auto no-repeat;
       background-color: #c8a97a;
-      padding: 20px 16px 28px;
-      /* 이미지 비율 9:20 → padding-top으로 높이 확보 */
-      min-height: calc(100vw * 20 / 9);
+      /* 높이는 뷰포트(100vw)가 아니라 컨테이너 너비 기준이어야 함 — 이미지 비율 9:20 */
+      aspect-ratio: 9 / 20;
     }
 
     /* 양피지 노이즈 텍스처 오버레이 */
@@ -99,38 +101,23 @@
       pointer-events: none;
     }
 
-    /* 점선 경로 SVG */
-    .path-svg {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      pointer-events: none;
-      z-index: 1;
-    }
-
-    /* ── 미션 노드 그리드 ── */
+    /* ── 미션 노드 그리드 (배경 위 절대배치 컨테이너) ── */
     .mission-grid {
-      position: relative;
+      position: absolute;
+      inset: 0;
       z-index: 2;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      min-height: calc(100vw * 20 / 9 - 48px);
     }
 
-    /* 행: 2개씩, 홀수행은 왼쪽→오른쪽, 짝수행은 오른쪽→왼쪽 (구불구불) */
-    .mission-row {
-      display: flex;
-      justify-content: space-around;
-      margin-bottom: 8px;
-    }
-    .mission-row.reverse {
-      flex-direction: row-reverse;
+    /* 각 노드를 배경 동그라미 좌표에 핀처럼 — 중심이 좌표에 일치 */
+    .node-anchor {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      width: 40%;
     }
 
     /* ── 미션 노드 ── */
     .node {
-      width: 44%;
+      width: 100%;
       background: transparent;
       border-radius: 4px;
       padding: 10px 8px;
@@ -165,9 +152,9 @@
     }
 
     .node-number {
-      font-size: 0.65rem;
-      font-weight: bold;
-      color: rgba(80,45,10,0.7);
+      font-size: 0.82rem;
+      font-weight: 800;
+      color: rgba(70,38,8,0.95);
       margin-bottom: 3px;
       letter-spacing: 0.5px;
     }
@@ -257,19 +244,22 @@
       50%       { transform: translateX(-50%) translateY(-5px); }
     }
 
-    /* 화살표 (완료 → 현재 미션) */
-    .mission-arrow {
-      text-align: center;
-      font-size: 1.4rem;
-      position: relative;
-      z-index: 2;
-      margin: 2px 0;
-      animation: arrow-blink 1.2s ease-in-out infinite;
-      filter: drop-shadow(0 1px 3px rgba(130,50,20,0.4));
+    /* 화살표 (직전 완료 → 현재 미션) — 황금색으로 깜박이며 진행 방향 안내 */
+    .path-arrow {
+      position: absolute;
+      z-index: 3;
+      pointer-events: none;
+      /* left/top/회전각은 JS가 인라인으로 지정 (두 좌표 사이 중점·각도 계산) */
+      transform-origin: center center;
+      font-size: 2.2rem;
+      line-height: 1;
+      color: #f4c430;
+      text-shadow: 0 0 6px rgba(244,196,48,0.9), 0 0 2px rgba(120,70,0,0.8);
+      animation: arrow-blink 0.9s ease-in-out infinite;
     }
     @keyframes arrow-blink {
-      0%, 100% { opacity: 1; transform: translateY(0); }
-      50%       { opacity: 0.4; transform: translateY(3px); }
+      0%, 100% { opacity: 1;   }
+      50%      { opacity: 0.15; }
     }
 
     /* QR 스캔 버튼 — 잉크 느낌 */
@@ -383,14 +373,15 @@
 
     #qr-canvas { display: none; }
 
-    /* ── 하단 안내 ── */
+    /* ── 하단 안내 (배경 위 절대배치 하단 고정) ── */
     .footer-note {
-      position: relative;
+      position: absolute;
+      left: 0; right: 0; bottom: 8px;
       z-index: 2;
       text-align: center;
       color: rgba(61,31,10,0.6);
       font-size: 0.72rem;
-      padding: 8px 0 16px;
+      padding: 8px 0;
     }
 
     /* ── 미션 복습 모달 ── */
@@ -540,12 +531,9 @@
     <div class="header-compass">🧭</div>
   </div>
 
-  <!-- 지도 영역 -->
+  <!-- 지도 영역 (배경 점선 경로는 bg_map.webp에 그려져 있음) -->
   <div class="map-wrap" id="mapWrap">
-    <!-- 점선 경로 (JS로 그림) -->
-    <svg class="path-svg" id="pathSvg" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
-
-    <!-- 미션 노드들 -->
+    <!-- 미션 노드들 (배경 동그라미 좌표에 절대배치) -->
     <div class="mission-grid" id="missionGrid">
       <p style="text-align:center;color:#8b5e2a;padding:40px 0">불러오는 중…</p>
     </div>
@@ -593,7 +581,21 @@
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
 
   <script>
-    const PLACE_ICONS = ['⚽','🌳','📚','🏃','🌸','🪜','🎭','🛝'];
+    // 보물찾기 테마 아이콘 (해골·칼·방패·골동품류)
+    const PLACE_ICONS = ['💀','⚔️','🛡️','🗝️','🏺','💎','🧭','👑'];
+
+    // 배경 지도(bg_map.webp)의 로마자 동그라미 I~VIII 중심 좌표 (가로%, 세로%)
+    // 노드 카드의 중심을 이 좌표에 일치시킨다 (translate -50%,-50%).
+    const SPOT_COORDS = [
+      { x: 26, y: 9 },   // I
+      { x: 70, y: 21 },  // II
+      { x: 27, y: 33 },  // III
+      { x: 70, y: 44 },  // IV
+      { x: 28, y: 56 },  // V
+      { x: 72, y: 64 },  // VI
+      { x: 25, y: 78 },  // VII
+      { x: 58, y: 89 },  // VIII
+    ];
 
     let COURSE, QUESTIONS, PROGRESS;
     let scanStream = null;
@@ -603,7 +605,7 @@
     loadData().then(({ course, questions }) => {
       COURSE = course;
       QUESTIONS = questions;
-      PROGRESS = loadProgress();
+      PROGRESS = loadProgress(course);
 
       if (!PROGRESS || !PROGRESS.team) {
         location.href = 'index.html';
@@ -631,38 +633,32 @@
     }
 
     /* ── 지도 렌더링 ── */
+    // 노드를 배경 지도의 로마자 동그라미(I~VIII) 좌표에 절대배치한다.
+    // 카드 중심 = 동그라미 중심 (translate -50%,-50%). 진행 순서는 항상 I→VIII.
     function renderMap() {
       const grid = document.getElementById('missionGrid');
       const order = PROGRESS.order;
       const total = order.length;
 
-      // 현재 미션 = 아직 안 푼 칸 중 가장 앞선 칸 (표시 기준 solved 우선)
-      const firstUnsolvedIdx = order.findIndex(s => !PROGRESS.solved[s]);
-      const curStep = firstUnsolvedIdx === -1 ? order.length : firstUnsolvedIdx;
-
-      // 화살표가 필요한 행 간격: 직전 행(row) → 현재 미션 행(row)
-      const prevRow = curStep > 0 ? Math.floor((curStep - 1) / 2) : -1;
-      const curRow = Math.floor(curStep / 2);
-      const needArrowAfterRow = (prevRow !== curRow && curStep > 0) ? prevRow : -1;
-
       let html = '';
-      for (let i = 0; i < total; i += 2) {
-        const rowIdx = Math.floor(i / 2);
-        const isReverse = rowIdx % 2 === 1;
-        html += `<div class="mission-row${isReverse ? ' reverse' : ''}">`;
-        html += nodeHtml(order[i], i);
-        if (i + 1 < total) html += nodeHtml(order[i + 1], i + 1);
-        html += `</div>`;
-
-        if (i + 2 < total) {
-          if (rowIdx === needArrowAfterRow) {
-            // 화살표: 직전 완료 → 현재 미션 방향
-            html += `<div class="mission-arrow">⬇️</div>`;
-          } else {
-            html += `<div style="text-align:center;font-size:1rem;color:rgba(139,94,42,0.5);margin:2px 0;position:relative;z-index:2">🐾 · · · · · · 🐾</div>`;
-          }
-        }
+      for (let i = 0; i < total; i++) {
+        const spot = SPOT_COORDS[i] || SPOT_COORDS[SPOT_COORDS.length - 1];
+        html += `<div class="node-anchor" style="left:${spot.x}%;top:${spot.y}%">${nodeHtml(order[i], i)}</div>`;
       }
+
+      // 진행 방향 화살표: 직전 완료 노드 → 현재(current) 노드.
+      // current = 아직 안 푼 칸 중 가장 앞선 칸. 그 바로 앞 칸(직전)이 있을 때만 그린다.
+      const curIdx = order.findIndex(s => !PROGRESS.solved[s]);
+      if (curIdx > 0) {
+        const from = SPOT_COORDS[curIdx - 1] || SPOT_COORDS[SPOT_COORDS.length - 1];
+        const to   = SPOT_COORDS[curIdx]     || SPOT_COORDS[SPOT_COORDS.length - 1];
+        const midX = (from.x + to.x) / 2;
+        const midY = (from.y + to.y) / 2;
+        // 화면 비율(9:20) 보정: y%는 x%보다 세로로 길어 각도가 왜곡됨 → 실제 픽셀 비율로 환산
+        const angle = Math.atan2((to.y - from.y) * (20 / 9), to.x - from.x) * 180 / Math.PI;
+        html += `<div class="path-arrow" style="left:${midX}%;top:${midY}%;transform:translate(-50%,-50%) rotate(${angle}deg)">➤</div>`;
+      }
+
       grid.innerHTML = html;
 
       // 이벤트 바인딩
