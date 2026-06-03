@@ -399,6 +399,12 @@
         location.href = isFinalePending(COURSE, PROGRESS) ? 'map.html' : 'done.html';
         return;
       }
+      // URL에 ?q= 파라미터가 남아있으면 제거하고 scanDone 리셋
+      // 안 하면 이전 스캔 상태가 남아 새 QR이 인식되지 않음
+      if (location.search) {
+        history.replaceState(null, '', 'mission.html');
+      }
+      scanDone = false;
       const m = missionBySet(COURSE, currentSet(PROGRESS));
       const n = missionQrCount(m);
       const stepNo = PROGRESS.step + 1, total = PROGRESS.order.length;
