@@ -10,7 +10,7 @@
   },
   "missions": [
     { "set": 1, "placeName": "도서관 입구 (1층)", "mode": "combo", "qids": ["1A", "1B"], "piece": "운", "inputGuide": "#1, #2번 문제의 답을 더한 숫자를 입력하세요" },
-    { "set": 2, "placeName": "솔빛길 (3~4층 사이)", "mode": "combo", "qids": ["2A", "2B", "2C", "2D"], "piece": "동", "inputGuide": "#1~#4번 캐릭터 이름의 첫 글자를 순서대로 합친 4글자를 입력하세요" },
+    { "set": 2, "placeName": "솔빛길 (3~4층 사이)", "mode": "combo", "qids": ["2A", "2B", "2C", "2D"], "piece": "동", "inputGuide": "#1~#4번 이미지의 글자힌트를 조합하여 완성한 4글자를 입력하세요" },
     { "set": 3, "placeName": "다람쥐 쉼터 (3층)", "mode": "combo", "qids": ["3A", "3B", "3C"], "piece": "장", "inputGuide": "#1, #2, #3번 문제의 답을 순서대로 합친 글자를 입력하세요" },
     { "set": 4, "placeName": "단비 쉼터 (3층)", "mode": "common", "qids": ["4"], "piece": "큰" },
     { "set": 5, "placeName": "틈새공간 (운동장 옆)", "mode": "combo", "qids": ["5A", "5B", "5C", "5D"], "piece": "은", "inputGuide": "#1, #2, #3, #4번 문제의 답을 순서대로 합친 글자를 입력하세요" },

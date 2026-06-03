@@ -178,7 +178,7 @@ function youtubeEmbed(url) {
 function renderMediaHtml(media) {
   return (media || []).map(m => {
     if (m.type === 'image') {
-      return `<img class="q-media q-image" src="${m.url}" alt="문제 이미지" onerror="this.style.display='none'">`;
+      return `<div class="q-media" style="display:flex;justify-content:center;align-items:center;margin-bottom:16px"><img src="${m.url}" alt="문제 이미지" style="max-height:220px;max-width:60%;height:auto;width:auto;border-radius:6px;border:1px solid rgba(100,65,20,0.3)" onerror="this.parentElement.style.display='none'"></div>`;
     }
     if (m.type === 'youtube') {
       const src = youtubeEmbed(m.url);

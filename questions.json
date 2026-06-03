@@ -17,30 +17,30 @@
 
   {
     "id": "2A", "set": 2, "slot": "A", "category": "캐릭터", "difficulty": "easy",
-    "question": "이 캐릭터의 이름은?",
-    "media": [{ "type": "image", "url": "images/q2a_kirby.png" }],
+    "question": "이 캐릭터의 이름은 ★비입니다.\n★에 들어갈 글자를 다른 조원들과 조합해서 최종 답을 만드세요.",
+    "media": [{ "type": "image", "url": "images/별의커비.webp" }],
     "hints": ["닌텐도의 분홍색 동그란 캐릭터예요.", "무엇이든 흡입해서 능력을 복사해요."],
     "answer": "커비", "combined": "커피우유"
   },
   {
     "id": "2B", "set": 2, "slot": "B", "category": "캐릭터", "difficulty": "easy",
-    "question": "이 캐릭터의 이름은?",
-    "media": [{ "type": "image", "url": "images/q2b_pikachu.jpg" }],
+    "question": "이 캐릭터의 이름은 ★카츄입니다.\n★에 들어갈 글자를 다른 조원들과 조합해서 최종 답을 만드세요.",
+    "media": [{ "type": "image", "url": "images/피카츄.webp" }],
     "hints": ["노란색 전기 포켓몬이에요.", "피카피카!"],
     "answer": "피카츄", "combined": "커피우유"
   },
   {
     "id": "2C", "set": 2, "slot": "C", "category": "캐릭터", "difficulty": "easy",
-    "question": "이 캐릭터의 이름은?",
-    "media": [{ "type": "image", "url": "images/q2c_woody.png" }],
+    "question": "이 캐릭터의 이름은 ★디입니다.\n★에 들어갈 글자를 다른 조원들과 조합해서 최종 답을 만드세요.",
+    "media": [{ "type": "image", "url": "images/우디.webp" }],
     "hints": ["카우보이 모자를 쓴 토이스토리 캐릭터예요.", "주인의 이름은 앤디예요."],
     "answer": "우디", "combined": "커피우유"
   },
   {
     "id": "2D", "set": 2, "slot": "D", "category": "캐릭터", "difficulty": "easy",
-    "question": "이 가수의 이름은?",
-    "media": [{ "type": "image", "url": "images/q2d_iu.jpg" }],
-    "hints": ["대한민국 국민 가수예요.", "이름이 영어 두 글자예요."],
+    "question": "이 가수의 이름은 아이★입니다.\n★에 들어갈 글자를 다른 조원들과 조합해서 최종 답을 만드세요.",
+    "media": [{ "type": "image", "url": "images/아이유.png" }],
+    "hints": ["대한민국 국민 가수예요."],
     "answer": "아이유", "combined": "커피우유"
   },
 
