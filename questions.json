@@ -16,25 +16,39 @@
   },
 
   {
-    "id": "2A", "set": 2, "slot": "A", "category": "국어", "difficulty": "easy",
-    "question": "두 글자를 모아 탐험 도구를 완성해요!\n[첫 글자] 보물이 어디 있는지 그려놓은 종이를 'O도'라고 해요. 그 첫 글자는?",
-    "media": [],
-    "hints": ["보물찾기에 꼭 필요한 종이예요.", "땅과 길이 그려져 있어요."],
-    "answer": "지", "combined": "지도"
+    "id": "2A", "set": 2, "slot": "A", "category": "캐릭터", "difficulty": "easy",
+    "question": "이 캐릭터의 이름은?",
+    "media": [{ "type": "image", "url": "images/q2a_kirby.png" }],
+    "hints": ["닌텐도의 분홍색 동그란 캐릭터예요.", "무엇이든 흡입해서 능력을 복사해요."],
+    "answer": "커비", "combined": "커피우유"
   },
   {
-    "id": "2B", "set": 2, "slot": "B", "category": "사회", "difficulty": "easy",
-    "question": "[둘째 글자] 위에서 내려다본 땅의 모습을 그린 'O도'. 세계 O도, 우리나라 O도. 짝꿍의 첫 글자와 합치면 두 글자가 돼요. 이 둘째 글자는?",
-    "media": [],
-    "hints": ["'지O'의 둘째 글자예요.", "첫 글자는 짝꿍이 알아요. 서로 알려주세요!"],
-    "answer": "도", "combined": "지도"
+    "id": "2B", "set": 2, "slot": "B", "category": "캐릭터", "difficulty": "easy",
+    "question": "이 캐릭터의 이름은?",
+    "media": [{ "type": "image", "url": "images/q2b_pikachu.jpg" }],
+    "hints": ["노란색 전기 포켓몬이에요.", "피카피카!"],
+    "answer": "피카츄", "combined": "커피우유"
+  },
+  {
+    "id": "2C", "set": 2, "slot": "C", "category": "캐릭터", "difficulty": "easy",
+    "question": "이 캐릭터의 이름은?",
+    "media": [{ "type": "image", "url": "images/q2c_woody.png" }],
+    "hints": ["카우보이 모자를 쓴 토이스토리 캐릭터예요.", "주인의 이름은 앤디예요."],
+    "answer": "우디", "combined": "커피우유"
+  },
+  {
+    "id": "2D", "set": 2, "slot": "D", "category": "캐릭터", "difficulty": "easy",
+    "question": "이 가수의 이름은?",
+    "media": [{ "type": "image", "url": "images/q2d_iu.jpg" }],
+    "hints": ["대한민국 국민 가수예요.", "이름이 영어 두 글자예요."],
+    "answer": "아이유", "combined": "커피우유"
   },
 
   {
     "id": "3A", "set": 3, "slot": "A", "category": "상식", "difficulty": "normal",
-    "question": "42.195km를 달리는 육상 종목, \"OO톤\"의 첫 글자는?",
+    "question": "42.195km를 달리는 육상 종목의 이름은 \"O라톤\"입니다. O에 들어갈 글자는?",
     "media": [],
-    "hints": ["올림픽 대표 장거리 달리기 종목이에요.", "\"O라톤\"이라고도 해요."],
+    "hints": ["올림픽 대표 장거리 달리기 종목이에요."],
     "answer": "마", "combined": "마라탕"
   },
   {
@@ -48,7 +62,7 @@
     "id": "3C", "set": 3, "slot": "C", "category": "상식", "difficulty": "easy",
     "question": "더운 여름, 어린 닭 한 마리에 인삼·대추·찹쌀을 넣고 푹 끓여낸 한국 대표 보양식은? \"삼계O\"의 마지막 글자는?",
     "media": [],
-    "hints": ["뜨거운 국물 요리를 부르는 한 글자예요.", "설렁O, 갈비O에도 들어가요."],
+    "hints": ["뜨거운 국물 요리를 부르는 한 글자예요.", "총을 쏘면 나는 소리에요. O! 으악!"],
     "answer": "탕", "combined": "마라탕"
   },
 
