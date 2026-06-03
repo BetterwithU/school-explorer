@@ -48,6 +48,25 @@
       filter: sepia(1);
     }
 
+    /* 보물 글자 모음 버튼 (헤더 좌측 고정) */
+    .header-pieces {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      background: rgba(130,80,20,0.85);
+      color: rgba(245,235,210,0.97);
+      border: 1px solid rgba(80,45,10,0.5);
+      border-radius: 16px;
+      padding: 6px 12px;
+      font-size: 0.74rem;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 1px 2px 5px rgba(40,20,5,0.3);
+      letter-spacing: 0.3px;
+    }
+    .header-pieces:active { background: rgba(100,55,12,0.9); }
+    @media (hover:hover) { .header-pieces:hover { background: rgba(150,95,25,0.9); } }
+
     /* ── 지도 영역 ── */
     .map-wrap {
       position: relative;
@@ -427,6 +446,7 @@
 
   <!-- 상단 헤더 -->
   <div class="header" id="header">
+    <button class="header-pieces" id="headerPieces" onclick="location.href='map.html'">🔑 모은 글자 –/–</button>
     <div class="header-team" id="headerTeam">탐험대</div>
     <div class="header-title">🗺️ 탐험 지도</div>
     <div class="header-progress" id="headerProgress">불러오는 중…</div>
@@ -503,11 +523,16 @@
     /* ── 헤더 렌더링 ── */
     function renderHeader() {
       document.getElementById('headerTeam').textContent = `🏕️ ${PROGRESS.team}`;
-      const done = PROGRESS.step;
+      // 실제 푼 개수(solved) 기준 — step과 어긋나도 정확
+      const done = PROGRESS.order.filter(s => !!PROGRESS.solved[s]).length;
       const total = PROGRESS.order.length;
-      const allDone = isAllDone(PROGRESS);
       document.getElementById('headerProgress').textContent =
-        allDone ? '🎉 모든 미션 완료!' : `미션 ${done} / ${total} 완료`;
+        done >= total ? '🎉 모든 미션 완료!' : `미션 ${done} / ${total} 완료`;
+
+      // 모은 보물 글자 수 버튼에 반영
+      const got = collectedPieces(COURSE, PROGRESS).length;
+      const need = totalPieces(COURSE);
+      document.getElementById('headerPieces').textContent = `🔑 모은 글자 ${got}/${need}`;
     }
 
     /* ── 지도 렌더링 ── */
@@ -516,14 +541,14 @@
       const order = PROGRESS.order;
       const total = order.length;
 
-      // 현재 스텝 계산 (버그 방어)
-      const actualDoneCount = order.filter(s => !!PROGRESS.solved[s]).length;
-      const curStep = Math.max(PROGRESS.step, actualDoneCount);
+      // 현재 미션 = 아직 안 푼 칸 중 가장 앞선 칸 (표시 기준 solved 우선)
+      const firstUnsolvedIdx = order.findIndex(s => !PROGRESS.solved[s]);
+      const curStep = firstUnsolvedIdx === -1 ? order.length : firstUnsolvedIdx;
 
-      // 화살표가 필요한 행 간격: 직전 완료 행(row) → 현재 행(row)
-      const prevDoneRow = curStep > 0 ? Math.floor((curStep - 1) / 2) : -1;
+      // 화살표가 필요한 행 간격: 직전 행(row) → 현재 미션 행(row)
+      const prevRow = curStep > 0 ? Math.floor((curStep - 1) / 2) : -1;
       const curRow = Math.floor(curStep / 2);
-      const needArrowAfterRow = (prevDoneRow !== curRow && curStep > 0) ? prevDoneRow : -1;
+      const needArrowAfterRow = (prevRow !== curRow && curStep > 0) ? prevRow : -1;
 
       let html = '';
       for (let i = 0; i < total; i += 2) {
@@ -555,12 +580,11 @@
       const mission = missionBySet(COURSE, setNo);
       const isDone = !!PROGRESS.solved[setNo];
 
-      // step이 solved 상태와 어긋날 수 있으므로 실제 완료 수로 curStep 재계산
-      const actualDoneCount = PROGRESS.order.filter(s => !!PROGRESS.solved[s]).length;
-      const curStep = Math.max(PROGRESS.step, actualDoneCount);
-
-      const isCurrent = stepIdx === curStep && !isDone;
-      const isLocked = stepIdx > curStep;
+      // 표시 기준은 'solved' — 푼 문제는 순서와 무관하게 무조건 완료(도장+클릭).
+      // current = 아직 안 푼 칸 중 가장 앞선(stepIdx 최소) 칸 하나.
+      const firstUnsolvedIdx = PROGRESS.order.findIndex(s => !PROGRESS.solved[s]);
+      const isCurrent = !isDone && stepIdx === firstUnsolvedIdx;
+      const isLocked = !isDone && !isCurrent;
 
       const icon = PLACE_ICONS[stepIdx % PLACE_ICONS.length];
       const stepLabel = `${stepIdx + 1}번째 미션`;
@@ -589,9 +613,7 @@
           pieceHtml = `<div class="piece-badge">🔑 ${mission.piece}</div>`;
         }
         if (isCurrent) {
-          const n = missionQrCount(mission);
-          const scanLabel = n === 1 ? '📷 QR 스캔' : `📷 QR 스캔 (${n}개)`;
-          scanHtml = `<button class="scan-btn" data-step="${stepIdx}">` + scanLabel + `</button>`;
+          scanHtml = `<button class="scan-btn" onclick="location.href='mission.html'">📷 미션 시작</button>`;
         }
       }
 
@@ -606,14 +628,12 @@
       </div>`;
     }
 
-    /* ── 노드 클릭 ── */
+    /* ── 노드 클릭 ── (판정 기준은 nodeHtml과 동일하게 solved 우선) */
     function handleNodeClick(stepIdx) {
       const setNo = PROGRESS.order[stepIdx];
       const isDone = !!PROGRESS.solved[setNo];
-      const isCurrent = stepIdx === PROGRESS.step && !isDone;
-
-      if (isCurrent) return; // scan-btn이 처리
-      if (isDone) showReview(setNo);
+      if (isDone) { showReview(setNo); return; } // 푼 문제 → 복습
+      // 안 푼 칸(current) → scan-btn이 처리하므로 여기선 무시
     }
 
     // scan-btn 이벤트 (이벤트 위임)

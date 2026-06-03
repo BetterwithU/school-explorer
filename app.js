@@ -107,6 +107,7 @@ function startGame(course, teamName) {
     step: 0,        // 현재 몇 번째 세트(0-based)
     solved: {},     // { set: true }
     answers: {},    // { set: "입력한 합본답" }
+    notes: {},      // { qid: "내 답 메모" } — 채점 무관, 기억 보조
     finaleSolved: false, // 최종 글자조합 미션 해결 여부
   };
   saveProgress(p);
@@ -130,6 +131,21 @@ function markSolved(p, setNo, answer) {
 
 function isAllDone(p) {
   return p.step >= p.order.length;
+}
+
+/* ---------- QR별 "내 답 메모" (채점 무관, 기억 보조) ----------
+ * 협력 미션에서 각자 알아낸 개별 답을 QR(qid)별로 저장.
+ * 같은 QR을 다시 찍으면 적어둔 메모가 그대로 보임.
+ */
+function getNote(p, qid) {
+  return (p.notes && p.notes[qid]) || '';
+}
+
+function saveNote(p, qid, text) {
+  if (!p.notes) p.notes = {};
+  p.notes[qid] = text;
+  saveProgress(p);
+  return p;
 }
 
 /* ---------- 정답 채점 (합본 비교) ----------

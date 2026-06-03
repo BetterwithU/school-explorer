@@ -56,6 +56,26 @@
     .pieces { color: #ffe8b3; letter-spacing: 3px; font-size: 1.1rem; }
 
     @media (hover: hover) { .controls a:hover { filter: brightness(1.25); } }
+
+    /* 게임 on/off 스위치 */
+    .game-switch {
+      background: #16213e; border-radius: 14px; padding: 16px;
+      margin: 14px 0; text-align: center;
+    }
+    .game-switch .gs-state { font-size: 1.05rem; font-weight: bold; margin-bottom: 10px; }
+    .game-switch .gs-state.on { color: #2ec4b6; }
+    .game-switch .gs-state.off { color: #f4a261; }
+    .game-switch .gs-state.na { color: #8b9bb4; font-size: 0.9rem; }
+    .gs-btn {
+      border: none; border-radius: 10px; padding: 13px 28px;
+      font-size: 1rem; font-weight: bold; cursor: pointer; color: #fff;
+      transition: transform 0.15s, filter 0.15s;
+    }
+    .gs-btn:active { transform: scale(0.96); }
+    .gs-btn.start { background: linear-gradient(135deg, #2ec4b6, #1a9b8f); }
+    .gs-btn.stop { background: linear-gradient(135deg, #e94560, #b8293f); }
+    .gs-btn:disabled { background: #2a3450; color: #5b6b8a; cursor: not-allowed; }
+    .gs-hint { color: #8b9bb4; font-size: 0.78rem; margin-top: 8px; line-height: 1.5; }
   </style>
 </head>
 <body>
@@ -70,6 +90,12 @@
       <a href="schedule.html">📋 조별 순서표</a>
       <a href="qrcodes.html">🔳 QR 인쇄</a>
       <a href="index.html">🏠 시작 화면</a>
+    </div>
+
+    <div class="game-switch" id="gameSwitch">
+      <div class="gs-state na" id="gsState">게임 상태 확인 중…</div>
+      <button class="gs-btn start" id="gsBtn" disabled>불러오는 중</button>
+      <div class="gs-hint" id="gsHint"></div>
     </div>
 
     <div class="section-title">📡 실시간 조별 진행</div>
@@ -146,8 +172,54 @@
       return Math.round(m / 60) + '시간 전';
     }
 
+    /* ---------- 게임 on/off 스위치 ---------- */
+    let gameOn = false;
+    function renderGameSwitch() {
+      const sync = window.SchoolExplorerSync;
+      const stateEl = document.getElementById('gsState');
+      const btn = document.getElementById('gsBtn');
+      const hint = document.getElementById('gsHint');
+      if (!sync || !sync.online) {
+        stateEl.className = 'gs-state na';
+        stateEl.textContent = '오프라인 — 스위치 사용 불가';
+        btn.disabled = true;
+        btn.textContent = '연결 안 됨';
+        hint.textContent = 'Firebase를 설정하면 게임 시작/정지를 원격으로 켤 수 있어요.';
+        return;
+      }
+      btn.disabled = false;
+      if (gameOn) {
+        stateEl.className = 'gs-state on';
+        stateEl.textContent = '🟢 게임 진행 중';
+        btn.className = 'gs-btn stop';
+        btn.textContent = '⏸️ 게임 정지';
+        hint.textContent = '정지하면 아이들이 QR을 찍어도 「즐거운 아빠 캠핑」 안내만 보여요.';
+      } else {
+        stateEl.className = 'gs-state off';
+        stateEl.textContent = '🟠 게임 정지 상태';
+        btn.className = 'gs-btn start';
+        btn.textContent = '▶️ 게임 시작';
+        hint.textContent = '시작을 누르면 모든 조의 폰에서 즉시 미션이 열려요.';
+      }
+    }
+
+    function bindGameSwitch() {
+      const sync = window.SchoolExplorerSync;
+      const btn = document.getElementById('gsBtn');
+      if (sync && sync.online) {
+        sync.subscribeGameState((on) => { gameOn = on; renderGameSwitch(); });
+        btn.onclick = () => {
+          const next = !gameOn;
+          const msg = next ? '게임을 시작할까요? 모든 폰에서 미션이 열립니다.' : '게임을 정지할까요? 아이들 화면은 캠핑 안내로 바뀝니다.';
+          if (confirm(msg)) sync.setGameState(next);
+        };
+      }
+      renderGameSwitch();
+    }
+
     function bindRealtime() {
       const start = () => {
+        bindGameSwitch();
         const live = document.getElementById('live');
         if (window.SchoolExplorerSync && window.SchoolExplorerSync.online) {
           live.innerHTML = '<div class="muted">실시간 연결됨 — 조 진행을 기다리는 중…</div>';

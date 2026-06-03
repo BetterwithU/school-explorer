@@ -198,6 +198,30 @@
       border-left: 3px solid #cc3300;
     }
 
+    /* 내 답 메모 (협력 미션 전용, 채점 무관) */
+    .note-box {
+      background: rgba(60,100,40,0.06);
+      border: 1px dashed rgba(60,100,40,0.45);
+      border-radius: 6px;
+      padding: 12px 14px;
+      margin-bottom: 16px;
+    }
+    .note-label { font-size: 0.85rem; color: #2d6010; font-weight: bold; margin-bottom: 8px; }
+    .note-label small { display: block; font-weight: normal; color: rgba(40,80,20,0.7); font-size: 0.75rem; margin-top: 2px; }
+    .note-input {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 4px;
+      border: 1px solid rgba(60,100,40,0.4);
+      background: rgba(255,253,240,0.8);
+      color: #2c1a05;
+      font-size: 1.05rem;
+      text-align: center;
+    }
+    .note-input:focus { outline: none; border-color: rgba(60,100,40,0.7); }
+    .note-input::placeholder { color: rgba(60,100,40,0.4); font-size: 0.9rem; }
+    .note-saved { font-size: 0.75rem; color: #2d6010; text-align: right; margin-top: 4px; min-height: 1em; }
+
     .answer-input {
       width: 100%;
       padding: 13px 16px;
@@ -235,6 +259,18 @@
     .feedback { margin-top: 12px; padding: 12px; border-radius: 4px; text-align: center; font-size: 0.95rem; display: none; }
     .feedback.wrong { background: rgba(160,50,30,0.1); border: 1px solid rgba(160,50,30,0.4); color: #8b2010; display: block; }
     .feedback.right { background: rgba(60,100,40,0.1); border: 1px solid rgba(60,100,40,0.4); color: #2d6010; display: block; }
+
+    .qr-btn {
+      display: block; width: 100%; margin-bottom: 14px;
+      padding: 11px; border-radius: 4px; font-size: 0.9rem; font-weight: bold;
+      cursor: pointer; text-align: center; border: none;
+      background: linear-gradient(135deg, #4a7a3a 0%, #2d5c20 100%);
+      color: #e8f5d8;
+      box-shadow: 2px 3px 8px rgba(30,60,10,0.3);
+      transition: transform 0.15s;
+    }
+    .qr-btn:active { transform: scale(0.97); }
+    @media (hover: hover) { .qr-btn:hover { background: linear-gradient(135deg, #5a8a48 0%, #3a6c2c 100%); } }
 
     /* 안내 화면 */
     .guide { text-align: center; }
@@ -380,6 +416,14 @@
       font-size: 0.95rem; cursor: pointer;
     }
     #qr-canvas { display: none; }
+
+    /* 게임 off 안내 (캠핑) */
+    .camp-screen { text-align: center; }
+    .camp-screen img {
+      width: 100%; max-width: 320px; height: auto;
+      border-radius: 10px;
+      box-shadow: 3px 4px 18px rgba(40,20,5,0.3);
+    }
   </style>
 </head>
 <body>
@@ -426,9 +470,44 @@
     loadData().then(({ course, questions }) => {
       COURSE = course; QUESTIONS = questions;
       PROGRESS = loadProgress();
-      route();
+      gateByGameState();
       reportProgress(COURSE, PROGRESS);
     });
+
+    /* ── 게임 on/off 게이트 ──
+     * Firebase가 켜져 있고 게임이 off면 → QR 스캔해도 캠핑 안내만.
+     * Firebase 꺼짐(오프라인) 또는 DEV면 → 게임 정상 동작(게이트 통과).
+     * 게임 상태가 실시간으로 바뀌면 화면도 즉시 갱신.
+     */
+    let gameStateBound = false;
+    function gateByGameState() {
+      const sync = window.SchoolExplorerSync;
+      const apply = () => {
+        const s = window.SchoolExplorerSync;
+        if (DEV || !s || !s.online) { route(); return; }   // 오프라인/DEV는 그냥 진행
+        if (!gameStateBound) {
+          gameStateBound = true;
+          s.subscribeGameState((on) => {
+            if (on) route();
+            else showCampScreen();
+          });
+        }
+      };
+      if (window.SYNC_READY) apply();
+      else window.addEventListener('sync-ready', apply, { once: true });
+    }
+
+    /* 게임 정지 중 안내 화면 (즐거운 아빠 캠핑) */
+    function showCampScreen() {
+      // 스캐너가 떠 있으면 닫기
+      if (typeof stopCamera === 'function') stopCamera();
+      const overlay = document.getElementById('scannerOverlay');
+      if (overlay) overlay.classList.remove('active');
+      document.getElementById('card').innerHTML = `
+        <div class="camp-screen">
+          <img src="images/Gemini_Generated_Image_hlj0behlj0behlj0.png" alt="즐거운 아빠 캠핑">
+        </div>`;
+    }
 
     function route() {
       if (DEV && (!PROGRESS || !PROGRESS.team)) {
@@ -485,10 +564,13 @@
       scanDone = false;
       const m = missionBySet(COURSE, currentSet(PROGRESS));
       const n = missionQrCount(m);
-      const stepNo = PROGRESS.step + 1, total = PROGRESS.order.length;
+      const actualDone = PROGRESS.order.filter(s => !!PROGRESS.solved[s]).length;
+      const stepNo = Math.max(PROGRESS.step, actualDone) + 1;
+      const total = PROGRESS.order.length;
+
       const scanMsg = n === 1
-        ? '이곳의 QR코드를 스캔해서 공통 문제를 푸세요!'
-        : `이곳에서 QR코드 ${n}개를 ${n}명이 나눠 스캔하세요!`;
+        ? '이곳의 QR코드를 스캔해서 문제를 푸세요!'
+        : `이곳에서 QR코드 ${n}개 중 하나를 스캔해서 내 문제를 푸세요!`;
 
       document.getElementById('card').innerHTML = `
         <div class="guide">
@@ -500,7 +582,7 @@
           </div>
           <div class="desc">${scanMsg}</div>
           <button class="scan-guide-btn primary" id="scanBtn">📷 QR 스캔하기</button>
-          <a class="guide btn" href="home.html">🏠 미션 홈으로</a>
+          <a class="guide btn" href="home.html">🗺️ 지도로 돌아가기</a>
         </div>`;
 
       document.getElementById('scanBtn').onclick = openScanner;
@@ -510,7 +592,9 @@
       const q = QUESTION;
       const n = missionQrCount(MISSION);
       const isCommon = n === 1;
-      const stepNo = PROGRESS.step + 1, total = PROGRESS.order.length;
+      const total = PROGRESS.order.length;
+      // 현재 미션이 몇 번째인지 order 배열에서 찾아 표시 (DEV모드/직접접근 모두 정확)
+      const stepNo = PROGRESS.order.indexOf(MISSION.set) + 1 || PROGRESS.step + 1;
       hintsShown = 0;
 
       const myLabel = isCommon ? `${q.set}번 공통` : `${q.set}-${q.slot}`;
@@ -543,11 +627,23 @@
       const hasHints = q.hints && q.hints.length > 0;
       const mediaHtml = renderMediaHtml(questionMedia(q));
 
+      // 내 답 메모 (협력 미션 전용) — 저장해둔 값 미리 채움
+      const myNote = getNote(PROGRESS, q.id);
+      const noteBoxHtml = isCommon ? '' : `
+        <div class="note-box">
+          <div class="note-label">✏️ 이 문제 내 답 (메모)
+            <small>친구에게 알려줄 내 답을 적어두세요. 다시 이 QR을 찍으면 그대로 보여요.</small>
+          </div>
+          <input class="note-input" id="note" placeholder="예: 커비" autocomplete="off" value="${myNote.replace(/"/g, '&quot;')}">
+          <div class="note-saved" id="noteSaved"></div>
+        </div>`;
+
       document.getElementById('card').innerHTML = `
         <div class="topbar">
           <span class="team">📜 ${PROGRESS.team}${DEV ? '<span class="dev-badge">🛠️ DEV</span>' : ''}</span>
           <span class="step">미션 ${stepNo} / ${total}</span>
         </div>
+        ${!isCommon ? `<button class="qr-btn" onclick="showCurrentGuide()">📷 다른 QR 찍기</button>` : ''}
         <div class="badge-row">
           <span class="badge badge-pair">${isCommon ? '공통 문제' : `#${MISSION.qids.indexOf(q.id) + 1}번 문제`} / ${MISSION.placeName}${isCommon ? '' : ` (총 ${n}문제)`}</span>
         </div>
@@ -555,11 +651,12 @@
         <p class="question-text">${q.question}</p>
         ${noteHtml}
         ${hasHints ? (q.hints.map((_, i) => `<button class="hint-btn" data-hint="${i}">💡 힌트 ${i+1}</button>`).join('')) : ''}
+        ${noteBoxHtml}
         <div class="combined-label">${inputLabel}</div>
         <input class="answer-input" id="ans" placeholder="${placeholder}" autocomplete="off">
         <button class="submit-btn" id="submitBtn">✅ 정답 제출</button>
         <div class="feedback" id="feedback"></div>
-        <button class="back-link" onclick="showCurrentGuide()">${DEV ? '← 개발자 콘솔로' : '← 다른 QR 찍기'}</button>
+        ${DEV ? '<a class="back-link" href="dev.html" style="display:block">← 개발자 콘솔로</a>' : ''}
       `;
 
       if (hasHints) {
@@ -570,6 +667,18 @@
               `<div class="hint-popup-item">💡 ${q.hints[idx]}</div>`;
             document.getElementById('hintOverlay').classList.add('active');
           };
+        });
+      }
+
+      // 메모 입력 → 즉시 저장 (채점 무관, 기억 보조)
+      const noteEl = document.getElementById('note');
+      if (noteEl) {
+        noteEl.addEventListener('input', () => {
+          saveNote(PROGRESS, q.id, noteEl.value);
+          const savedEl = document.getElementById('noteSaved');
+          if (savedEl) {
+            savedEl.textContent = noteEl.value.trim() ? '✓ 저장됨' : '';
+          }
         });
       }
 

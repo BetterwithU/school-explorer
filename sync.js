@@ -25,7 +25,7 @@ function getDeviceId() {
 if (cfg && cfg.apiKey && cfg.databaseURL) {
   try {
     const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
-    const { getDatabase, ref, set, onValue } = await import(
+    const { getDatabase, ref, set, get, onValue } = await import(
       'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js'
     );
     const app = initializeApp(cfg);
@@ -42,6 +42,16 @@ if (cfg && cfg.apiKey && cfg.databaseURL) {
       },
       subscribe(cb) {
         onValue(ref(db, `sessions/${SESSION}/teams`), (snap) => cb(snap.val() || {}));
+      },
+      // 게임 on/off 상태 — HQ가 켜기 전엔 QR 스캔 시 '캠핑' 안내만 보임
+      subscribeGameState(cb) {
+        onValue(ref(db, `sessions/${SESSION}/gameOn`), (snap) => cb(snap.val() === true));
+      },
+      setGameState(on) {
+        return set(ref(db, `sessions/${SESSION}/gameOn`), on === true).catch(() => {});
+      },
+      getGameState() {
+        return get(ref(db, `sessions/${SESSION}/gameOn`)).then(s => s.val() === true).catch(() => false);
       },
     };
   } catch (e) {
