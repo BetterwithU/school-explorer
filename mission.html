@@ -453,12 +453,15 @@
           .map(x => `${q.set}-${x.replace(String(q.set), '')}`).join(', ');
         noteHtml = `
           <div class="pair-note">
-            이 문제의 답은 <b>한 글자</b>예요.<br>
-            짝꿍 <b>${others}</b> 친구들의 답과 <b>순서대로 합쳐야</b> ${len}글자가 완성돼요.<br>
-            서로 답을 알려주고, 아래에 <b>${len}글자 전체</b>를 입력하세요!
+            내 답은 <b>한 글자</b>예요. 혼자 제출하면 안 돼요!<br><br>
+            <span style="font-size:1rem;color:#7a3a10;font-weight:900;display:block;margin-bottom:6px">
+              ⚠️ QR ${len}개의 답을 모두 모아서<br>순서대로 합친 ${len}글자를 입력하세요!
+            </span>
+            짝꿍 <b>${others}</b> 의 답을 서로 알려주고<br>
+            아래 칸에 <b>${len}글자 전체</b>를 함께 입력하세요.
           </div>`;
-        inputLabel = `${len}글자 정답 입력`;
-        placeholder = `${len}글자 모두 입력`;
+        inputLabel = `⚠️ ${len}글자 전체 입력 (내 답 + 짝꿍 답 합치기)`;
+        placeholder = `${len}글자 모두 합쳐서 입력`;
       }
 
       const hintsHtml = (q.hints || []).map((h, i) =>
