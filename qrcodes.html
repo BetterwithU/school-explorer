@@ -135,7 +135,7 @@
   <div class="grid" id="grid"></div>
 
   <button class="print-btn" onclick="window.print()">🖨️ QR코드 인쇄하기</button>
-  <a href="index.html" class="back-link">← 메인으로 돌아가기</a>
+  <a href="hq.html" class="back-link">← 대시보드로 돌아가기</a>
 
   <script>
     const DEFAULT_BASE = 'https://betterwithu.github.io/school-explorer';
@@ -173,6 +173,18 @@
 
     document.getElementById('baseUrl').value = DEFAULT_BASE;
     renderQRCodes();
+  </script>
+
+  <!-- 제목 7번 연속 클릭 → 개발자 콘솔(새 창) -->
+  <script>
+    document.addEventListener('click', (e) => {
+      const h = e.target.closest('h1');
+      if (!h) return;
+      window._devN = (window._devN || 0) + 1;
+      clearTimeout(window._devT);
+      window._devT = setTimeout(() => { window._devN = 0; }, 1500);
+      if (window._devN >= 7) { window._devN = 0; window.open('dev.html', '_blank'); }
+    });
   </script>
 </body>
 </html>

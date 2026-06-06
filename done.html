@@ -237,5 +237,17 @@
       `;
     });
   </script>
+
+  <!-- 제목 7번 연속 클릭 → 개발자 콘솔(새 창) -->
+  <script>
+    document.addEventListener('click', (e) => {
+      const h = e.target.closest('h1');
+      if (!h) return;
+      window._devN = (window._devN || 0) + 1;
+      clearTimeout(window._devT);
+      window._devT = setTimeout(() => { window._devN = 0; }, 1500);
+      if (window._devN >= 7) { window._devN = 0; window.open('dev.html', '_blank'); }
+    });
+  </script>
 </body>
 </html>

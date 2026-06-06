@@ -554,7 +554,7 @@
     </div>
 
   </div>
-  <div class="footer-note">발자국을 따라 탐험하세요! 🐾</div>
+  <div class="footer-note">🧭 점선 길을 따라 보물을 찾아 떠나요!</div>
 
   <!-- QR 스캐너 오버레이 -->
   <div class="scanner-overlay" id="scannerOverlay">
@@ -975,6 +975,20 @@
         }
       };
     }
+  </script>
+
+  <!-- 제목 7번 연속 클릭 → 개발자 콘솔(새 창) -->
+  <script>
+    (function () {
+      let n = 0, t;
+      const h = document.querySelector('.header-title');
+      if (!h) return;
+      h.style.cursor = 'default';
+      h.addEventListener('click', () => {
+        n++; clearTimeout(t); t = setTimeout(() => { n = 0; }, 1500);
+        if (n >= 7) { n = 0; window.open('dev.html', '_blank'); }
+      });
+    })();
   </script>
 </body>
 </html>

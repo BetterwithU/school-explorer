@@ -310,7 +310,7 @@
       if (!h) return;
       h.addEventListener('click', () => {
         n++; clearTimeout(t); t = setTimeout(() => { n = 0; }, 1500);
-        if (n >= 7) location.href = 'dev.html';
+        if (n >= 7) { n = 0; window.open('dev.html', '_blank'); }
       });
     })();
   </script>

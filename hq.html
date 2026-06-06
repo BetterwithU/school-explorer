@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🛰️ 운영본부 (HQ)</title>
+  <title>📊 대시보드</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -81,12 +81,11 @@
 <body>
   <div class="wrap">
     <header>
-      <h1>🛰️ 운영본부 (HQ)</h1>
-      <p>게임 진행 현황 · 선생님 전용</p>
+      <h1>📊 대시보드</h1>
+      <p>게임 진행 현황</p>
     </header>
 
     <div class="controls">
-      <a class="dev" href="dev.html">🛠️ 개발자 콘솔</a>
       <a href="schedule.html">📋 조별 순서표</a>
       <a href="qrcodes.html">🔳 QR 인쇄</a>
       <a href="index.html">🏠 시작 화면</a>
@@ -271,6 +270,18 @@
       }).join('');
       document.getElementById('bank').innerHTML = rows;
     }
+  </script>
+
+  <!-- 제목 7번 연속 클릭 → 개발자 콘솔(새 창) -->
+  <script>
+    document.addEventListener('click', (e) => {
+      const h = e.target.closest('h1');
+      if (!h) return;
+      window._devN = (window._devN || 0) + 1;
+      clearTimeout(window._devT);
+      window._devT = setTimeout(() => { window._devN = 0; }, 1500);
+      if (window._devN >= 7) { window._devN = 0; window.open('dev.html', '_blank'); }
+    });
   </script>
 </body>
 </html>
