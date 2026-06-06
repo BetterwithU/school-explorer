@@ -4,11 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>미션</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hahmlet:wght@400;600;800&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: 'Apple SD Gothic Neo', 'Nanum Gothic', sans-serif;
+      /* 본문 — 묵직한 고전 명조(낡은 양피지 톤 + 저학년 가독성) */
+      font-family: 'Hahmlet', 'Nanum Myeongjo', serif;
       background: #2c1f0e;
       color: #2c1a05;
       min-height: 100dvh;
@@ -20,28 +24,35 @@
       position: relative;
     }
 
-    /* 양피지 배경 텍스처 */
+    /* 양피지 사진을 화면 전체 배경으로 */
     body::before {
       content: '';
       position: fixed;
       inset: 0;
-      background:
-        radial-gradient(ellipse at 30% 20%, rgba(210,175,110,0.3) 0%, transparent 60%),
-        radial-gradient(ellipse at 70% 80%, rgba(180,140,80,0.2) 0%, transparent 60%),
-        linear-gradient(160deg, #e8d5a3 0%, #dcc48a 40%, #d4b870 100%);
+      background: url("images/card_bg.webp") center/cover no-repeat;
+      background-color: #d4b870; /* 사진 로딩 전/여백 보정 */
+      z-index: -2;
+    }
+    /* 글자 영역만 살짝 띄우는 은은한 밝은 베일 (경계 없음) */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(ellipse at 50% 45%,
+        rgba(247,240,220,0.55) 0%,
+        rgba(247,240,220,0.25) 45%,
+        transparent 75%);
       z-index: -1;
+      pointer-events: none;
     }
 
+    /* 카드 박스 제거 — 본문만 배경 위에 직접 얹기 */
     .card {
       position: relative;
       z-index: 1;
-      background: rgba(245,235,200,0.82);
-      border: 2px solid rgba(100,65,20,0.4);
-      border-radius: 6px;
-      padding: 24px 20px;
       max-width: 480px;
       width: 100%;
-      box-shadow: 3px 4px 18px rgba(60,30,5,0.25), inset 0 0 30px rgba(180,140,70,0.08);
+      padding: 24px 20px;
     }
 
     .topbar {
@@ -75,7 +86,9 @@
       line-height: 1.8;
       margin-bottom: 18px;
       white-space: pre-line;
-      color: #2c1a05;
+      color: #3a2410;
+      font-weight: 600;
+      text-shadow: 0 1px 0 rgba(255,248,225,0.5);
     }
 
     .q-media { margin-bottom: 16px; width: 100%; }
@@ -84,28 +97,47 @@
     .q-video iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
     .q-audio { width: 100%; display: block; }
 
-    .pair-note {
-      background: rgba(130,60,10,0.08);
-      border: 2px solid rgba(160,70,20,0.5);
-      border-radius: 6px;
-      padding: 14px 16px;
-      margin-bottom: 18px;
-      font-size: 0.88rem;
-      color: rgba(60,30,5,0.85);
-      line-height: 1.75;
-    }
-    .pair-note b { color: #7a3a10; }
-    .pair-note .warn {
-      display: block;
-      margin-top: 10px;
-      font-size: 0.95rem;
-      font-weight: 900;
-      color: #cc3300;
-      background: rgba(200,50,0,0.08);
-      border-radius: 4px;
-      padding: 6px 10px;
+    /* 유형 안내 박스 — 공통(어려운 1문제) / 협력(조합) 구분 */
+    .type-box {
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin-bottom: 16px;
       text-align: center;
     }
+    .type-box .tb-title { font-size: 1.05rem; font-weight: 900; margin-bottom: 6px; }
+    .type-box .tb-desc { font-size: 0.85rem; color: rgba(60,30,5,0.8); line-height: 1.5; }
+    .type-box .tb-desc b { color: #b3360a; font-weight: 900; }
+    .type-common {
+      background: rgba(90,60,160,0.08);
+      border: 2px solid rgba(110,80,180,0.45);
+    }
+    .type-common .tb-title { color: #5a3aa0; }
+    .type-combo {
+      background: rgba(20,120,90,0.08);
+      border: 2px solid rgba(20,140,100,0.45);
+    }
+    .type-combo .tb-title { color: #14785a; }
+    /* 협력 문제 칸 시각화 */
+    .tb-slots {
+      display: flex; align-items: center; justify-content: center;
+      gap: 6px; margin: 8px 0;
+    }
+    .tb-slots .slot {
+      width: 28px; height: 28px; border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 0.85rem;
+      background: rgba(20,140,100,0.12);
+      border: 1.5px solid rgba(20,140,100,0.4);
+      color: rgba(20,100,75,0.7);
+    }
+    .tb-slots .slot.mine {
+      background: #14785a; color: #fff;
+      border-color: #0e5c45;
+      box-shadow: 0 2px 5px rgba(20,120,90,0.4);
+      transform: scale(1.12);
+    }
+    .tb-slots .arrow { font-size: 1.1rem; color: rgba(20,100,75,0.6); margin: 0 2px; }
+    .tb-slots .key { font-size: 1.4rem; }
 
     .hint-btn {
       background: rgba(100,65,20,0.08);
@@ -197,30 +229,6 @@
       border-radius: 4px;
       border-left: 3px solid #cc3300;
     }
-
-    /* 내 답 메모 (협력 미션 전용, 채점 무관) */
-    .note-box {
-      background: rgba(60,100,40,0.06);
-      border: 1px dashed rgba(60,100,40,0.45);
-      border-radius: 6px;
-      padding: 12px 14px;
-      margin-bottom: 16px;
-    }
-    .note-label { font-size: 0.85rem; color: #2d6010; font-weight: bold; margin-bottom: 8px; }
-    .note-label small { display: block; font-weight: normal; color: rgba(40,80,20,0.7); font-size: 0.75rem; margin-top: 2px; }
-    .note-input {
-      width: 100%;
-      padding: 10px 12px;
-      border-radius: 4px;
-      border: 1px solid rgba(60,100,40,0.4);
-      background: rgba(255,253,240,0.8);
-      color: #2c1a05;
-      font-size: 1.05rem;
-      text-align: center;
-    }
-    .note-input:focus { outline: none; border-color: rgba(60,100,40,0.7); }
-    .note-input::placeholder { color: rgba(60,100,40,0.4); font-size: 0.9rem; }
-    .note-saved { font-size: 0.75rem; color: #2d6010; text-align: right; margin-top: 4px; min-height: 1em; }
 
     .answer-input {
       width: 100%;
@@ -424,6 +432,18 @@
       border-radius: 10px;
       box-shadow: 3px 4px 18px rgba(40,20,5,0.3);
     }
+
+    /* 제목·헤더·버튼은 함렛 굵게 — 묵직한 고전 강조 */
+    .topbar .team,
+    .tb-title,
+    .submit-btn,
+    .qr-btn,
+    .scan-guide-btn,
+    .hint-btn,
+    .guide .btn {
+      font-family: 'Hahmlet', 'Nanum Myeongjo', serif;
+      font-weight: 800;
+    }
   </style>
 </head>
 <body>
@@ -600,43 +620,35 @@
       const myLabel = isCommon ? `${q.set}번 공통` : `${q.set}-${q.slot}`;
       const len = isCommon ? null : n;
 
-      let noteHtml, inputLabel, placeholder;
+      // 유형별 안내 — QR 개수로 자동 분기 (1개=공통 어려운 문제 / N개=협력 조합)
+      // 시작 전 규칙을 이미 봤으므로 미션 화면에선 '지금 유형'만 짧게.
+      let typeBox, inputLabel, placeholder;
       if (isCommon) {
-        noteHtml = `
-          <div class="pair-note">
-            이 장소는 <b>공통 문제</b>예요. 조원 모두 같은 문제를 풉니다.<br>
-            한 명이 먼저 풀면 <b>정답을 친구들에게 알려주세요!</b><br>
-            각자 자기 폰에 정답을 입력하면 다음 장소로 갈 수 있어요.
+        typeBox = `
+          <div class="type-box type-common">
+            <div class="tb-title">🧠 다 같이 푸는 어려운 문제</div>
+            <div class="tb-desc">힘을 모아 답을 찾으면, 각자 폰에 <b>정답을 입력</b>하세요</div>
           </div>`;
         inputLabel = '정답 입력';
         placeholder = '정답을 입력하세요';
       } else {
-        const others = (MISSION.qids || []).filter(x => x !== q.id)
-          .map(x => `${q.set}-${x.replace(String(q.set), '')}`).join(', ');
-        noteHtml = `
-          <div class="pair-note">
-            🤝 <b>이 장소는 조원이 함께 푸는 협력 미션이에요!</b><br>
-            각자 다른 QR을 찍어 문제를 풀고, 조원끼리 답을 알려주세요.<br>
-            모든 답을 모아서 최종 정답을 완성한 뒤 입력하세요.<br>
-            <span class="warn">⚠️ 내 답만 입력하는 게 아니에요!</span>
+        // 문제 칸 시각화: 내가 푸는 번호 강조 → 모아서 1개 정답
+        const myIdx = MISSION.qids.indexOf(q.id);
+        const slots = MISSION.qids.map((_, i) =>
+          `<span class="slot ${i === myIdx ? 'mine' : ''}">${i + 1}</span>`
+        ).join('');
+        typeBox = `
+          <div class="type-box type-combo">
+            <div class="tb-title">🤝 ${n}명이 나눠 푸는 협력 문제</div>
+            <div class="tb-slots">${slots}<span class="arrow">→</span><span class="key">🔑</span></div>
+            <div class="tb-desc">내 문제는 <b>${myIdx + 1}번</b>! ${n}명의 답을 <b>순서대로 합쳐</b> 하나의 정답을 입력해요</div>
           </div>`;
-        inputLabel = MISSION.inputGuide || `#1~#${len}번 문제의 답을 모아서 입력하세요`;
-        placeholder = `조원 ${len}명의 답을 모아서 입력`;
+        inputLabel = MISSION.inputGuide || `${n}명의 답을 순서대로 합쳐서 입력하세요`;
+        placeholder = `${n}명의 답을 순서대로 합쳐서 입력`;
       }
 
       const hasHints = q.hints && q.hints.length > 0;
       const mediaHtml = renderMediaHtml(questionMedia(q));
-
-      // 내 답 메모 (협력 미션 전용) — 저장해둔 값 미리 채움
-      const myNote = getNote(PROGRESS, q.id);
-      const noteBoxHtml = isCommon ? '' : `
-        <div class="note-box">
-          <div class="note-label">✏️ 이 문제 내 답 (메모)
-            <small>친구에게 알려줄 내 답을 적어두세요. 다시 이 QR을 찍으면 그대로 보여요.</small>
-          </div>
-          <input class="note-input" id="note" placeholder="예: 커비" autocomplete="off" value="${myNote.replace(/"/g, '&quot;')}">
-          <div class="note-saved" id="noteSaved"></div>
-        </div>`;
 
       document.getElementById('card').innerHTML = `
         <div class="topbar">
@@ -647,11 +659,10 @@
         <div class="badge-row">
           <span class="badge badge-pair">${isCommon ? '공통 문제' : `#${MISSION.qids.indexOf(q.id) + 1}번 문제`} / ${MISSION.placeName}${isCommon ? '' : ` (총 ${n}문제)`}</span>
         </div>
+        ${typeBox}
         ${mediaHtml}
         <p class="question-text">${q.question}</p>
-        ${noteHtml}
         ${hasHints ? (q.hints.map((_, i) => `<button class="hint-btn" data-hint="${i}">💡 힌트 ${i+1}</button>`).join('')) : ''}
-        ${noteBoxHtml}
         <div class="combined-label">${inputLabel}</div>
         <input class="answer-input" id="ans" placeholder="${placeholder}" autocomplete="off">
         <button class="submit-btn" id="submitBtn">✅ 정답 제출</button>
@@ -667,18 +678,6 @@
               `<div class="hint-popup-item">💡 ${q.hints[idx]}</div>`;
             document.getElementById('hintOverlay').classList.add('active');
           };
-        });
-      }
-
-      // 메모 입력 → 즉시 저장 (채점 무관, 기억 보조)
-      const noteEl = document.getElementById('note');
-      if (noteEl) {
-        noteEl.addEventListener('input', () => {
-          saveNote(PROGRESS, q.id, noteEl.value);
-          const savedEl = document.getElementById('noteSaved');
-          if (savedEl) {
-            savedEl.textContent = noteEl.value.trim() ? '✓ 저장됨' : '';
-          }
         });
       }
 
