@@ -107,7 +107,8 @@
 
     .team-grid {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
+      /* 조 개수에 자동 적응 — N개 조 확장 대응 */
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
       gap: 12px;
       margin-bottom: 8px;
     }
