@@ -131,6 +131,78 @@
       }
     }
 
+    /* 게임 규칙 설명 (조 선택 전 단계) — 아이들이 한눈에 인지하도록 대박 강조 */
+    .rules-box {
+      background: rgba(100,65,20,0.08);
+      border: 2px solid rgba(100,65,20,0.3);
+      border-radius: 12px;
+      padding: 18px 16px;
+      text-align: center;
+    }
+    .rules-box h2 {
+      margin: 0 0 18px;
+      font-size: 1.7rem;
+      color: #7a3a10;
+      text-shadow: 1px 1px 0 rgba(255,230,180,0.8);
+    }
+    .rules-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    /* 단계 카드 */
+    .rstep {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(255,250,235,0.7);
+      border: 2px solid rgba(140,90,30,0.28);
+      border-radius: 14px;
+      padding: 12px 14px;
+      text-align: left;
+      box-shadow: 0 2px 0 rgba(140,90,30,0.18);
+    }
+    .rstep .num {
+      flex: 0 0 auto;
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #c8761a, #9a5212);
+      color: #fff;
+      font-weight: 900;
+      font-size: 1.05rem;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    .rstep .emo { flex: 0 0 auto; font-size: 2rem; line-height: 1; }
+    .rstep .txt {
+      flex: 1;
+      font-size: 0.96rem;
+      line-height: 1.5;
+      color: rgba(55,28,5,0.9);
+      font-weight: 600;
+    }
+    /* 핵심 단어 하이라이트 */
+    .rstep .hl {
+      color: #b3360a;
+      font-weight: 900;
+      background: linear-gradient(transparent 55%, #ffe08a 55%);
+      padding: 0 2px;
+    }
+    /* 큰 숫자 */
+    .rstep .big {
+      color: #c0392b;
+      font-weight: 900;
+      font-size: 1.35em;
+    }
+    /* 마지막(보물) 단계 강조 */
+    .rstep.finale {
+      background: linear-gradient(135deg, #fff3d0, #ffe6a8);
+      border-color: #e0a82e;
+      box-shadow: 0 2px 0 #d49a1e, 0 0 14px rgba(230,170,40,0.35);
+    }
+    .rstep.finale .num { background: linear-gradient(135deg, #e0a82e, #c8870f); }
+
     .resume-box {
       background: rgba(100,65,20,0.08);
       border: 1px solid rgba(100,65,20,0.3);
@@ -190,6 +262,37 @@
     }
     .btn-ghost:active { background: rgba(100,65,20,0.1); }
     @media (hover: hover) { .btn-ghost:hover { background: rgba(100,65,20,0.1); } }
+    #reSelectBtn { width: 100%; margin-bottom: 14px; }
+
+    /* '당신은 OO조!' 확정 안내 */
+    .confirm-team {
+      text-align: center;
+      padding: 16px 8px 8px;
+    }
+    .confirm-team .ct-emo { font-size: 3rem; margin-bottom: 10px; }
+    .confirm-team .ct-line {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #5c2e05;
+      margin-bottom: 8px;
+    }
+    .confirm-team .ct-team {
+      color: #b3360a;
+      font-size: 1.9rem;
+      font-weight: 900;
+    }
+    .confirm-team .ct-sub {
+      font-size: 0.95rem;
+      color: rgba(60,30,5,0.7);
+      margin-bottom: 20px;
+    }
+
+    /* 첫 미션 장소 '뿅' 등장 */
+    .pop-in { animation: pop-in 0.45s cubic-bezier(0.34,1.56,0.64,1); }
+    @keyframes pop-in {
+      0%   { opacity: 0; transform: scale(0.6); }
+      100% { opacity: 1; transform: scale(1); }
+    }
 
     .next-place {
       margin-top: 20px;
@@ -231,11 +334,15 @@
       render();
     });
 
+    // dev 콘솔의 '시작 화면' 버튼(?fresh=1)은 진행 중이어도 조 선택부터 보이게 함
+    const FRESH = new URLSearchParams(location.search).get('fresh') === '1';
+    let rulesSeen = false; // 규칙 화면을 한 번 보면 true → 조 선택으로
+
     function render() {
       const panel = document.getElementById('panel');
       const p = loadProgress();
 
-      if (p && p.team) {
+      if (!FRESH && p && p.team) {
         const total = p.order.length;
         const done = p.step;
         const finished = isAllDone(p);
@@ -259,40 +366,91 @@
         return;
       }
 
+      // 1단계: 게임 규칙 설명 (조 선택 전에 한 번 보여줌)
+      if (!rulesSeen) {
+        panel.innerHTML = `
+          <div class="rules-box">
+            <h2>🗺️ 게임 방법</h2>
+            <div class="rules-steps">
+              <div class="rstep">
+                <span class="num">1</span><span class="emo">📍</span>
+                <span class="txt">우리 조의 <span class="hl">첫 장소</span>로 가요</span>
+              </div>
+              <div class="rstep">
+                <span class="num">2</span><span class="emo">📷</span>
+                <span class="txt">장소마다 <span class="hl">QR이 여러 개</span>! 조원들이 <span class="hl">나눠서 스캔</span>해 각자 문제를 풀어요</span>
+              </div>
+              <div class="rstep">
+                <span class="num">3</span><span class="emo">🧩</span>
+                <span class="txt">푼 답들을 <span class="hl">순서대로 조합</span>해서 정답을 입력! <span class="hl">보물 글자 1개</span> 획득</span>
+              </div>
+              <div class="rstep">
+                <span class="num">4</span><span class="emo">🗺️</span>
+                <span class="txt"><span class="big">8곳</span>을 모두 돌아 글자 <span class="big">8개</span>를 모아요</span>
+              </div>
+              <div class="rstep finale">
+                <span class="num">5</span><span class="emo">💎</span>
+                <span class="txt">모은 글자를 <span class="hl">조합하면</span> <span class="hl">보물이 숨은 곳</span>이 나타나요!</span>
+              </div>
+            </div>
+            <a class="btn btn-primary" href="#" id="toTeamsBtn">🚀 시작하기 →</a>
+          </div>
+        `;
+        document.getElementById('toTeamsBtn').onclick = (e) => {
+          e.preventDefault(); rulesSeen = true; render();
+        };
+        return;
+      }
+
+      // 2단계: 조 선택 (1·2·3·4)
       const teams = COURSE.teams.map(t =>
         `<button class="team-btn" data-team="${t}">${t}</button>`
       ).join('');
       panel.innerHTML = `
         <h2>🏕️ 우리 조를 선택하세요</h2>
         <div class="team-grid">${teams}</div>
-        <div class="next-place" id="nextPlace">
-          <div class="ico">📍</div>
-          <div class="ttl">첫 번째 미션 장소</div>
-          <div class="nm" id="placeName"></div>
-          <div class="hint">이곳에서 두 명이 QR코드(A·B)를 나눠 스캔하세요!</div>
-          <a class="btn btn-primary" href="#" id="startBtn">🚀 탐험 시작! →</a>
-        </div>
       `;
       panel.querySelectorAll('.team-btn').forEach(btn => {
-        btn.onclick = () => selectTeam(btn.dataset.team, btn);
+        btn.onclick = () => confirmTeam(btn.dataset.team);
       });
     }
 
-    function selectTeam(team, btn) {
-      document.querySelectorAll('.team-btn').forEach(b => {
-        b.style.borderColor = '#2d6a4f';
-        b.style.color = '#b7e4c7';
-      });
-      btn.style.borderColor = '#ffd166';
-      btn.style.color = '#ffd166';
-
+    // 3단계: '당신은 OO조!' 확정 안내 (팝업 없이 화면 내에서)
+    function confirmTeam(team) {
+      const panel = document.getElementById('panel');
       const p = startGame(COURSE, team);
       reportProgress(COURSE, p);
       const mission = missionBySet(COURSE, currentSet(p));
 
-      document.getElementById('placeName').textContent = mission.placeName;
-      document.getElementById('nextPlace').style.display = 'block';
-      document.getElementById('startBtn').onclick = (e) => { e.preventDefault(); goToCurrent(p); };
+      panel.innerHTML = `
+        <button class="btn btn-ghost" id="reSelectBtn">↩ 다른 조 선택하기</button>
+        <div class="confirm-team">
+          <div class="ct-emo">🏕️</div>
+          <div class="ct-line">당신은 <span class="ct-team">${team}</span> 입니다!</div>
+          <div class="ct-sub">탐험을 시작할 준비가 되었나요?</div>
+          <a class="btn btn-primary" href="#" id="startBtn">🚀 탐험 시작!</a>
+        </div>
+        <div class="next-place" id="nextPlace" style="display:none">
+          <div class="ico">📍</div>
+          <div class="ttl">첫 번째 미션 장소</div>
+          <div class="nm">${mission.placeName}</div>
+          <div class="hint">이곳으로 가서 QR코드를 찾으세요!</div>
+          <a class="btn btn-primary" href="#" id="goBtn">🧭 출발하기 →</a>
+        </div>
+      `;
+      // 잘못 골랐으면 조 선택으로 되돌리기 (탐험 시작 전까지 가능)
+      document.getElementById('reSelectBtn').onclick = () => { clearProgress(); render(); };
+      // '탐험 시작' → 페이지 전환 없이 첫 미션 장소가 뿅 등장
+      document.getElementById('startBtn').onclick = (e) => {
+        e.preventDefault();
+        document.querySelector('.confirm-team').style.display = 'none';
+        document.getElementById('reSelectBtn').style.display = 'none';
+        const np = document.getElementById('nextPlace');
+        np.style.display = 'block';
+        np.classList.add('pop-in');
+      };
+      // 첫 장소 안내의 '출발하기' → 실제 게임(home)으로
+      document.getElementById('goBtn').onclick = (e) => { e.preventDefault(); goToCurrent(p); };
     }
 
     function goToCurrent(p) {

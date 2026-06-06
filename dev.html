@@ -95,13 +95,14 @@
 
       let html = `
         <div class="nav">
-          <a href="index.html" target="_blank">🏠 시작 화면</a>
+          <a href="index.html?fresh=1" target="_blank">🏠 시작 화면</a>
           <a href="hq.html" target="_blank">📊 대시보드</a>
           <a href="qrcodes.html" target="_blank">🔳 QR코드</a>
           <a href="schedule.html" target="_blank">📋 조별 순서표</a>
           <a href="map.html" target="_blank">🔑 수집함</a>
         </div>
-        <div class="section-title">조 선택 (다른 조 선택 시 그 조로 새로 시작 · 같은 조 재선택은 유지)</div>
+        <div class="section-title">조 선택 — 이 기기엔 한 조만 저장됩니다.<br>
+          <span style="font-weight:normal;color:#ff9b9b">⚠️ 다른 조를 선택하면 지금 조의 진행(치트 포함)은 사라지고 새로 시작돼요.</span></div>
         <div class="team-row">${teamBtns}</div>`;
 
       if (p && p.team) {
