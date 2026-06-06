@@ -94,7 +94,14 @@
       ).join('');
 
       let html = `
-        <div class="section-title">조 선택 (선택 시 그 조로 진행 초기화)</div>
+        <div class="nav">
+          <a href="index.html" target="_blank">🏠 시작 화면</a>
+          <a href="hq.html" target="_blank">📊 대시보드</a>
+          <a href="qrcodes.html" target="_blank">🔳 QR코드</a>
+          <a href="schedule.html" target="_blank">📋 조별 순서표</a>
+          <a href="map.html" target="_blank">🔑 수집함</a>
+        </div>
+        <div class="section-title">조 선택 (다른 조 선택 시 그 조로 새로 시작 · 같은 조 재선택은 유지)</div>
         <div class="team-row">${teamBtns}</div>`;
 
       if (p && p.team) {
@@ -117,16 +124,6 @@
       } else {
         html += `<div class="status">위에서 조를 먼저 선택하세요. 선택하면 그 조의 미션 순서대로 모든 QR이 펼쳐집니다.</div>`;
       }
-
-      html += `
-        <div class="nav">
-          <a href="index.html" target="_blank">🏠 시작 화면</a>
-          <a href="hq.html" target="_blank">📊 대시보드</a>
-          <a href="qrcodes.html" target="_blank">🔳 QR코드</a>
-          <a href="schedule.html" target="_blank">📋 조별 순서표</a>
-          <a href="map.html" target="_blank">수집함</a>
-          <a href="done.html" target="_blank">완료</a>
-        </div>`;
 
       document.getElementById('content').innerHTML = html;
       bind();
@@ -162,7 +159,14 @@
 
     function bind() {
       document.querySelectorAll('.team-btn').forEach(btn => {
-        btn.onclick = () => { startGame(COURSE, btn.dataset.team); render(); };
+        btn.onclick = () => {
+          const team = btn.dataset.team;
+          const cur = loadProgress();
+          // 이미 진행 중인 '같은 조'를 다시 누르면 초기화하지 않음 (치트 결과 보존).
+          // 다른 조이거나 진행이 없을 때만 그 조로 새로 시작.
+          if (!cur || cur.team !== team) startGame(COURSE, team);
+          render();
+        };
       });
 
       const solveAll = () => {

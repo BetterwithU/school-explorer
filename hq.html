@@ -232,8 +232,13 @@
           </div>`;
         }
       };
-      if (window.SYNC_READY) start();
-      else window.addEventListener('sync-ready', start, { once: true });
+      let started = false;
+      const startOnce = () => { if (started) return; started = true; start(); };
+      if (window.SYNC_READY) startOnce();
+      else window.addEventListener('sync-ready', startOnce, { once: true });
+      // 안전장치: sync-ready 이벤트를 놓쳤거나 sync.js 로드 실패 시에도
+      // 1.5초 뒤 강제로 판정해 '불러오는 중'에 멈추지 않게 함(오프라인이면 안내 표시).
+      setTimeout(startOnce, 1500);
     }
 
     /* ---------- 정적 정보 ---------- */
