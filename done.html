@@ -19,10 +19,12 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 24px 16px;
+      /* 콘텐츠가 화면보다 길면 잘리지 않고 스크롤되도록 */
+      padding: 32px 16px;
       text-align: center;
       position: relative;
-      overflow: hidden;
+      overflow-x: hidden;
+      overflow-y: auto;
     }
     body::before {
       content: '';
@@ -224,7 +226,7 @@
       const f = course.finale || {};
       if (p.finaleSolved && f.answer) {
         document.getElementById('treasure').innerHTML = `
-          <div class="lbl">💎 보물이 숨겨진 곳</div>
+          <div class="lbl">💎 보물이 기다리는 곳 — 지금 달려가요!</div>
           <div class="place">${f.answer}</div>
           <div class="reveal">${f.reveal || '선생님께 가서 보물을 찾았다고 외치세요!'}</div>`;
       } else {

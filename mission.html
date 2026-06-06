@@ -349,6 +349,38 @@
     }
     .scan-guide-btn.primary:active { transform: scale(0.97); }
 
+    /* DEV 전용 — 카메라 없이 QR 찍기 (운영자 테스트용, ?dev=1에서만 노출) */
+    .dev-scan-box {
+      margin-top: 14px;
+      padding: 12px;
+      border: 1px dashed rgba(124,58,237,0.5);
+      border-radius: 8px;
+      background: rgba(124,58,237,0.06);
+    }
+    .dev-scan-title {
+      font-size: 0.78rem;
+      color: #7c3aed;
+      font-weight: bold;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+    .dev-scan-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+      gap: 8px;
+    }
+    .scan-guide-btn.dev-scan {
+      margin: 0;
+      background: rgba(124,58,237,0.12);
+      border: 1px solid rgba(124,58,237,0.5);
+      color: #5b21b6;
+      font-weight: bold;
+      font-size: 0.9rem;
+      padding: 12px 8px;
+    }
+    .scan-guide-btn.dev-scan:active { transform: scale(0.96); }
+    @media (hover: hover) { .scan-guide-btn.dev-scan:hover { background: rgba(124,58,237,0.2); } }
+
     .back-link {
       display: block;
       position: relative;
@@ -481,7 +513,7 @@
   <script>
     const params = new URLSearchParams(location.search);
     const scannedQid = params.get('q');
-    const DEV = params.get('dev') === '1';
+    const DEV = isDev();   // app.js: ?dev=1을 처음 만나면 세션에 고정 → 페이지 이동해도 유지
 
     let COURSE, QUESTIONS, PROGRESS, QUESTION, MISSION;
     let hintsShown = 0;
@@ -578,8 +610,9 @@
       }
       // URL에 ?q= 파라미터가 남아있으면 제거하고 scanDone 리셋
       // 안 하면 이전 스캔 상태가 남아 새 QR이 인식되지 않음
+      // (단 DEV 모드는 유지해야 '다른 QR 찍기'로 돌아와도 DEV 버튼이 보임)
       if (location.search) {
-        history.replaceState(null, '', 'mission.html');
+        history.replaceState(null, '', DEV ? 'mission.html?dev=1' : 'mission.html');
       }
       scanDone = false;
       const m = missionBySet(COURSE, currentSet(PROGRESS));
@@ -592,6 +625,24 @@
         ? '이곳의 QR코드를 스캔해서 문제를 푸세요!'
         : `이곳에서 QR코드 ${n}개 중 하나를 스캔해서 내 문제를 푸세요!`;
 
+      // DEV: 카메라 동작만 대체하는 '가짜 QR' 버튼 — QR 개수만큼.
+      // 학생이 각자 다른 QR을 찍는 과정을 혼자서 그대로 재현(스캔만 생략).
+      let devBlock = '';
+      if (DEV) {
+        const devBtns = (m.qids || []).map(qid => {
+          const label = n === 1 ? `${qid}번 문제` : qid;
+          return `<button class="scan-guide-btn dev-scan" data-qid="${qid}">🔓 ${label} 찍기</button>`;
+        }).join('');
+        const devTitle = n === 1
+          ? '🛠️ DEV — 카메라 없이 이 문제 열기'
+          : `🛠️ DEV — 친구들이 각자 찍을 QR ${n}개 (스캔만 생략)`;
+        devBlock = `
+          <div class="dev-scan-box">
+            <div class="dev-scan-title">${devTitle}</div>
+            <div class="dev-scan-grid">${devBtns}</div>
+          </div>`;
+      }
+
       document.getElementById('card').innerHTML = `
         <div class="guide">
           <div class="ico">📍</div>
@@ -602,10 +653,18 @@
           </div>
           <div class="desc">${scanMsg}</div>
           <button class="scan-guide-btn primary" id="scanBtn">📷 QR 스캔하기</button>
+          ${devBlock}
           <a class="guide btn" href="home.html">🗺️ 지도로 돌아가기</a>
         </div>`;
 
       document.getElementById('scanBtn').onclick = openScanner;
+      // DEV 버튼 = 스캔 성공과 동일 경로 (location.href ?q=QID), dev=1 유지
+      document.querySelectorAll('.dev-scan').forEach(btn => {
+        btn.onclick = () => {
+          const qid = btn.dataset.qid;
+          location.href = `mission.html?q=${encodeURIComponent(qid)}&dev=1`;
+        };
+      });
     }
 
     function renderQuestion() {

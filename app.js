@@ -5,6 +5,26 @@
  */
 
 const STORAGE_KEY = 'schoolExplorer';
+const DEV_KEY = 'schoolExplorerDev';
+
+/* ---------- 개발자 모드 판정 (운영자 전용) ----------
+ * ?dev=1을 한 번이라도 만나면 sessionStorage에 고정 → 페이지를 넘어가도 그 탭 안에서 유지.
+ * 학생은 이 URL(?dev=1)을 절대 받지 않으므로(QR엔 ?q=만 들어감) 평소엔 항상 false → 학생 동작 불변.
+ * 세션 한정이라 탭을 닫으면 자동 해제(학생 기기 잔존 방지).
+ */
+function isDev() {
+  try {
+    if (new URLSearchParams(location.search).get('dev') === '1') {
+      sessionStorage.setItem(DEV_KEY, '1');
+    }
+    return sessionStorage.getItem(DEV_KEY) === '1';
+  } catch { return false; }
+}
+
+// DEV 끄기 (운영자가 기기 정리할 때)
+function devOff() {
+  try { sessionStorage.removeItem(DEV_KEY); } catch {}
+}
 
 /* ---------- 데이터 로드 ---------- */
 async function loadData() {

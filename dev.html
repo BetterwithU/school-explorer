@@ -115,10 +115,12 @@
             보물 글자: <b>${pieces.length ? pieces.join(' ') : '(없음)'}</b> · 최종조합: <b>${p.finaleSolved ? '완료' : '미완'}</b>
           </div>
           <div class="cheats">
+            <button class="cheat-btn" id="cheatPlay">🎮 선택한 조로 처음부터 플레이</button>
             <button class="cheat-btn" id="cheatSolveAll">⚡ 이 조 전부 풀기</button>
             <button class="cheat-btn" id="cheatClear">🏁 최종까지 클리어</button>
             <button class="cheat-btn danger" id="cheatReset">♻️ 진행 초기화</button>
             <button class="cheat-btn" id="cheatToMap">🔑 수집함(map)</button>
+            <button class="cheat-btn danger" id="devOff">🚫 이 기기 DEV 끄기</button>
           </div>
           <div class="section-title">${p.team} 미션 순서 — QR을 눌러 바로 열람 (dev 모드)</div>
           ${renderMissions(p)}`;
@@ -182,11 +184,19 @@
       };
 
       const byId = id => document.getElementById(id);
+      if (byId('cheatPlay')) byId('cheatPlay').onclick = () => {
+        const p = loadProgress(); if (!p || !p.team) return;
+        startGame(COURSE, p.team);            // 그 조로 진행을 처음 상태(step:0)로 초기화
+        location.href = 'home.html?dev=1';     // 학생과 동일한 지도부터 시작, DEV 세션 켜짐
+      };
+      if (byId('devOff')) byId('devOff').onclick = () => { devOff(); alert('이 기기 DEV 꺼짐 (탭/세션 한정)'); render(); };
       if (byId('cheatSolveAll')) byId('cheatSolveAll').onclick = () => { solveAll(); render(); };
       if (byId('cheatClear')) byId('cheatClear').onclick = () => {
         solveAll();
         const p = loadProgress(); p.finaleSolved = true; saveProgress(p);
         render();
+        // 클리어 결과를 바로 보여줘 피드백 제공 (이미 완료 상태여도 done 화면 확인 가능)
+        window.open('done.html', '_blank');
       };
       if (byId('cheatReset')) byId('cheatReset').onclick = () => { clearProgress(); render(); };
       if (byId('cheatToMap')) byId('cheatToMap').onclick = () => { window.open('map.html', '_blank'); };
