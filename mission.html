@@ -19,9 +19,10 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
+      justify-content: safe center;   /* 짧으면 중앙, 길면 위부터(상단 잘림 방지) */
       padding: 20px;
       position: relative;
+      overflow-x: hidden;
     }
 
     /* 양피지 사진을 화면 전체 배경으로 */
