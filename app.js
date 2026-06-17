@@ -328,7 +328,6 @@ function campScreenHtml() {
     <img src="images/camping.webp" alt="즐거운 아빠 캠핑"
       style="width:100%;max-width:340px;height:auto;border-radius:12px;box-shadow:3px 4px 18px rgba(40,20,5,0.3)">
     <p style="margin-top:16px;font-size:1.1rem;font-weight:800;color:#5c2e05">⛺ 즐거운 캠핑 되세요!</p>
-    <p style="margin-top:6px;font-size:0.9rem;color:rgba(80,50,15,0.7)">곧 탐험이 시작돼요. 잠시만 기다려 주세요.</p>
   </div>`;
 }
 
