@@ -25,7 +25,7 @@ function getDeviceId() {
 if (cfg && cfg.apiKey && cfg.databaseURL) {
   try {
     const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
-    const { getDatabase, ref, set, get, onValue } = await import(
+    const { getDatabase, ref, set, get, onValue, remove } = await import(
       'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js'
     );
     const app = initializeApp(cfg);
@@ -52,6 +52,10 @@ if (cfg && cfg.apiKey && cfg.databaseURL) {
       },
       getGameState() {
         return get(ref(db, `sessions/${SESSION}/gameOn`)).then(s => s.val() === true).catch(() => false);
+      },
+      // 모든 조의 진행 기록 삭제 (HQ 초기화용). 게임 on/off 상태는 건드리지 않음.
+      resetTeams() {
+        return remove(ref(db, `sessions/${SESSION}/teams`)).catch(() => {});
       },
     };
   } catch (e) {
