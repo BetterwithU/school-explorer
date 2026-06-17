@@ -272,7 +272,7 @@
     function bindGameSwitch() {
       const sync = window.SchoolExplorerSync;
       const btn = document.getElementById('gsBtn');
-      if (sync && sync.online) {
+      if (sync && sync.online && typeof sync.subscribeGameState === 'function') {
         sync.subscribeGameState((on) => { gameOn = on; renderGameSwitch(); });
         btn.onclick = () => {
           const next = !gameOn;
@@ -289,7 +289,10 @@
         const live = document.getElementById('live');
         if (window.SchoolExplorerSync && window.SchoolExplorerSync.online) {
           live.innerHTML = '<div class="muted">실시간 연결됨 — 조 진행을 기다리는 중…</div>';
-          window.SchoolExplorerSync.subscribe((data) => renderLive(aggregate(data)));
+          window.SchoolExplorerSync.subscribe((data) => {
+            try { renderLive(aggregate(data)); }
+            catch (e) { console.error('renderLive 실패:', e); }
+          });
         } else {
           live.innerHTML = `<div class="offline">
             <b>오프라인 모드</b> — 실시간 조 위치가 비활성화돼 있어요.<br>
@@ -300,9 +303,15 @@
         }
       };
       let started = false;
-      const startOnce = () => { if (started) return; started = true; start(); };
+      // start()가 예외를 던져도 started를 latch하지 않아 이후 트리거가 재시도할 수 있게 한다.
+      const startOnce = () => {
+        if (started) return;
+        try { start(); started = true; }
+        catch (e) { console.error('HQ start() 실패 — 재시도 대기:', e); }
+      };
+      // 리스너를 먼저 등록한 뒤 SYNC_READY를 확인한다(읽기/등록 사이 race로 이벤트 유실 방지).
+      window.addEventListener('sync-ready', startOnce, { once: true });
       if (window.SYNC_READY) startOnce();
-      else window.addEventListener('sync-ready', startOnce, { once: true });
       // 안전장치: sync-ready 이벤트를 놓쳤거나 sync.js 로드 실패 시에도
       // 1.5초 뒤 강제로 판정해 '불러오는 중'에 멈추지 않게 함(오프라인이면 안내 표시).
       setTimeout(startOnce, 1500);
