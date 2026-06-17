@@ -899,8 +899,23 @@
     }
     document.getElementById('scannerCancel').onclick = closeScanner;
 
+    // QR 디코더: 브라우저 네이티브(BarcodeDetector)가 있으면 우선 사용(안드로이드 크롬 등 → 즉시 인식),
+    // 없으면 jsQR로 폴백(iOS 사파리 등). 둘 다 같은 scanTick 루프에서 처리.
+    let barcodeDetector = null;
+    async function initDetector() {
+      try {
+        if ('BarcodeDetector' in window) {
+          const formats = await window.BarcodeDetector.getSupportedFormats();
+          if (formats.includes('qr_code')) {
+            barcodeDetector = new window.BarcodeDetector({ formats: ['qr_code'] });
+          }
+        }
+      } catch { barcodeDetector = null; }
+    }
+
     async function startCamera() {
       try {
+        await initDetector();
         scanStream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 1280 } }
         });
@@ -916,19 +931,33 @@
       if (scanStream) { scanStream.getTracks().forEach(t => t.stop()); scanStream = null; }
       document.getElementById('qr-video').srcObject = null;
     }
-    function scanTick() {
+    async function scanTick() {
       if (scanDone) return;
       const video = document.getElementById('qr-video');
-      const canvas = document.getElementById('qr-canvas');
       if (video.readyState !== video.HAVE_ENOUGH_DATA) { scanRAF = requestAnimationFrame(scanTick); return; }
-      const size = Math.min(video.videoWidth, video.videoHeight);
-      canvas.width = size; canvas.height = size;
-      const ctx = canvas.getContext('2d');
-      const ox = (video.videoWidth - size) / 2, oy = (video.videoHeight - size) / 2;
-      ctx.drawImage(video, ox, oy, size, size, 0, 0, size, size);
-      const imageData = ctx.getImageData(0, 0, size, size);
-      const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: 'dontInvert' });
-      if (code) { handleQrResult(code.data); } else { scanRAF = requestAnimationFrame(scanTick); }
+
+      // 1) 네이티브 BarcodeDetector 우선 — 비디오 프레임을 직접 디코드(가장 빠름·정확)
+      if (barcodeDetector) {
+        try {
+          const codes = await barcodeDetector.detect(video);
+          if (scanDone) return;
+          if (codes && codes.length && codes[0].rawValue) { handleQrResult(codes[0].rawValue); return; }
+        } catch { /* 실패 시 jsQR로 폴백 */ }
+        scanRAF = requestAnimationFrame(scanTick);
+        return;
+      }
+
+      // 2) 폴백: jsQR — 분석 해상도를 ~400px로 다운스케일해 매 프레임 처리량을 크게 줄임(속도↑)
+      const canvas = document.getElementById('qr-canvas');
+      const src = Math.min(video.videoWidth, video.videoHeight);
+      const D = Math.min(400, src);                       // 분석용 정사각 크기
+      canvas.width = D; canvas.height = D;
+      const ctx = canvas.getContext('2d', { willReadFrequently: true });
+      const ox = (video.videoWidth - src) / 2, oy = (video.videoHeight - src) / 2;
+      ctx.drawImage(video, ox, oy, src, src, 0, 0, D, D);  // 중앙 정사각 → 400px로 축소
+      const imageData = ctx.getImageData(0, 0, D, D);
+      const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: 'attemptBoth' });
+      if (code && code.data) { handleQrResult(code.data); } else { scanRAF = requestAnimationFrame(scanTick); }
     }
     function handleQrResult(url) {
       scanDone = true;
