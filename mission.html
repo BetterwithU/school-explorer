@@ -621,9 +621,11 @@
       const stepNo = Math.max(PROGRESS.step, actualDone) + 1;
       const total = PROGRESS.order.length;
 
-      const scanMsg = n === 1
-        ? '이곳의 QR코드를 스캔해서 문제를 푸세요!'
-        : `이곳에서 QR코드 ${n}개 중 하나를 스캔해서 내 문제를 푸세요!`;
+      const scanMsg = m.mode === 'clue'
+        ? `이곳에서 QR코드 ${n}개 중 하나를 스캔해 내 단서를 확인하세요!`
+        : n === 1
+          ? '이곳의 QR코드를 스캔해서 문제를 푸세요!'
+          : `이곳에서 QR코드 ${n}개 중 하나를 스캔해서 내 문제를 푸세요!`;
 
       // DEV: 카메라 동작만 대체하는 '가짜 QR' 버튼 — QR 개수만큼.
       // 학생이 각자 다른 QR을 찍는 과정을 혼자서 그대로 재현(스캔만 생략).
@@ -670,7 +672,8 @@
     function renderQuestion() {
       const q = QUESTION;
       const n = missionQrCount(MISSION);
-      const isCommon = n === 1;
+      const isClue = MISSION.mode === 'clue';   // 분산 힌트형: 각 QR=단서, 정답은 미션 공유
+      const isCommon = n === 1 && !isClue;
       const total = PROGRESS.order.length;
       // 현재 미션이 몇 번째인지 order 배열에서 찾아 표시 (DEV모드/직접접근 모두 정확)
       const stepNo = PROGRESS.order.indexOf(MISSION.set) + 1 || PROGRESS.step + 1;
@@ -682,7 +685,21 @@
       // 유형별 안내 — QR 개수로 자동 분기 (1개=공통 어려운 문제 / N개=협력 조합)
       // 시작 전 규칙을 이미 봤으므로 미션 화면에선 '지금 유형'만 짧게.
       let typeBox, inputLabel, placeholder;
-      if (isCommon) {
+      if (isClue) {
+        // 분산 힌트형: 내가 찍은 QR이 몇 번째 단서인지 표시 → 친구들과 단서 모아 한 정답
+        const myIdx = MISSION.qids.indexOf(q.id);
+        const slots = MISSION.qids.map((_, i) =>
+          `<span class="slot ${i === myIdx ? 'mine' : ''}">${i + 1}</span>`
+        ).join('');
+        typeBox = `
+          <div class="type-box type-combo">
+            <div class="tb-title">🔍 ${n}개의 단서를 모으는 추리 미션</div>
+            <div class="tb-slots">${slots}<span class="arrow">→</span><span class="key">🔑</span></div>
+            <div class="tb-desc">내 단서는 <b>${myIdx + 1}번</b>! ${n}명의 단서를 모아 <b>정답 하나</b>를 맞혀요. 누구든 알아내면 입력!</div>
+          </div>`;
+        inputLabel = MISSION.cluePrompt || '단서를 모아 정답을 입력하세요';
+        placeholder = '정답을 입력하세요';
+      } else if (isCommon) {
         typeBox = `
           <div class="type-box type-common">
             <div class="tb-title">🧠 다 같이 푸는 어려운 문제</div>
@@ -708,6 +725,13 @@
 
       const hasHints = q.hints && q.hints.length > 0;
       const mediaHtml = renderMediaHtml(questionMedia(q));
+      // 숫자전용 문제(예: 수학 미션) → 모바일 숫자 키패드 + 숫자만 입력 허용
+      const numAttrs = q.numeric ? ' inputmode="numeric" pattern="[0-9]*"' : '';
+      // 본문: clue 모드는 q.clue(단서)를, 그 외엔 q.question을 보여줌
+      const bodyText = isClue ? (q.clue || q.question || '') : q.question;
+      const badgeText = isClue
+        ? `#${MISSION.qids.indexOf(q.id) + 1}번 단서 / ${MISSION.placeName} (단서 ${n}개)`
+        : `${isCommon ? '공통 문제' : `#${MISSION.qids.indexOf(q.id) + 1}번 문제`} / ${MISSION.placeName}${isCommon ? '' : ` (총 ${n}문제)`}`;
 
       document.getElementById('card').innerHTML = `
         <div class="topbar">
@@ -716,14 +740,14 @@
         </div>
         ${!isCommon ? `<button class="qr-btn" onclick="showCurrentGuide()">📷 다른 QR 찍기</button>` : ''}
         <div class="badge-row">
-          <span class="badge badge-pair">${isCommon ? '공통 문제' : `#${MISSION.qids.indexOf(q.id) + 1}번 문제`} / ${MISSION.placeName}${isCommon ? '' : ` (총 ${n}문제)`}</span>
+          <span class="badge badge-pair">${badgeText}</span>
         </div>
         ${typeBox}
         ${mediaHtml}
-        <p class="question-text">${q.question}</p>
+        <p class="question-text">${bodyText}</p>
         ${hasHints ? (q.hints.map((_, i) => `<button class="hint-btn" data-hint="${i}">💡 힌트 ${i+1}</button>`).join('')) : ''}
         <div class="combined-label">${inputLabel}</div>
-        <input class="answer-input" id="ans" placeholder="${placeholder}" autocomplete="off">
+        <input class="answer-input" id="ans" placeholder="${placeholder}" autocomplete="off"${numAttrs}>
         <button class="submit-btn" id="submitBtn">✅ 정답 제출</button>
         <div class="feedback" id="feedback"></div>
         ${DEV ? '<a class="back-link" href="dev.html" style="display:block">← 개발자 콘솔로</a>' : ''}
@@ -740,16 +764,30 @@
         });
       }
 
+      // 숫자전용 문제: 입력 중 숫자가 아닌 글자는 즉시 제거 (PC 키보드 포함)
+      if (q.numeric) {
+        const ansEl = document.getElementById('ans');
+        ansEl.addEventListener('input', () => {
+          const cleaned = ansEl.value.replace(/[^0-9]/g, '');
+          if (ansEl.value !== cleaned) ansEl.value = cleaned;
+        });
+      }
+
       document.getElementById('submitBtn').onclick = () => {
         const input = document.getElementById('ans').value || '';
         const fb = document.getElementById('feedback');
         if (!input.trim()) { fb.className = 'feedback wrong'; fb.textContent = '정답을 입력해주세요!'; return; }
-        if (checkCombined(q, input)) {
+        // clue 모드는 미션 공유 정답(MISSION.answer)과 비교, 그 외엔 question.combined와 비교
+        const ok = isClue ? checkMissionAnswer(MISSION, input) : checkCombined(q, input);
+        if (ok) {
           markSolved(PROGRESS, q.set, input.trim());
           reportProgress(COURSE, PROGRESS);
           fb.className = 'feedback right';
           fb.textContent = isCommon ? '🎉 정답이에요! 멋져요!' : '🎉 정답이에요! 모두 힘을 합쳤네요!';
-          setTimeout(() => showNextAfterSolve(q.combined, isCommon), 800);
+          const shownAnswer = isClue
+            ? (Array.isArray(MISSION.answer) ? MISSION.answer[0] : MISSION.answer)
+            : q.combined;
+          setTimeout(() => showNextAfterSolve(shownAnswer, isCommon), 800);
         } else {
           fb.className = 'feedback wrong';
           fb.textContent = isCommon ? '아쉬워요! 다시 생각해 볼까요?' : '아쉬워요! 친구들과 답을 다시 맞춰보세요.';
@@ -797,9 +835,11 @@
       const m = missionBySet(COURSE, currentSet(PROGRESS));
       const n = missionQrCount(m);
       const placeHtml = `<div class="place"><div class="lbl">다음 장소</div><div class="nm">${m.placeName}</div></div>`;
-      const scanMsg = n === 1
-        ? `${stepNo}/${total} · 이 장소의 QR을 스캔해 공통 문제를 푸세요!`
-        : `${stepNo}/${total} · 이 장소에서 QR ${n}개를 ${n}명이 나눠 스캔!`;
+      const scanMsg = m.mode === 'clue'
+        ? `${stepNo}/${total} · 이 장소에서 QR ${n}개를 ${n}명이 나눠 스캔해 단서를 모으세요!`
+        : n === 1
+          ? `${stepNo}/${total} · 이 장소의 QR을 스캔해 공통 문제를 푸세요!`
+          : `${stepNo}/${total} · 이 장소에서 QR ${n}개를 ${n}명이 나눠 스캔!`;
 
       document.getElementById('card').innerHTML = `
         <div class="guide">

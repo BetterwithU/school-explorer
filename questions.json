@@ -38,10 +38,10 @@
   },
   {
     "id": "2D", "set": 2, "slot": "D", "category": "캐릭터", "difficulty": "easy",
-    "question": "이 가수의 이름은 아이★입니다.\n★에 들어갈 글자를 다른 조원들과 조합해서 최종 답을 만드세요.",
-    "media": [{ "type": "image", "url": "images/아이유.png" }],
-    "hints": ["대한민국 국민 가수예요."],
-    "answer": "아이유", "combined": "커피우유"
+    "question": "이 동물의 이름은 ★니콘입니다.\n★에 들어갈 글자를 다른 조원들과 조합해서 최종 답을 만드세요.",
+    "media": [{ "type": "image", "url": "images/q2d_unicorn.webp" }],
+    "hints": ["이마에 뿔이 하나 달린, 무지개빛 갈기의 상상 속 말이에요.", "로블록스 '입양하세요!'의 인기 전설 펫이기도 해요."],
+    "answer": "유니콘", "combined": "커피우유"
   },
 
   {
@@ -67,84 +67,77 @@
   },
 
   {
-    "id": "4", "set": 4, "slot": "", "category": "과학", "difficulty": "normal",
-    "question": "위 그림은 국자 모양의 별자리예요. 그림 속 별은 모두 몇 개일까요?",
-    "media": [{ "type": "image", "url": "images/bigdipper.png" }],
-    "hints": ["이름에 숫자가 숨어 있어요 — '북두칠성'.", "손가락으로 별을 하나씩 짚어보세요."],
-    "answer": "7", "combined": "7"
+    "id": "4A", "set": 4, "slot": "A", "category": "수학", "difficulty": "normal", "numeric": true,
+    "question": "주차장의 비밀!\n주차장에 차들이 나란히 세워져 있어요. 차가 세워진 '빈칸' 바닥에 원래 적혀 있어야 할 번호는?\n\n[ 16, 06, 68, 88, 빈칸, 98 ]",
+    "media": [],
+    "hints": ["숫자를 똑바로만 보지 말고, 종이를 위아래로 휙! 뒤집어서 관찰해 봐요.", "완전히 뒤집어 처음부터 읽으면 [86, 빈칸, 88, 89, 90, 91] 이 돼요."],
+    "answer": "87", "combined": "90"
+  },
+  {
+    "id": "4B", "set": 4, "slot": "B", "category": "수학", "difficulty": "normal", "numeric": true,
+    "question": "외계인의 암호!\n우주선 문을 여는 암호표를 발견했어요. 규칙을 찾아 빈칸의 숫자를 맞혀보세요.\n\n8809 = 6\n7111 = 0\n6666 = 4\n2172 = 0\n그렇다면  8193 = ?",
+    "media": [],
+    "hints": ["더하기·빼기 같은 계산으로는 못 풀어요! 숫자를 '그림'이라고 생각하고 모양을 뚫어져라 봐요.", "숫자 모양 안에 동그랗게 막힌 '구멍'이 몇 개인지 세어봐요. '8'은 2개, '9'는 1개!"],
+    "answer": "3", "combined": "90"
   },
 
   {
-    "id": "5A", "set": 5, "slot": "A", "category": "국어", "difficulty": "normal",
-    "question": "네 친구가 각자 다른 문제를 풀어요!\n[첫 글자] 숨겨진 귀한 것을 'O물'이라 해요. 'O물찾기'의 첫 글자는?",
-    "media": [],
-    "hints": ["'O배'롭다 = 귀하다.", "해적이 찾아다니는 것."],
-    "answer": "보", "combined": "보물상자"
+    "id": "5A", "set": 5, "slot": "A", "category": "미술", "difficulty": "normal",
+    "clue": "🎨 단서 ① · 작품 <별이 빛나는 밤>\n밤하늘의 별과 달이 빙글빙글 살아 움직이는 것처럼 그렸어요. 이 그림을 그린 화가는 누구일까요?",
+    "media": [{ "type": "image", "url": "images/q5a_starry.webp" }]
   },
   {
-    "id": "5B", "set": 5, "slot": "B", "category": "상식", "difficulty": "normal",
-    "question": "[둘째 글자] 목마를 때 마시고, 강과 바다에 가득한 것은? 한 글자로!",
-    "media": [],
-    "hints": ["0℃에서 얼면 얼음이 돼요.", "우리 몸의 70%가 이것."],
-    "answer": "물", "combined": "보물상자"
+    "id": "5B", "set": 5, "slot": "B", "category": "미술", "difficulty": "normal",
+    "clue": "🌻 단서 ② · 작품 <해바라기>\n같은 화가가 그린 그림이에요. 노란색을 아주 좋아해서 활짝 핀 해바라기를 멋지게 그렸어요!",
+    "media": [{ "type": "image", "url": "images/q5b_sunflower.webp" }]
   },
   {
-    "id": "5C", "set": 5, "slot": "C", "category": "사회", "difficulty": "normal",
-    "question": "[셋째 글자] 공부할 때 앉는 책'O', 밥 먹는 식'O' — 위에 물건을 올려놓는 가구의 끝 글자는?",
-    "media": [],
-    "hints": ["'책O', '밥O'.", "다리가 네 개, 위가 평평해요."],
-    "answer": "상", "combined": "보물상자"
+    "id": "5C", "set": 5, "slot": "C", "category": "미술", "difficulty": "normal",
+    "clue": "🧑‍🎨 단서 ③ · 작품 <자화상>\n화가가 자기 얼굴을 직접 그린 그림이에요. 붓 자국이 꿈틀꿈틀 살아 움직이는 것 같죠?",
+    "media": [{ "type": "image", "url": "images/q5c_selfportrait.webp" }]
   },
   {
-    "id": "5D", "set": 5, "slot": "D", "category": "국어", "difficulty": "normal",
-    "question": "[넷째 글자] 사'O', 모'O', 의'O' — 이 단어들의 공통 끝 글자는?",
-    "media": [],
-    "hints": ["사O(동물), 모O(쓰는 것), 의O(앉는 것).", "'ㅈ'으로 시작해요."],
-    "answer": "자", "combined": "보물상자"
+    "id": "5D", "set": 5, "slot": "D", "category": "미술", "difficulty": "normal",
+    "clue": "🌷 단서 ④ · 작품 <붓꽃>\n결정적 힌트! 이 화가의 이름은 '빈센트 반 ○○'이에요.\n네덜란드 출신이랍니다!",
+    "media": [{ "type": "image", "url": "images/q5d_irises.webp" }]
   },
 
   {
-    "id": "6A", "set": 6, "slot": "A", "category": "현장관찰", "difficulty": "normal",
-    "question": "[현장 미션 · 선생님 설정] [첫 글자] 지금 서 있는 이 건물은 몇 층짜리일까요? 세어보고 'O층'의 첫 글자를 답하세요. (예: 3층이면 '삼')",
-    "media": [],
-    "hints": ["계단을 보고 층수를 세어봐요.", "숫자를 한글로 적어요 (3→삼)."],
-    "answer": "삼", "combined": "삼층"
-  },
-  {
-    "id": "6B", "set": 6, "slot": "B", "category": "현장관찰", "difficulty": "normal",
-    "question": "[현장 미션 · 선생님 설정] [둘째 글자] '몇 O'에서 건물 높이를 세는 단위 글자는? (1O, 2O, 3O…)",
-    "media": [],
-    "hints": ["'O수'를 센다고 할 때 그 글자.", "첫 글자는 짝꿍이 알아요. 합치면 두 글자!"],
-    "answer": "층", "combined": "삼층"
+    "id": "6", "set": 6, "slot": "", "category": "인물", "difficulty": "normal",
+    "question": "우주로 가는 세계 최고의 부자!\n위 사진 속, 멋진 정장을 입은 이 사람의 이름은 무엇일까요?",
+    "media": [{ "type": "image", "url": "images/q6_musk.webp" }],
+    "hints": ["멋진 전기자동차를 만드는 '테슬라(Tesla)'라는 회사의 대장(CEO)이에요.", "로켓·우주선을 만들어 화성에 사람을 보내려는 '스페이스X'의 대장이기도 해요.", "전 세계에서 돈이 가장 많은 사람(세계 1위 부자)으로 아주아주 유명해요."],
+    "answer": "일론 머스크", "combined": "일론머스크"
   },
 
   {
-    "id": "7", "set": 7, "slot": "", "category": "자연", "difficulty": "normal",
-    "question": "영상 속 소리를 들어보세요. 가을밤 풀숲에서 '귀뚤귀뚤' 우는 이 곤충의 이름은?",
-    "media": [{ "type": "youtube", "url": "" }],
-    "hints": ["가을밤에 풀숲에서 울어요.", "이름이 울음소리('귀뚤')와 비슷해요."],
-    "answer": "귀뚜라미", "combined": "귀뚜라미"
+    "id": "7A", "set": 7, "slot": "A", "category": "영어", "difficulty": "normal",
+    "question": "첫 번째 영어 단어를 맞혀보세요! (소문자 영어로 입력)\n\n1. My opposite word is \"cold\", and summer is this season.\n2. When you feel this, you sweat and want to eat ice cream.\n3. Fire and boiling water are very much this, so be careful!",
+    "media": [],
+    "hints": ["나의 반대말은 '추운(cold)'이고, 여름은 '이런' 계절이에요.", "불과 끓는 물은 아주 '이것' 하니까 조심! 세 글자 영어예요."],
+    "answer": "hot", "combined": "hotdog"
+  },
+  {
+    "id": "7B", "set": 7, "slot": "B", "category": "영어", "difficulty": "normal",
+    "question": "두 번째 영어 단어를 맞혀보세요! (소문자 영어로 입력)\n\n1. I am a cute pet animal, and my friend is a cat.\n2. I love going for a walk outside with my owner.\n3. I have a tail and I say \"Woof, woof!\"",
+    "media": [],
+    "hints": ["나는 귀여운 애완동물이고, 내 친구는 고양이(cat)예요.", "나는 꼬리가 있고 \"멍멍!\" 하고 짖어요. 세 글자 영어예요."],
+    "answer": "dog", "combined": "hotdog"
   },
 
   {
-    "id": "8A", "set": 8, "slot": "A", "category": "국어", "difficulty": "hard",
-    "question": "마지막 미션! 세 친구가 각자 풀어요.\n[첫 글자] 동굴이나 정글을 살펴보며 찾아 나서는 걸 'O험'이라 해요 ('OO대'!). 그 첫 글자는?",
-    "media": [],
-    "hints": ["우리 이름이 '캠핑 OO대'예요.", "'O정'은 사건을 조사하는 사람."],
-    "answer": "탐", "combined": "탐험가"
+    "id": "8A", "set": 8, "slot": "A", "category": "음악", "difficulty": "normal",
+    "clue": "🎹 단서 ①\n아래 영상을 보고 들어보세요. 이렇게 멋지게 피아노를 연주하는 사람은 누구일까요?",
+    "media": [{ "type": "youtube", "url": "https://www.youtube.com/shorts/6P_WkdJJ6Y4" }]
   },
   {
-    "id": "8B", "set": 8, "slot": "B", "category": "국어", "difficulty": "hard",
-    "question": "[둘째 글자] 위험, 모험, 험난 — 험한 산을 넘는다의 한 글자는?",
-    "media": [],
-    "hints": ["'위O', '모O'에 공통으로 들어가요.", "'O악한 산길'."],
-    "answer": "험", "combined": "탐험가"
+    "id": "8B", "set": 8, "slot": "B", "category": "음악", "difficulty": "normal",
+    "clue": "🔤 단서 ②\n이 사람의 이름은 세 글자예요.\n초성(첫소리)은 'ㅇ ㅇ ㅊ' 이에요!",
+    "media": []
   },
   {
-    "id": "8C", "set": 8, "slot": "C", "category": "국어", "difficulty": "hard",
-    "question": "[셋째 글자] 노래하는 '가수', 그림 그리는 '화O', 요리하는 'O' — '-가'로 끝나는 직업의 끝 글자는?",
-    "media": [],
-    "hints": ["'O수', '화O', '음악O'.", "어떤 일을 잘하는 사람."],
-    "answer": "가", "combined": "탐험가"
+    "id": "8C", "set": 8, "slot": "C", "category": "음악", "difficulty": "normal",
+    "clue": "📜 단서 ③\n이 사람은 2022년, 미국에서 열린 세계적인 피아노 대회 '반 클라이번 콩쿠르'에서 역사상 가장 어린 나이(만 18세)로 우승한 한국의 천재 피아니스트예요. 우승 연주 영상은 유튜브에서 1,000만 번 넘게 재생되며 전 세계를 놀라게 했어요!",
+    "media": []
   }
 ]

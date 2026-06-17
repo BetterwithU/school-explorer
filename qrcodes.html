@@ -151,8 +151,10 @@
           course.missions.forEach(m => {
             const qids = m.qids || [];
             const isCommon = qids.length === 1;
+            const isClue = m.mode === 'clue';
             qids.forEach((qid, i) => {
-              const tag = isCommon ? '공통' : String.fromCharCode(65 + i); // A,B,C,D
+              const slot = String.fromCharCode(65 + i); // A,B,C,D
+              const tag = isCommon ? '공통' : isClue ? `단서 ${slot}` : slot;
               const url = `${base}/mission.html?q=${encodeURIComponent(qid)}`;
               const card = document.createElement('div');
               card.className = 'qr-card';

@@ -185,6 +185,18 @@ function checkCombined(question, input) {
   return given === correct;
 }
 
+/* ---------- clue 모드 채점 (분산 힌트형) ----------
+ * 각 QR은 서로 다른 단서(clue)만 보여주고, 정답은 미션 전체가 공유(mission.answer).
+ * 어느 QR에서 입력하든 mission.answer와 비교 → 모두 같은 정답.
+ */
+function checkMissionAnswer(mission, input) {
+  if (!mission || !mission.answer) return false;
+  // answer는 문자열 또는 배열(복수 정답: 하나라도 맞으면 정답)
+  const answers = Array.isArray(mission.answer) ? mission.answer : [mission.answer];
+  const given = normalizeAnswer(input);
+  return answers.some(a => a !== '' && given === normalizeAnswer(a));
+}
+
 /* ---------- 멀티미디어 ----------
  * question.media: [{ type: "image"|"youtube"|"audio", url }]
  * 구버전 question.image(문자열)도 하위호환 지원.

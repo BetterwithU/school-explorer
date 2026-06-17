@@ -868,20 +868,26 @@
       const stepIdx = PROGRESS.order.indexOf(setNo);
       const answer = PROGRESS.answers && PROGRESS.answers[setNo];
 
-      // 이 세트의 문제들
+      // 이 세트의 문제들 (clue 미션은 q.clue/미션 공유 정답, 그 외엔 q.question/q.answer)
+      const isClue = mission.mode === 'clue';
+      const missionAns = Array.isArray(mission.answer) ? mission.answer[0] : mission.answer;
       const qCards = (mission.qids || []).map(qid => {
         const q = findQuestion(QUESTIONS, qid);
         if (!q) return '';
-        const label = mission.qids.length === 1 ? '공통' : (q.slot || qid.replace(String(setNo), ''));
+        const label = mission.qids.length === 1 ? '공통'
+          : isClue ? `${mission.qids.indexOf(qid) + 1}번 단서`
+          : (q.slot || qid.replace(String(setNo), ''));
+        const bodyText = isClue ? (q.clue || '') : (q.question || '');
+        const ansText = isClue ? (missionAns || '-') : (q.answer || '-');
         return `
           <div style="background:#0f3460;border-radius:12px;padding:12px 14px;margin-bottom:10px">
             <div class="modal-badge-row">
-              <span class="modal-badge modal-badge-cat">${label} 문제</span>
+              <span class="modal-badge modal-badge-cat">${isClue ? label : label + ' 문제'}</span>
               <span class="modal-badge modal-badge-cat" style="background:#1d3a2e;color:#74c69d">${q.category || ''}</span>
             </div>
-            <div class="modal-q">${q.question}</div>
+            <div class="modal-q">${bodyText}</div>
             <div class="modal-ans-label">정답</div>
-            <div class="modal-ans">${q.answer || '-'}</div>
+            <div class="modal-ans">${ansText}</div>
           </div>`;
       }).join('');
 
