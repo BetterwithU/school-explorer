@@ -192,7 +192,14 @@
         startGame(COURSE, p.team);            // 그 조로 진행을 처음 상태(step:0)로 초기화
         location.href = 'home.html?dev=1';     // 학생과 동일한 지도부터 시작, DEV 세션 켜짐
       };
-      if (byId('devOff')) byId('devOff').onclick = () => { devOff(); alert('이 기기 DEV 꺼짐 (탭/세션 한정)'); render(); };
+      if (byId('devOff')) byId('devOff').onclick = () => {
+        devOff();
+        // URL에 ?dev=1 이 남아 있으면 새로고침/페이지이동 때 isDev()가 DEV를 되살린다.
+        // 쿼리스트링을 제거해 부활을 막는다.
+        if (location.search) history.replaceState(null, '', location.pathname);
+        alert('✅ 이 기기 DEV 꺼짐.\n\n이제 이 탭에서 게임에 들어가면 학생과 똑같이 동작합니다\n(게임 정지 중이면 캠핑 화면이 떠요).');
+        render();
+      };
       if (byId('cheatSolveAll')) byId('cheatSolveAll').onclick = () => { solveAll(); render(); };
       if (byId('cheatClear')) byId('cheatClear').onclick = () => {
         solveAll();
