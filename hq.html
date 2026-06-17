@@ -345,7 +345,7 @@
           <summary>${m.set}. ${m.placeName} — ${m.mode === 'common' ? '공통' : 'QR ' + m.qids.length + '개'} · 보물글자 「${m.piece}」</summary>
           <table>
             <tr><th>문제</th><th>분류</th><th>내용</th><th>답</th><th>합본</th></tr>
-            ${rows}
+            ${qs}
           </table>
         </details>`;
       }).join('');
