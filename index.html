@@ -15,10 +15,10 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: safe center;   /* 짧으면 중앙, 길면 위부터(상단 잘림 방지) */
+      justify-content: flex-start;   /* 위에서부터 흐르게 — 콘텐츠가 길어도 안 잘림 */
       padding: 24px 16px;
       position: relative;
-      overflow-x: hidden;   /* 배경 가로 넘침만 막고, 세로는 자르지 않음(아래 잘림 방지) */
+      overflow-x: hidden;   /* 가로 넘침만 막고 세로는 자연 스크롤 */
     }
     body::before {
       content: '';
