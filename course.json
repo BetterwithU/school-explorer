@@ -15,7 +15,7 @@
     { "set": 4, "placeName": "단비 쉼터 (3층)", "mode": "combo", "qids": ["4A", "4B"], "piece": "실", "inputGuide": "#1번(주차장)과 #2번(외계인) 두 문제의 답을 구한 뒤, 두 숫자를 더한 값을 입력하세요 (예: 10과 5 → 15)" },
     { "set": 5, "placeName": "틈새공간 (운동장 옆)", "mode": "clue", "qids": ["5A", "5B", "5C", "5D"], "piece": "옆", "answer": ["빈센트반고흐", "고흐", "반고흐"], "cluePrompt": "네 친구가 모은 단서를 합쳐, 이 유명한 화가의 이름을 맞혀보세요!" },
     { "set": 6, "placeName": "강당 입구", "mode": "common", "qids": ["6"], "piece": "스" },
-    { "set": 7, "placeName": "음악2실 (2층)", "mode": "combo", "qids": ["7A", "7B"], "piece": "탠", "inputGuide": "#1번과 #2번 두 영어 단어를 순서대로 붙여서 한 단어로 입력하세요 (소문자 영어, 예: hot + dog → hotdog)" },
+    { "set": 7, "placeName": "음악2실 (2층)", "mode": "combo", "qids": ["7A", "7B"], "piece": "탠", "inputGuide": "#1번과 #2번 두 영어 단어를 순서대로 붙여서 한 단어로 입력하세요 (소문자 영어, 예: rain + bow → rainbow)" },
     { "set": 8, "placeName": "시청각실 (0층)", "mode": "clue", "qids": ["8A", "8B", "8C"], "piece": "드", "answer": "임윤찬", "cluePrompt": "세 친구가 모은 단서를 합쳐, 이 천재 피아니스트의 이름을 맞혀보세요!" }
   ]
 }
