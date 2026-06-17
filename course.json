@@ -9,9 +9,9 @@
     "reveal": "지금 바로 그곳으로 달려가세요! 그곳에 계신 아빠에게 \"우리 조 미션 완료했어요!\"라고 외치면 보물(선물)을 받을 수 있어요! 🎁"
   },
   "missions": [
-    { "set": 1, "placeName": "도서관 입구 (1층)", "mode": "combo", "qids": ["1A", "1B"], "piece": "보", "inputGuide": "#1, #2번 문제의 답을 더한 숫자를 입력하세요" },
-    { "set": 2, "placeName": "솔빛길 (3~4층 사이)", "mode": "combo", "qids": ["2A", "2B", "2C", "2D"], "piece": "안", "inputGuide": "#1~#4번 이미지의 글자힌트를 조합하여 완성한 4글자를 입력하세요" },
-    { "set": 3, "placeName": "다람쥐 쉼터 (3층)", "mode": "combo", "qids": ["3A", "3B", "3C"], "piece": "관", "inputGuide": "#1, #2, #3번 문제의 답을 순서대로 합친 글자를 입력하세요" },
+    { "set": 1, "placeName": "도서관 입구 (1층)", "mode": "combo", "qids": ["1A", "1B"], "piece": "보", "inputGuide": "#1, #2번 문제의 답을 더한 숫자를 입력하세요 (예: 10과 5 → 15)" },
+    { "set": 2, "placeName": "솔빛길 (3~4층 사이)", "mode": "combo", "qids": ["2A", "2B", "2C", "2D"], "piece": "안", "inputGuide": "#1~#4번 이미지의 글자힌트를 순서대로 조합한 4글자를 입력하세요 (예: 가·나·다·라 → 가나다라)" },
+    { "set": 3, "placeName": "다람쥐 쉼터 (3층)", "mode": "combo", "qids": ["3A", "3B", "3C"], "piece": "관", "inputGuide": "#1, #2, #3번 문제의 답을 순서대로 합친 글자를 입력하세요 (예: 가·나·다 → 가나다)" },
     { "set": 4, "placeName": "단비 쉼터 (3층)", "mode": "combo", "qids": ["4A", "4B"], "piece": "실", "inputGuide": "#1번(주차장)과 #2번(외계인) 두 문제의 답을 구한 뒤, 두 숫자를 더한 값을 입력하세요 (예: 10과 5 → 15)" },
     { "set": 5, "placeName": "틈새공간 (운동장 옆)", "mode": "clue", "qids": ["5A", "5B", "5C", "5D"], "piece": "옆", "answer": ["빈센트반고흐", "고흐", "반고흐"], "cluePrompt": "네 친구가 모은 단서를 합쳐, 이 유명한 화가의 이름을 맞혀보세요!" },
     { "set": 6, "placeName": "강당 입구", "mode": "common", "qids": ["6"], "piece": "스" },
