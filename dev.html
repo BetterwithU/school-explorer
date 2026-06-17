@@ -176,8 +176,11 @@
         const p = loadProgress(); if (!p) return;
         COURSE.missions.forEach(m => {
           p.solved[m.set] = true;
+          // clue 미션은 미션 공유 정답, 그 외엔 첫 문제의 combined
           const q = findQuestion(QUESTIONS, (m.qids || [])[0]);
-          p.answers[m.set] = q ? q.combined : '';
+          p.answers[m.set] = m.mode === 'clue'
+            ? (Array.isArray(m.answer) ? m.answer[0] : (m.answer || ''))
+            : (q ? q.combined : '');
         });
         p.step = p.order.length;
         saveProgress(p);
