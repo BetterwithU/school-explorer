@@ -331,8 +331,11 @@
 
     loadData().then(({ course }) => {
       COURSE = course;
-      document.getElementById('subtitle').textContent = course.subtitle || '';
-      render();
+      // 게임 off면 조 선택 등 일절 안 보이고 '즐거운 캠핑' 화면만(DEV/오프라인은 통과)
+      gateGameOn(() => {
+        document.getElementById('subtitle').textContent = course.subtitle || '';
+        render();
+      }, document.getElementById('panel'));
     });
 
     // dev 콘솔의 '시작 화면' 버튼(?fresh=1)은 진행 중이어도 조 선택부터 보이게 함

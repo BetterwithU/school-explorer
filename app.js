@@ -315,3 +315,39 @@ function reportProgress(course, p) {
     /* 무시 */
   }
 }
+
+/* ---------- 게임 on/off 게이트 (모든 학생 화면 공통) ----------
+ * 게임이 켜지기 전(off)엔 어떤 화면이든 '즐거운 캠핑' 안내만 보이고
+ * 게임 관련 UI는 일절 노출하지 않는다.
+ * - DEV 또는 오프라인(Firebase 미설정)이면 게이트 없이 통과(운영자 테스트/로컬).
+ * - 게임 상태가 실시간으로 바뀌면 화면도 즉시 전환.
+ * onOpen: 게임이 켜졌을 때 실제 화면을 그리는 콜백.
+ */
+function campScreenHtml() {
+  return `<div class="camp-screen" style="text-align:center">
+    <img src="images/camping.webp" alt="즐거운 아빠 캠핑"
+      style="width:100%;max-width:340px;height:auto;border-radius:12px;box-shadow:3px 4px 18px rgba(40,20,5,0.3)">
+    <p style="margin-top:16px;font-size:1.1rem;font-weight:800;color:#5c2e05">⛺ 즐거운 캠핑 되세요!</p>
+    <p style="margin-top:6px;font-size:0.9rem;color:rgba(80,50,15,0.7)">곧 탐험이 시작돼요. 잠시만 기다려 주세요.</p>
+  </div>`;
+}
+
+// 게이트 적용. targetEl(없으면 #card 또는 body)에 캠핑 화면을 그린다.
+let __gameGateBound = false;
+function gateGameOn(onOpen, targetEl) {
+  const showCamp = () => {
+    const el = targetEl || document.getElementById('card') || document.body;
+    if (el) el.innerHTML = campScreenHtml();
+  };
+  const apply = () => {
+    const s = window.SchoolExplorerSync;
+    const dev = (typeof isDev === 'function') && isDev();
+    if (dev || !s || !s.online) { onOpen(); return; }   // DEV/오프라인은 통과
+    if (!__gameGateBound) {
+      __gameGateBound = true;
+      s.subscribeGameState((on) => { if (on) onOpen(); else showCamp(); });
+    }
+  };
+  if (window.SYNC_READY) apply();
+  else window.addEventListener('sync-ready', apply, { once: true });
+}

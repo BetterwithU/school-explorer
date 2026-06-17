@@ -626,14 +626,16 @@
       QUESTIONS = questions;
       PROGRESS = loadProgress(course);
 
-      if (!PROGRESS || !PROGRESS.team) {
-        location.href = 'index.html';
-        return;
-      }
-
-      renderHeader();
-      renderMap();
-      reportProgress(COURSE, PROGRESS);
+      // 게임 off면 지도 등 일절 안 보이고 '즐거운 캠핑' 화면만(DEV/오프라인은 통과)
+      gateGameOn(() => {
+        if (!PROGRESS || !PROGRESS.team) {
+          location.href = 'index.html';
+          return;
+        }
+        renderHeader();
+        renderMap();
+        reportProgress(COURSE, PROGRESS);
+      }, document.body);
     });
 
     /* ── 헤더 렌더링 ── */
