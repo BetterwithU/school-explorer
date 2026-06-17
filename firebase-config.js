@@ -5,15 +5,13 @@
  *
  * 채우는 방법: drafts/firebase-셋업.md 참고
  */
-window.FIREBASE_CONFIG = null;
-
-/* ↓↓↓ Firebase 콘솔에서 받은 값으로 위 줄을 아래처럼 교체하세요 ↓↓↓
 window.FIREBASE_CONFIG = {
-  apiKey: "AIza...........................",
-  authDomain: "your-project.firebaseapp.com",
-  databaseURL: "https://your-project-default-rtdb.firebaseio.com",
-  projectId: "your-project",
-  appId: "1:000000000000:web:xxxxxxxxxxxx",
+  apiKey: "AIzaSyDD1m3-TU8C0JdpisjmCxs9tjDS6dXNJR0",
+  authDomain: "school-explorer-8e687.firebaseapp.com",
+  databaseURL: "https://school-explorer-8e687-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "school-explorer-8e687",
+  storageBucket: "school-explorer-8e687.firebasestorage.app",
+  messagingSenderId: "416751678265",
+  appId: "1:416751678265:web:21ce62c43ce79f0bda2ee8",
   sessionId: "default"   // 여러 반이 동시에 하면 반마다 다른 값(예: "3학년2반")
 };
-*/

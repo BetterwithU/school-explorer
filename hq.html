@@ -45,6 +45,44 @@
     .tc-done { color: #ffd166; font-weight: bold; }
     .tc-wait { color: #5b6b8a; }
 
+    /* ── 선형 동선 진행바 (노드 일렬 + 화살표 + 깜박이는 현위치 점) ── */
+    .track {
+      display: flex; align-items: stretch; gap: 0;
+      margin: 10px 0 4px; overflow-x: auto; padding-bottom: 6px;
+    }
+    .track-node {
+      display: flex; flex-direction: column; align-items: center;
+      flex: 0 0 auto; min-width: 54px; position: relative;
+    }
+    /* 노드 사이 연결선/화살표 영역 */
+    .track-link {
+      flex: 1 1 auto; min-width: 18px; height: 26px;
+      display: flex; align-items: center; justify-content: center;
+      color: #3a4a6a; font-size: 0.9rem; position: relative;
+    }
+    .track-link.passed { color: #2ec4b6; }   /* 이미 지나온 구간 */
+    /* 현재 이동 중 구간 — 깜박이는 점 */
+    .track-link.moving::after {
+      content: ''; width: 9px; height: 9px; border-radius: 50%;
+      background: #ffd166; box-shadow: 0 0 8px 2px #ffd166aa;
+      animation: hq-blink 0.9s ease-in-out infinite;
+    }
+    @keyframes hq-blink { 0%,100% { opacity: 1; transform: scale(1.15);} 50% { opacity: 0.25; transform: scale(0.8);} }
+    .tn-dot {
+      width: 26px; height: 26px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.78rem; font-weight: bold;
+      background: #0f3460; color: #6b7ca0; border: 2px solid #24365e;
+    }
+    .track-node.done .tn-dot { background: #2ec4b6; color: #06281f; border-color: #2ec4b6; }
+    .track-node.at .tn-dot {   /* 지금 이 노드를 풀고 있는 중(도착) */
+      background: #ffd166; color: #4a2e00; border-color: #ffd166;
+      box-shadow: 0 0 10px 2px #ffd16688;
+    }
+    .tn-name { font-size: 0.62rem; color: #8b9bb4; margin-top: 3px; text-align: center; line-height: 1.2; max-width: 56px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .track-node.done .tn-name { color: #b7e4c7; }
+    .track-node.at .tn-name { color: #ffd166; }
+
     details { background: #16213e; border-radius: 12px; padding: 12px 14px; margin-bottom: 10px; }
     summary { cursor: pointer; color: #cfe3ff; font-size: 0.9rem; font-weight: bold; }
     table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.8rem; }
@@ -155,11 +193,40 @@
             <span class="tc-name">${team}</span>
             <span class="tc-meta">기기 ${d.deviceCount} · ${timeAgo(d.ts)}</span></div>
           <div class="tc-place">📍 ${place}</div>
+          ${trackHtml(team, d)}
           <div class="bar"><span style="width:${pct}%"></span></div>
           <div class="tc-prog">${prog}</div>
         </div>`;
       }).join('');
       document.getElementById('live').innerHTML = cards;
+    }
+
+    /* 조의 실제 동선(teamMissionOrder)을 일렬 노드+화살표로 그리고,
+     * 푼 미션 수(step) 기준으로 현위치(깜박이는 점)를 표시한다.
+     * step개 풀었으면: order[0..step-1] 완료, order[step-1]↔order[step] 사이로 '이동 중'. */
+    function trackHtml(team, d) {
+      const order = teamMissionOrder(COURSE, team);   // set 번호 배열(이 조 동선)
+      const step = d.finaleSolved ? order.length : (d.step || 0);
+      let html = '<div class="track">';
+      order.forEach((setNo, idx) => {
+        const m = missionBySet(COURSE, setNo);
+        const shortName = (m && m.placeName ? m.placeName : setNo + '번').split('(')[0].trim();
+        const isDone = idx < step;
+        const isAt = idx === step && !d.finaleSolved; // 막 도착해 풀고 있는 노드(이동 끝난 지점)
+        const cls = isDone ? 'done' : isAt ? 'at' : '';
+        if (idx > 0) {
+          // 직전 노드 → 이 노드 사이의 연결선. 둘 다 done이면 passed, '지금 이 노드로 이동 중'이면 moving
+          const passed = idx <= step;            // 이미 지나온(또는 막 도착한) 구간
+          const moving = idx === step && !d.finaleSolved; // order[step-1] 끝내고 order[step]로 이동/도착 중
+          html += `<div class="track-link ${moving ? 'moving' : passed ? 'passed' : ''}">${moving ? '' : '→'}</div>`;
+        }
+        html += `<div class="track-node ${cls}">
+          <span class="tn-dot">${isDone ? '✓' : idx + 1}</span>
+          <span class="tn-name">${shortName}</span>
+        </div>`;
+      });
+      html += '</div>';
+      return html;
     }
 
     function timeAgo(ts) {
