@@ -324,19 +324,20 @@ function reportProgress(course, p) {
  * onOpen: 게임이 켜졌을 때 실제 화면을 그리는 콜백.
  */
 function campScreenHtml() {
-  return `<div class="camp-screen" style="text-align:center">
+  // 이미지를 화면 높이에 맞춰(max-height) 항상 한 화면에 들어오게 — 어떤 기기에서도 안 잘림.
+  return `<div class="camp-screen" style="min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:16px;box-sizing:border-box">
     <img src="images/camping.webp" alt="즐거운 아빠 캠핑"
-      style="width:100%;max-width:340px;height:auto;border-radius:12px;box-shadow:3px 4px 18px rgba(40,20,5,0.3)">
-    <p style="margin-top:16px;font-size:1.1rem;font-weight:800;color:#5c2e05">⛺ 즐거운 캠핑 되세요!</p>
+      style="max-width:min(340px,88vw);max-height:78dvh;width:auto;height:auto;border-radius:12px;box-shadow:3px 4px 18px rgba(40,20,5,0.3)">
+    <p style="margin-top:14px;font-size:1.1rem;font-weight:800;color:#5c2e05">⛺ 즐거운 캠핑 되세요!</p>
   </div>`;
 }
 
-// 게이트 적용. targetEl(없으면 #card 또는 body)에 캠핑 화면을 그린다.
+// 게이트 적용. 게임 off면 화면 전체(body)를 캠핑으로 덮어 게임 관련 요소를 모두 숨긴다.
 let __gameGateBound = false;
 function gateGameOn(onOpen, targetEl) {
   const showCamp = () => {
-    const el = targetEl || document.getElementById('card') || document.body;
-    if (el) el.innerHTML = campScreenHtml();
+    // 게임 관련 글자(제목·부제 등)까지 안 보이게 body 전체를 캠핑 화면으로 교체
+    document.body.innerHTML = campScreenHtml();
   };
   const apply = () => {
     const s = window.SchoolExplorerSync;
