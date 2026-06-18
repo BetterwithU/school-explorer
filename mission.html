@@ -606,7 +606,7 @@
     /* ── 장소 안내 화면 (QR 스캔 버튼 포함) ── */
     function showCurrentGuide() {
       if (isAllDone(PROGRESS)) {
-        location.href = isFinalePending(COURSE, PROGRESS) ? 'map.html' : 'done.html';
+        location.href = isFinalePending(COURSE, PROGRESS) ? 'home.html?pieces=1' : 'done.html';
         return;
       }
       // URL에 ?q= 파라미터가 남아있으면 제거하고 scanDone 리셋
@@ -827,7 +827,7 @@
             ${shareHtml}
             ${pieceHtml}
             <div class="desc">이제 모은 글자 ${need}개를 조합해 보물이 숨은 곳을 찾을 차례예요!</div>
-            <a class="guide btn" href="map.html">🔑 보물 글자 조합하러 가기 →</a>
+            <a class="guide btn" href="home.html?pieces=1">🔑 보물 글자 조합하러 가기 →</a>
             ${DEV ? '<a class="guide btn" href="dev.html">🛠️ 개발자 패널로</a>' : ''}
           </div>`;
         return;
@@ -850,7 +850,7 @@
           ${pieceHtml}
           ${placeHtml}
           <div class="desc">${scanMsg}</div>
-          <a class="guide btn" href="map.html">🔑 보물 글자 모음 보기</a>
+          <a class="guide btn" href="home.html?pieces=1">🔑 보물 글자 모음 보기</a>
           ${DEV ? '<a class="guide btn" href="dev.html">🛠️ 개발자 패널로</a>' : ''}
           <a class="guide btn" href="home.html">🏠 미션 홈으로</a>
           <div class="redirect-bar">🗺️ <span id="redirectCount">3</span>초 후 지도로 이동합니다</div>

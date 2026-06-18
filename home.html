@@ -635,6 +635,11 @@
         renderHeader();
         renderMap();
         reportProgress(COURSE, PROGRESS);
+        // ?pieces=1 로 들어오면 보물글자 조합 팝업을 자동으로 연다
+        // (옛 map.html 진입을 home으로 일원화 — 모든 글자를 모았으면 여기서 최종 조합)
+        if (new URLSearchParams(location.search).get('pieces') === '1') {
+          openPieces();
+        }
       }, document.body);
     });
 

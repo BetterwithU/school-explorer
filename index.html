@@ -459,7 +459,7 @@
 
     function goToCurrent(p) {
       if (isAllDone(p)) {
-        location.href = isFinalePending(COURSE, p) ? 'map.html' : 'done.html';
+        location.href = isFinalePending(COURSE, p) ? 'home.html?pieces=1' : 'done.html';
         return;
       }
       location.href = 'home.html';

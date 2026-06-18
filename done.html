@@ -218,7 +218,7 @@
       const p = loadProgress(course);
       if (!p || !p.team) { location.href = 'index.html'; return; }
 
-      if (isFinalePending(course, p)) { location.href = 'map.html'; return; }
+      if (isFinalePending(course, p)) { location.href = 'home.html?pieces=1'; return; }
 
       reportProgress(course, p);
       document.getElementById('teamName').textContent = `🎉 ${p.team} 🎉`;
