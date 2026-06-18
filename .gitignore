@@ -19,3 +19,7 @@ images/커비.jpg
 Gemini_Generated_Image_flvrjhflvrjhflvr.png
 # 루트 임시 스크린샷·작업 이미지 (게임 미사용)
 이미지*.png
+
+# 변환 전 원본 이미지(게임은 webp만 사용 — 레포 경량화)
+images/Gemini_Generated_Image_*.png
+images/유니콘.jpeg
