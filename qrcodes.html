@@ -58,13 +58,30 @@
       white-space: nowrap;
     }
 
+    /* 장소(미션)마다 한 행 */
     .grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
-      max-width: 700px;
+      max-width: 760px;
       margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
     }
+    .place-row {
+      border: 1px solid #2a3a5e;
+      border-radius: 14px;
+      padding: 12px 14px;
+      background: #141d33;
+    }
+    .place-head {
+      display: flex; align-items: baseline; gap: 10px;
+      margin-bottom: 10px; padding-bottom: 8px;
+      border-bottom: 1px solid #2a3a5e;
+    }
+    .place-name { font-size: 1.05rem; font-weight: bold; color: #ffd166; }
+    .place-type { font-size: 0.78rem; color: #8b9bb4; }
+    /* 같은 장소 QR을 한 줄에 나란히 (1~4개 가변) */
+    .row-cards { display: flex; flex-wrap: wrap; gap: 12px; }
+    .row-cards .qr-card { flex: 0 0 auto; width: 160px; }
 
     .qr-card {
       background: #fff;
@@ -117,9 +134,11 @@
 
     @media print {
       body { background: #fff; color: #000; }
-      .qr-card { border: 1px solid #ddd; }
       .base-url-row, .print-btn, .back-link, h1, .subtitle { display: none; }
-      .grid { grid-template-columns: repeat(3, 1fr); }
+      .place-row { border: 1px solid #bbb; background: #fff; break-inside: avoid; page-break-inside: avoid; }
+      .place-name { color: #000; }
+      .place-type { color: #555; }
+      .qr-card { border: 1px solid #ddd; }
     }
   </style>
 </head>
@@ -148,10 +167,22 @@
       fetch('course.json')
         .then(r => r.json())
         .then(course => {
+          // 장소(미션)마다 한 행(.place-row). 같은 장소 QR은 한 줄에 나란히,
+          // 장소가 바뀌면 다음 행으로. 한 줄에 1개~4개까지 가변.
           course.missions.forEach(m => {
             const qids = m.qids || [];
             const isCommon = qids.length === 1;
             const isClue = m.mode === 'clue';
+
+            const row = document.createElement('div');
+            row.className = 'place-row';
+            const typeLabel = isCommon ? '공통 1개' : isClue ? `단서 ${qids.length}개` : `협력 ${qids.length}개`;
+            row.innerHTML = `<div class="place-head"><span class="place-name">${m.placeName}</span><span class="place-type">${typeLabel}</span></div>`;
+            const cards = document.createElement('div');
+            cards.className = 'row-cards';
+            row.appendChild(cards);
+            grid.appendChild(row);
+
             qids.forEach((qid, i) => {
               const slot = String.fromCharCode(65 + i); // A,B,C,D
               const tag = isCommon ? '공통' : isClue ? `단서 ${slot}` : slot;
@@ -159,11 +190,11 @@
               const card = document.createElement('div');
               card.className = 'qr-card';
               card.innerHTML = `
-                <div class="qr-label">${m.placeName} — ${qid} (${tag})</div>
+                <div class="qr-label">${qid} (${tag})</div>
                 <div class="qr-box" id="qr-${qid}"></div>
                 <div class="qr-cat">${url}</div>
               `;
-              grid.appendChild(card);
+              cards.appendChild(card);
               new QRCode(document.getElementById(`qr-${qid}`), {
                 text: url, width: 150, height: 150,
                 colorDark: '#1a1a2e', colorLight: '#ffffff',
