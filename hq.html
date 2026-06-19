@@ -122,6 +122,27 @@
     .gs-btn.stop { background: linear-gradient(135deg, #e94560, #b8293f); }
     .gs-btn:disabled { background: #2a3450; color: #5b6b8a; cursor: not-allowed; }
     .gs-hint { color: #8b9bb4; font-size: 0.78rem; margin-top: 8px; line-height: 1.5; }
+
+    /* 커스텀 확인 모달 (모바일 인앱브라우저는 confirm()이 막혀 먹통이 됨) */
+    .modal-back {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+      display: none; align-items: center; justify-content: center;
+      z-index: 1000; padding: 20px;
+    }
+    .modal-back.show { display: flex; }
+    .modal-box {
+      background: #1a2540; border-radius: 16px; padding: 22px;
+      max-width: 360px; width: 100%; text-align: center;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+    }
+    .modal-box .m-msg { color: #e6eefc; font-size: 0.98rem; line-height: 1.55; margin-bottom: 18px; white-space: pre-line; }
+    .modal-box .m-row { display: flex; gap: 10px; }
+    .modal-box .m-btn {
+      flex: 1; border: none; border-radius: 10px; padding: 13px 0;
+      font-size: 0.98rem; font-weight: bold; cursor: pointer;
+    }
+    .modal-box .m-ok { background: linear-gradient(135deg, #2ec4b6, #1a9b8f); color: #fff; }
+    .modal-box .m-cancel { background: #2a3450; color: #b9c6e0; }
   </style>
 </head>
 <body>
@@ -152,6 +173,17 @@
 
     <div class="section-title">📚 전체 문제·정답 (커닝지)</div>
     <div id="bank"></div>
+  </div>
+
+  <!-- 커스텀 확인 모달 -->
+  <div class="modal-back" id="confirmModal">
+    <div class="modal-box">
+      <div class="m-msg" id="confirmMsg"></div>
+      <div class="m-row">
+        <button class="m-btn m-cancel" id="confirmCancel">취소</button>
+        <button class="m-btn m-ok" id="confirmOk">확인</button>
+      </div>
+    </div>
   </div>
 
   <script src="firebase-config.js"></script>
@@ -247,6 +279,26 @@
       return Math.round(m / 60) + '시간 전';
     }
 
+    /* ---------- 커스텀 확인 모달 (confirm 대체) ---------- */
+    function askConfirm(msg) {
+      return new Promise((resolve) => {
+        const back = document.getElementById('confirmModal');
+        const msgEl = document.getElementById('confirmMsg');
+        const okBtn = document.getElementById('confirmOk');
+        const cancelBtn = document.getElementById('confirmCancel');
+        msgEl.textContent = msg;
+        back.classList.add('show');
+        const close = (val) => {
+          back.classList.remove('show');
+          okBtn.onclick = cancelBtn.onclick = back.onclick = null;
+          resolve(val);
+        };
+        okBtn.onclick = () => close(true);
+        cancelBtn.onclick = () => close(false);
+        back.onclick = (e) => { if (e.target === back) close(false); };
+      });
+    }
+
     /* ---------- 게임 on/off 스위치 ---------- */
     let gameOn = false;
     function renderGameSwitch() {
@@ -283,10 +335,10 @@
       const btn = document.getElementById('gsBtn');
       if (sync && sync.online && typeof sync.subscribeGameState === 'function') {
         sync.subscribeGameState((on) => { gameOn = on; renderGameSwitch(); });
-        btn.onclick = () => {
+        btn.onclick = async () => {
           const next = !gameOn;
-          const msg = next ? '게임을 시작할까요? 모든 폰에서 미션이 열립니다.' : '게임을 정지할까요? 아이들 화면은 캠핑 안내로 바뀝니다.';
-          if (confirm(msg)) sync.setGameState(next);
+          const msg = next ? '게임을 시작할까요?\n모든 폰에서 미션이 열립니다.' : '게임을 정지할까요?\n아이들 화면은 캠핑 안내로 바뀝니다.';
+          if (await askConfirm(msg)) sync.setGameState(next);
         };
       }
       renderGameSwitch();
