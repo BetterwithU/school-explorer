@@ -724,7 +724,10 @@
         placeholder = `${n}명의 답을 순서대로 합쳐서 입력`;
       }
 
-      const hasHints = q.hints && q.hints.length > 0;
+      // 아이 화면 자동 힌트 비활성화: 조마다 인솔 아빠가 직접 힌트를 주므로,
+      // 화면 힌트(너무 직접적이라 게임 재미↓)는 숨긴다. 데이터(q.hints)와
+      // 아빠 정답지(manual.html)는 그대로 유지 → 되살리려면 false를 q.hints 조건으로 복구.
+      const hasHints = false;
       const mediaHtml = renderMediaHtml(questionMedia(q));
       // 숫자전용 문제(예: 수학 미션) → 모바일 숫자 키패드 + 숫자만 입력 허용
       const numAttrs = q.numeric ? ' inputmode="numeric" pattern="[0-9]*"' : '';
