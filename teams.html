@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🏕️ 캠핑 탐험대 조 편성표</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Apple SD Gothic Neo', 'Nanum Gothic', sans-serif; background: #ece6d8; color: #2a2218; line-height: 1.5; padding: 16px; }
+    .wrap { max-width: 760px; margin: 0 auto; }
+
+    h1 { font-size: 1.3rem; color: #5c3a12; text-align: center; margin-bottom: 4px; }
+    .lead { text-align: center; font-size: 0.85rem; color: #8a7a55; margin-bottom: 8px; }
+    .toolbar { text-align: center; margin-bottom: 16px; }
+    .print-btn { background: #6b3410; color: #fff; border: none; border-radius: 8px; padding: 9px 20px; font-size: 0.9rem; font-weight: bold; cursor: pointer; }
+    .print-btn:active { transform: scale(0.97); }
+
+    .teams { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+    .team { border-radius: 12px; overflow: hidden; border: 1px solid #d6cbb0; background: #fff; break-inside: avoid; }
+    .team-head { color: #fff; padding: 8px 12px; font-weight: 900; font-size: 1.05rem; display: flex; justify-content: space-between; align-items: center; }
+    .team-head .cnt { font-size: 0.78rem; font-weight: bold; opacity: 0.9; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
+    td, th { padding: 5px 8px; border-bottom: 1px solid #eee3cc; }
+    th { background: #f3ead6; color: #6b3410; font-size: 0.78rem; }
+    .no { width: 28px; text-align: center; color: #8a7a55; }
+    .grade { width: 56px; text-align: center; color: #5c3a12; font-weight: bold; }
+    .young td { background: #fff7e3; }
+    .young .grade { color: #c47b00; }
+    tr:last-child td { border-bottom: none; }
+
+    @media print {
+      body { background: #fff; padding: 0; }
+      .toolbar { display: none; }
+      .teams { gap: 10px; }
+      .team { box-shadow: none; }
+      .team-head, .young td, th { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+    @media (max-width: 560px) { .teams { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>🏕️ 캠핑 탐험대 조 편성표</h1>
+    <p class="lead">각 조 저학년 → 고학년 순 · 총 31명 (5개 조)</p>
+    <div class="toolbar">
+      <button class="print-btn" onclick="window.print()">🖨️ 인쇄 / PDF 저장</button>
+    </div>
+    <div class="teams" id="teams"></div>
+  </div>
+
+  <script>
+    // 조 색상
+    const COLORS = { 1:'#e94560', 2:'#f4a261', 3:'#2a9d8f', 4:'#577590', 5:'#9b5de5' };
+    // (조, 이름, 학년표시, 보호자)  — 저학년→고학년 정렬, 미취학은 나이만
+    const DATA = [
+      [1,'주하영','5살','주한구'],[1,'정인서','1학년','정덕영'],[1,'허태욱','2학년','허철호'],
+      [1,'조아준','3학년','조성호'],[1,'주하윤','4학년','주한구'],[1,'김담율','5학년','김치수'],
+
+      [2,'박예담','7살','박일환'],[2,'이영석','1학년','이재석'],[2,'한정원','3학년','한동규'],
+      [2,'박예성','4학년','박일환'],[2,'정서호','5학년','정철'],[2,'최지훈','6학년','최정항'],
+
+      [3,'김채은(동생)','6살','김상근'],[3,'지은호','1학년','지승훈'],[3,'김채은','3학년','김상근'],
+      [3,'이보은','3학년','이재석'],[3,'허준성','5학년','허철호'],[3,'김시언','6학년','김민우'],
+
+      [4,'하시율','7살','하래권'],[4,'박예솜','2학년','박일환'],[4,'정호준','3학년','정덕영'],
+      [4,'오지안','3학년','오상현'],[4,'하시헌','4학년','하래권'],[4,'김주은','5학년','김태훈'],
+      [4,'한준휘','6학년','한충원'],
+
+      [5,'김리호','1학년','김민우'],[5,'이아인','3학년','이원태'],[5,'김주혁','4학년','김태훈'],
+      [5,'김태은','5학년','김일회'],[5,'정아인','5학년','정용주'],[5,'한예준','6학년','한동규'],
+    ];
+
+    // 조별 인솔 아빠
+    const LEADER = { 1:'박일환', 2:'김민우', 3:'김일회', 4:'지승훈', 5:'이재석' };
+
+    const byTeam = {};
+    DATA.forEach(r => { (byTeam[r[0]] = byTeam[r[0]] || []).push(r); });
+
+    document.getElementById('teams').innerHTML = [1,2,3,4,5].map(t => {
+      const rows = byTeam[t].map((r,i) => {
+        const young = /살/.test(r[2]);
+        return `<tr class="${young?'young':''}">
+          <td class="no">${i+1}</td>
+          <td>${r[1]}</td>
+          <td class="grade">${r[2]}</td>
+          <td>${r[3]}</td>
+        </tr>`;
+      }).join('');
+      return `<div class="team">
+        <div class="team-head" style="background:${COLORS[t]}">
+          <span>탐험대 ${t}조</span><span class="cnt">🧭 ${LEADER[t]} 아빠 · ${byTeam[t].length}명</span>
+        </div>
+        <table>
+          <tr><th class="no">#</th><th>이름</th><th class="grade">학년</th><th>보호자</th></tr>
+          ${rows}
+        </table>
+      </div>`;
+    }).join('');
+  </script>
+</body>
+</html>
