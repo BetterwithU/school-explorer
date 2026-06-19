@@ -185,14 +185,15 @@
 
             qids.forEach((qid, i) => {
               const slot = String.fromCharCode(65 + i); // A,B,C,D
-              const tag = isCommon ? '공통' : isClue ? `단서 ${slot}` : slot;
+              // 카드 라벨 = 장소명(층 표기 제외) + 칸(A·B·C·D). 공통(1개)은 장소명만.
+              const shortPlace = m.placeName.split('(')[0].trim();
+              const label = isCommon ? shortPlace : `${shortPlace} ${slot}`;
               const url = `${base}/mission.html?q=${encodeURIComponent(qid)}`;
               const card = document.createElement('div');
               card.className = 'qr-card';
               card.innerHTML = `
-                <div class="qr-label">${qid} (${tag})</div>
+                <div class="qr-label">${label}</div>
                 <div class="qr-box" id="qr-${qid}"></div>
-                <div class="qr-cat">${url}</div>
               `;
               cards.appendChild(card);
               new QRCode(document.getElementById(`qr-${qid}`), {
