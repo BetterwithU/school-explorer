@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🏕️ 학교 캠핑 탐험대 — 아버지회 안내서</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Apple SD Gothic Neo', 'Nanum Gothic', sans-serif;
+      background: #ece6d8; color: #2a2218; line-height: 1.6; padding: 18px;
+    }
+    .wrap { max-width: 680px; margin: 0 auto; }
+
+    h1 { font-size: 1.4rem; color: #5c3a12; text-align: center; margin-bottom: 4px; }
+    .lead { text-align: center; font-size: 0.9rem; color: #8a7a55; margin-bottom: 20px; }
+
+    section { background: #fff; border: 1px solid #d6cbb0; border-radius: 14px; padding: 16px 18px; margin-bottom: 16px; }
+    h2 { font-size: 1.12rem; color: #6b3410; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+    h2 .num { background: #6b3410; color: #fff; width: 26px; height: 26px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.9rem; flex: 0 0 auto; }
+    p { margin-bottom: 8px; font-size: 0.95rem; }
+    ul { margin: 6px 0 6px 4px; list-style: none; }
+    li { position: relative; padding-left: 22px; margin-bottom: 7px; font-size: 0.95rem; }
+    li::before { content: '•'; position: absolute; left: 6px; color: #6b3410; font-weight: bold; }
+    li.ok::before { content: '✅'; left: 0; }
+    li.no::before { content: '❌'; left: 0; }
+
+    .flow { background: #f3ead6; border-radius: 10px; padding: 12px 14px; font-size: 0.92rem; line-height: 1.9; }
+    .flow b { color: #6b3410; }
+
+    .alert { background: #fbe9e7; border: 1px solid #f0c4bd; border-radius: 10px; padding: 12px 14px; margin-top: 10px; font-size: 0.92rem; color: #9c2; }
+    .alert.danger { color: #b23; }
+    .alert b { color: #8c1f12; }
+
+    .linkbox { background: #eef6ea; border: 1px solid #c4ddb8; border-radius: 10px; padding: 12px 14px; margin-top: 10px; }
+    .linkbox a { color: #2d6010; font-weight: bold; word-break: break-all; }
+    .linkbox .note { font-size: 0.82rem; color: #6f8a5a; margin-top: 6px; }
+
+    .keypoints { background: #6b3410; color: #fff5e8; border-radius: 14px; padding: 16px 18px; }
+    .keypoints h2 { color: #fff; }
+    .keypoints h2 .num { background: #fff; color: #6b3410; }
+    .keypoints li { color: #fff5e8; }
+    .keypoints li::before { content: '✔'; color: #ffd166; }
+    .keypoints b { color: #ffd166; }
+
+    .outro { text-align: center; font-size: 0.88rem; color: #8a7a55; margin: 10px 0 4px; }
+
+    /* 조 편성 공지 */
+    .teams { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 6px; }
+    .team { border: 1px solid #d6cbb0; border-radius: 10px; overflow: hidden; break-inside: avoid; }
+    .team-head { color: #fff; padding: 7px 11px; font-weight: 900; font-size: 0.98rem; display: flex; justify-content: space-between; align-items: center; }
+    .team-head .cnt { font-size: 0.74rem; font-weight: bold; opacity: 0.9; }
+    .team table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    .team td, .team th { padding: 4px 7px; border-bottom: 1px solid #eee3cc; }
+    .team th { background: #f3ead6; color: #6b3410; font-size: 0.74rem; }
+    .team .no { width: 22px; text-align: center; color: #8a7a55; }
+    .team .grade { width: 50px; text-align: center; color: #5c3a12; font-weight: bold; }
+    .team .young td { background: #fff7e3; }
+    .team .young .grade { color: #c47b00; }
+    .team tr:last-child td { border-bottom: none; }
+
+    @media print {
+      body { background: #fff; padding: 0; }
+      section, .keypoints { box-shadow: none; break-inside: avoid; }
+      .team-head, .team .young td, .team th { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+    @media (max-width: 520px) { .teams { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>🏕️ 학교 캠핑 탐험대</h1>
+    <p class="lead">아버지회 회원 안내서 — 우리 아이들의 든든한 가이드가 되어 주세요</p>
+
+    <!-- 0. 탐험대 조 편성 공지 -->
+    <section>
+      <h2><span class="num">📋</span> 탐험대 조 편성</h2>
+      <p style="font-size:0.9rem; color:#8a7a55;">아이들은 아래 <b>탐험대 1~5조</b>로 나뉘어 움직입니다. (각 조 저학년 → 고학년 순 · 총 31명)</p>
+      <div class="teams" id="teamsBox"></div>
+    </section>
+
+    <!-- 1. 게임은 이렇게 진행됩니다 (간략) -->
+    <section>
+      <h2><span class="num">1</span> 게임은 이렇게 진행됩니다</h2>
+      <div class="flow">
+        선생님이 <b>게임 시작</b>을 누르면 출발!<br>
+        ① 아이들이 학교 곳곳에 숨은 <b>QR을 찾아 스캔</b>해요<br>
+        ② 화면에 뜬 <b>문제를 풀어</b> 정답을 맞혀요<br>
+        ③ 맞히면 <b>보물 글자 1개</b>를 얻고 다음 장소로!<br>
+        ④ 8개 장소를 모두 돌아 글자를 모으면 → <b>최종 보물의 위치</b>가 공개돼요 🎁
+      </div>
+      <p style="margin-top:10px; font-size:0.88rem; color:#8a7a55;">
+        ※ 아이들은 조별로 움직입니다. 아빠는 옆에서 <b>안전을 지키고, 막힐 때만 도와주는</b> 역할이에요.
+      </p>
+    </section>
+
+    <!-- 2. 안전사항 (본론) -->
+    <section>
+      <h2><span class="num">2</span> ⚠️ 꼭 지켜주세요 — 안전이 최우선</h2>
+      <ul>
+        <li>게임이 시작되면 아이들은 신나서 흩어집니다. <b>항상 곁을 따라다니며</b> 안전을 살펴 주세요.</li>
+        <li>계단·복도·모서리에서 부딪히지 않도록 미리 주의시켜 주세요.</li>
+        <li>다친 아이가 있거나 문제가 생기면 <b>즉시 운영본부(선생님)</b>에게 알려 주세요.</li>
+      </ul>
+      <div class="alert danger">
+        ☔ <b>비가 오면 실내 바닥이 미끄럽습니다.</b><br>
+        아이들에게 <b>"뛰지 않기"</b>를 반복해서 안내해 주세요. 넘어짐 사고가 가장 위험합니다.
+      </div>
+      <div class="alert">
+        🧭 <b>안전 &gt; 게임 진행.</b> 게임을 늦게 끝내도 괜찮습니다. <b>다치지 않는 것</b>이 가장 중요합니다.
+      </div>
+    </section>
+
+    <!-- 3. 힌트 주기 -->
+    <section>
+      <h2><span class="num">3</span> 💡 힌트는 이렇게 주세요</h2>
+      <p>아이들이 <b>스스로 푸는 즐거움</b>이 이 게임의 핵심입니다. 정답을 너무 빨리 알려주면 재미가 사라져요.</p>
+      <ul>
+        <li class="no">처음부터 정답을 알려주지 마세요.</li>
+        <li class="ok">먼저 아이들끼리 충분히 고민하고 의논하게 두세요.</li>
+        <li class="ok">정 모르겠다 싶으면 → <b>답이 아니라 '생각의 방향'</b>만 살짝 던져 주세요.<br>
+          <span style="color:#8a7a55; font-size:0.88rem;">예: "숫자들을 한번 비교해볼까?" / "혹시 규칙이 보이지 않니?"</span></li>
+        <li class="ok">그래도 너무 오래 막히면 → 정답을 알려주고 다음 장소로 보내 주세요.</li>
+      </ul>
+      <div class="linkbox">
+        📄 <b>모든 문제의 정답과 힌트</b>는 아빠 전용 정답지에서 확인하세요:<br>
+        <a href="https://betterwithu.github.io/school-explorer/manual.html" target="_blank">betterwithu.github.io/school-explorer/manual.html</a>
+        <div class="note">⚠️ 이 페이지는 아빠들만 보는 커닝지입니다. 아이들에게 보여주지 마세요.</div>
+      </div>
+    </section>
+
+    <!-- 4. 기억할 3가지 -->
+    <section class="keypoints">
+      <h2><span class="num">★</span> 기억할 3가지</h2>
+      <ul>
+        <li><b>안전 먼저</b> — 곁에서 따라다니기, 비 오면 미끄러우니 뛰지 않기</li>
+        <li><b>힌트는 아껴서</b> — 정 모를 때만, 정답이 아니라 방향만</li>
+        <li><b>스스로 풀게</b> — 기다려주는 것이 가장 큰 도움입니다</li>
+      </ul>
+    </section>
+
+    <p class="outro">도움이 필요하면 언제든 운영본부로 와 주세요. 함께해 주셔서 감사합니다 🙏</p>
+  </div>
+
+  <script>
+    // 탐험대 조 편성 (저학년→고학년 순, 미취학은 나이만)
+    const TEAM_COLORS = { 1:'#e94560', 2:'#f4a261', 3:'#2a9d8f', 4:'#577590', 5:'#9b5de5' };
+    const TEAM_DATA = [
+      [1,'주하영','5살'],[1,'정인서','1학년'],[1,'허태욱','2학년'],
+      [1,'조아준','3학년'],[1,'주하윤','4학년'],[1,'김담율','5학년'],
+      [2,'박예담','7살'],[2,'이영석','1학년'],[2,'한정원','3학년'],
+      [2,'박예성','4학년'],[2,'정서호','5학년'],[2,'최지훈','6학년'],
+      [3,'김채은(동생)','6살'],[3,'지은호','1학년'],[3,'김채은','3학년'],
+      [3,'이보은','3학년'],[3,'허준성','5학년'],[3,'김시언','6학년'],
+      [4,'하시율','7살'],[4,'박예솜','2학년'],[4,'정호준','3학년'],
+      [4,'오지안','3학년'],[4,'하시헌','4학년'],[4,'김주은','5학년'],[4,'한준휘','6학년'],
+      [5,'김리호','1학년'],[5,'이아인','3학년'],[5,'김주혁','4학년'],
+      [5,'김태은','5학년'],[5,'정아인','5학년'],[5,'한예준','6학년'],
+    ];
+    const LEADER = { 1:'박일환', 2:'김민우', 3:'김일회', 4:'지승훈', 5:'이재석' };
+    const _bt = {};
+    TEAM_DATA.forEach(r => { (_bt[r[0]] = _bt[r[0]] || []).push(r); });
+    document.getElementById('teamsBox').innerHTML = [1,2,3,4,5].map(t => {
+      const rows = _bt[t].map((r,i) => {
+        const young = /살/.test(r[2]);
+        return `<tr class="${young?'young':''}"><td class="no">${i+1}</td><td>${r[1]}</td><td class="grade">${r[2]}</td></tr>`;
+      }).join('');
+      return `<div class="team">
+        <div class="team-head" style="background:${TEAM_COLORS[t]}"><span>탐험대 ${t}조</span><span class="cnt">🧭 ${LEADER[t]} 아빠 · ${_bt[t].length}명</span></div>
+        <table><tr><th class="no">#</th><th>이름</th><th class="grade">학년</th></tr>${rows}</table>
+      </div>`;
+    }).join('');
+  </script>
+</body>
+</html>
