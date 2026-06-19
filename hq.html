@@ -356,11 +356,12 @@
         btn.title = '오프라인 — 초기화 불가';
         return;
       }
-      btn.onclick = () => {
+      btn.onclick = async () => {
         // 1차 확인 — 무엇이 지워지는지 명확히 경고
-        if (!confirm('⚠️ 모든 조의 진행 기록을 삭제합니다.\n\n지금까지 푼 미션·위치·완주 기록이 전부 사라지고\n대시보드가 빈 상태로 돌아갑니다. (게임 시작/정지 상태는 유지)\n\n계속할까요?')) return;
+        // (모바일 인앱브라우저는 네이티브 confirm()이 막혀 먹통 → 커스텀 모달 askConfirm 사용)
+        if (!(await askConfirm('⚠️ 모든 조의 진행 기록을 삭제합니다.\n\n지금까지 푼 미션·위치·완주 기록이 전부 사라지고\n대시보드가 빈 상태로 돌아갑니다. (게임 시작/정지 상태는 유지)\n\n계속할까요?'))) return;
         // 2차 확인 — 되돌릴 수 없음을 한 번 더
-        if (!confirm('정말 초기화할까요?\n\n이 작업은 되돌릴 수 없습니다. 실제 게임이 진행 중이면 절대 누르지 마세요.')) return;
+        if (!(await askConfirm('정말 초기화할까요?\n\n이 작업은 되돌릴 수 없습니다. 실제 게임이 진행 중이면 절대 누르지 마세요.'))) return;
         btn.disabled = true; btn.textContent = '초기화 중…';
         Promise.resolve(sync.resetTeams()).then(() => {
           btn.textContent = '✅ 초기화됨';
