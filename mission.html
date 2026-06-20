@@ -318,6 +318,17 @@
     .quorum-box .q-count span { color: #e8590c; }
     .quorum-box .q-hint { font-size: 0.8rem; color: #4a8a76; }
 
+    /* 정족수 도달 → 이동 예고 토스트 (못 푼 아이 화면 위에 뜸) */
+    .quorum-move-toast {
+      position: fixed; inset: 0; z-index: 2000;
+      background: rgba(12,90,68,0.96); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      text-align: center; font-size: 1.25rem; font-weight: bold; line-height: 1.7;
+      padding: 30px; animation: qmt-in 0.25s ease;
+    }
+    .quorum-move-toast b { color: #ffd166; }
+    @keyframes qmt-in { from { opacity: 0; } to { opacity: 1; } }
+
     .piece-box {
       background: rgba(60,100,40,0.08);
       border: 1px solid rgba(60,100,40,0.3);
@@ -798,6 +809,7 @@
         const ok = isClue ? checkMissionAnswer(MISSION, input) : checkCombined(q, input);
         if (ok) {
           markSolved(PROGRESS, q.set, input.trim());
+          window._solvedAndWaiting = true;   // 내가 풀었음을 즉시 표시(아래 구독 콜백이 나를 지도로 튕기지 않게) — 결함 B
           reportProgress(COURSE, PROGRESS);
           fb.className = 'feedback right';
           fb.textContent = isCommon ? '🎉 정답이에요! 멋져요!' : '🎉 정답이에요! 모두 힘을 합쳤네요!';
@@ -815,19 +827,46 @@
         document.querySelector('.back-link').onclick = () => location.href = 'dev.html';
       }
 
-      // ── 아직 못 푼 아이도 정족수 도달 시 함께 지도로 ──
-      // 이 문제 화면에 머무는 동안 조 진행을 구독한다. 같은 조에서 이 미션을 푼 폰이
-      // 3명 이상이 되면(=다음 장소가 공개되면) 아직 못 푼 이 아이도 자동으로 지도로 이동.
+      // ── 아직 못 푼 아이도 정족수 도달 시 함께 이동 ──
+      // 이 문제 화면(또는 입력 중)에 머무는 동안 조 진행을 구독한다.
+      // 같은 조에서 이 미션을 푼 폰이 3명 이상이면 → 예고 메시지 2초 후 일괄 이동.
       const myMissionIdx = PROGRESS.order.indexOf(MISSION.set);
       const QUORUM = 3;
+      const isLastMission = myMissionIdx === PROGRESS.order.length - 1;
       const qSync = window.SchoolExplorerSync;
+
+      let leaving = false;
+      // 못 푼 채 이동: 마지막 미션이면 전부 클리어 처리 후 힌트조합(피날레)로, 아니면 지도로.
+      const leaveByQuorum = (announce) => {
+        if (leaving) return; leaving = true;
+        const dest = isLastMission ? 'home.html?pieces=1' : 'home.html';
+        if (isLastMission) {
+          PROGRESS.step = PROGRESS.order.length;   // 못 푼 마지막 미션도 완료 처리 → 피날레 도달
+          try { saveProgress(PROGRESS); } catch (e) {}
+        }
+        if (announce) {
+          // 예고 메시지를 띄우고 2초 후 이동
+          const ov = document.createElement('div');
+          ov.className = 'quorum-move-toast';
+          ov.innerHTML = isLastMission
+            ? '🎉 친구 3명이 모두 풀었어요!<br>잠시 후 <b>보물 찾기 화면</b>으로 이동합니다'
+            : '📢 친구 3명이 정답을 입력했어요!<br>잠시 후 <b>지도로 이동</b>합니다';
+          document.body.appendChild(ov);
+          setTimeout(() => { location.href = dest; }, 2000);
+        } else {
+          location.href = dest;
+        }
+      };
+
       if (!DEV && qSync && qSync.online && typeof qSync.subscribe === 'function') {
         qSync.subscribe((data) => {
-          if (window._solvedAndWaiting) return;   // 내가 이미 풀어 대기화면이면 그쪽 로직이 처리
+          if (window._solvedAndWaiting || leaving) return;   // 내가 풀었거나 이미 이동 중이면 무시
           const teamData = (data && data[PROGRESS.team]) || {};
           const solvedPhones = Object.values(teamData).filter(d => (d && d.step || 0) > myMissionIdx).length;
-          if (solvedPhones >= QUORUM) location.href = 'home.html';
+          if (solvedPhones >= QUORUM) leaveByQuorum(true);   // 예고 메시지 후 이동
         });
+        // 끊김 대비 안전장치: 25초간 신호 못 받아도 멈춰있지 않게(예고 없이 바로)
+        setTimeout(() => { if (!window._solvedAndWaiting) leaveByQuorum(false); }, 25000);
       }
     }
 
