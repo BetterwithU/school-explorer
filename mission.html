@@ -304,6 +304,19 @@
     }
     .share-box .share-lbl { font-size: 0.78rem; color: #7a3a10; margin-bottom: 6px; }
     .share-box .share-ans { font-size: 1.7rem; font-weight: bold; color: #2c1a05; letter-spacing: 3px; }
+    .share-extra { font-size: 0.92rem; font-weight: bold; color: #c2410c; margin: 8px 0 4px; }
+
+    /* 정족수(3명) 대기 박스 */
+    .quorum-box {
+      background: rgba(20,120,90,0.1);
+      border: 1px solid rgba(20,120,90,0.4);
+      border-radius: 10px; padding: 16px; margin: 12px 0 4px;
+    }
+    .quorum-box .q-wait { font-size: 0.95rem; color: #14785a; line-height: 1.55; }
+    .quorum-box .q-wait b { color: #0c5a44; }
+    .quorum-box .q-count { font-size: 1.5rem; font-weight: bold; color: #0c5a44; margin: 10px 0 4px; }
+    .quorum-box .q-count span { color: #e8590c; }
+    .quorum-box .q-hint { font-size: 0.8rem; color: #4a8a76; }
 
     .piece-box {
       background: rgba(60,100,40,0.08);
@@ -801,9 +814,25 @@
       if (DEV) {
         document.querySelector('.back-link').onclick = () => location.href = 'dev.html';
       }
+
+      // ── 아직 못 푼 아이도 정족수 도달 시 함께 지도로 ──
+      // 이 문제 화면에 머무는 동안 조 진행을 구독한다. 같은 조에서 이 미션을 푼 폰이
+      // 3명 이상이 되면(=다음 장소가 공개되면) 아직 못 푼 이 아이도 자동으로 지도로 이동.
+      const myMissionIdx = PROGRESS.order.indexOf(MISSION.set);
+      const QUORUM = 3;
+      const qSync = window.SchoolExplorerSync;
+      if (!DEV && qSync && qSync.online && typeof qSync.subscribe === 'function') {
+        qSync.subscribe((data) => {
+          if (window._solvedAndWaiting) return;   // 내가 이미 풀어 대기화면이면 그쪽 로직이 처리
+          const teamData = (data && data[PROGRESS.team]) || {};
+          const solvedPhones = Object.values(teamData).filter(d => (d && d.step || 0) > myMissionIdx).length;
+          if (solvedPhones >= QUORUM) location.href = 'home.html';
+        });
+      }
     }
 
     function showNextAfterSolve(solvedAnswer, wasCommon) {
+      window._solvedAndWaiting = true;   // 풀이 화면 구독과 충돌 방지
       const allDone = isAllDone(PROGRESS);
       const stepNo = PROGRESS.step + 1, total = PROGRESS.order.length;
 
@@ -836,39 +865,46 @@
         return;
       }
 
-      const m = missionBySet(COURSE, currentSet(PROGRESS));
-      const n = missionQrCount(m);
-      const placeHtml = `<div class="place"><div class="lbl">다음 장소</div><div class="nm">${m.placeName}</div></div>`;
-      const scanMsg = m.mode === 'clue'
-        ? `${stepNo}/${total} · 이 장소에서 QR ${n}개를 ${n}명이 나눠 스캔해 단서를 모으세요!`
-        : n === 1
-          ? `${stepNo}/${total} · 이 장소의 QR을 스캔해 공통 문제를 푸세요!`
-          : `${stepNo}/${total} · 이 장소에서 QR ${n}개를 ${n}명이 나눠 스캔!`;
+      // ── 조원 정족수(3명) 대기 화면 ──
+      // 다음 장소는 "탐험대 3명 이상이 정답 입력" 시 전원에게 일괄 공개된다.
+      // 내가 방금 푼 이 미션의 order 인덱스. 이 인덱스보다 step이 큰 폰 = 이 미션을 이미 푼 폰.
+      const solvedMissionIdx = PROGRESS.order.indexOf(MISSION.set);
+      const QUORUM = 3;
 
       document.getElementById('card').innerHTML = `
         <div class="guide">
           <div class="ico">✅</div>
-          <div class="ttl">정답! 다음 미션으로 출발!</div>
+          <div class="ttl">정답이에요! 잘했어요!</div>
           ${shareHtml}
+          <div class="share-extra">📢 다른 탐험조원들에게 정답을 알려주세요!</div>
           ${pieceHtml}
-          ${placeHtml}
-          <div class="desc">${scanMsg}</div>
-          ${DEV ? '<a class="guide btn" href="dev.html">🛠️ 개발자 패널로</a>' : ''}
-          <a class="guide btn" href="home.html">🏠 미션 홈으로</a>
-          <div class="redirect-bar">🗺️ <span id="redirectCount">3</span>초 후 지도로 이동합니다</div>
+          <div class="quorum-box">
+            <div class="q-wait">⏳ 탐험대 <b>${QUORUM}명 이상</b>이 정답을 입력해야<br>다음 장소가 공개됩니다</div>
+            <div class="q-count"><span id="quorumNow">1</span> / ${QUORUM} 명 완료</div>
+            <div class="q-hint">친구들이 다 풀면 모두 함께 다음 장소로 이동해요!</div>
+          </div>
         </div>`;
 
-      // 3초 카운트다운 후 home.html로 자동 이동
-      let count = 3;
-      const timer = setInterval(() => {
-        count--;
-        const el = document.getElementById('redirectCount');
-        if (el) el.textContent = count;
-        if (count <= 0) {
-          clearInterval(timer);
-          location.href = 'home.html';
-        }
-      }, 1000);
+      // 조 진행 실시간 구독 → 이 미션을 푼 폰 수가 정족수에 도달하면 전원 일괄 지도 이동
+      let moved = false;
+      const goMap = () => { if (moved) return; moved = true; location.href = 'home.html'; };
+      const sync = window.SchoolExplorerSync;
+      if (sync && sync.online && typeof sync.subscribe === 'function') {
+        sync.subscribe((data) => {
+          const teamData = (data && data[PROGRESS.team]) || {};
+          // 이 미션을 푼 폰 = step이 solvedMissionIdx 보다 큰(=다음으로 넘어간) 폰
+          const solvedPhones = Object.values(teamData).filter(d => (d && d.step || 0) > solvedMissionIdx).length;
+          const shown = Math.max(1, solvedPhones);
+          const el = document.getElementById('quorumNow');
+          if (el) el.textContent = Math.min(shown, QUORUM);
+          if (solvedPhones >= QUORUM) goMap();
+        });
+        // 안전장치: 동기화가 끊겨도 25초 뒤엔 진행되도록(데드락 방지)
+        setTimeout(goMap, 25000);
+      } else {
+        // 오프라인/DEV — 정족수 판정 불가 → 기존처럼 잠시 후 바로 이동
+        setTimeout(goMap, 1500);
+      }
     }
 
     // 힌트 팝업 닫기 — 닫기 버튼 or 오버레이 클릭
