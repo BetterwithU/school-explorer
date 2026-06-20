@@ -132,6 +132,15 @@
       font-size: 0.9rem;
     }
 
+    .start-qr-card {
+      background: #16213e; border: 2px dashed #c89b3c; border-radius: 14px;
+      padding: 18px; margin: 0 0 18px; text-align: center;
+    }
+    .start-qr-card .sq-title { font-size: 1.2rem; font-weight: 900; color: #ffd166; margin-bottom: 4px; }
+    .start-qr-card .sq-sub { font-size: 0.85rem; color: #a8b3c8; margin-bottom: 12px; }
+    .start-qr-card .sq-box { display: inline-block; padding: 12px; background: #fff; border-radius: 10px; }
+    .start-qr-card .sq-box img, .start-qr-card .sq-box canvas { display: block; }
+
     @media print {
       body { background: #fff; color: #000; }
       .base-url-row, .print-btn, .back-link, h1, .subtitle { display: none; }
@@ -139,6 +148,9 @@
       .place-name { color: #000; }
       .place-type { color: #555; }
       .qr-card { border: 1px solid #ddd; }
+      .start-qr-card { background: #fff; break-inside: avoid; page-break-inside: avoid; }
+      .start-qr-card .sq-title { color: #000; }
+      .start-qr-card .sq-sub { color: #555; }
     }
   </style>
 </head>
@@ -151,6 +163,8 @@
     <button onclick="renderQRCodes()">QR 생성</button>
   </div>
 
+  <div class="start-qr-card" id="startQrCard"></div>
+
   <div class="grid" id="grid"></div>
 
   <button class="print-btn" onclick="window.print()">🖨️ QR코드 인쇄하기</button>
@@ -161,6 +175,18 @@
 
     function renderQRCodes() {
       const base = (document.getElementById('baseUrl').value.trim() || DEFAULT_BASE).replace(/\/$/, '');
+
+      // 게임 시작 QR (규칙 화면부터 진입) — 모인 아이들이 찍고 시작
+      const startCard = document.getElementById('startQrCard');
+      startCard.innerHTML = `
+        <div class="sq-title">🚀 게임 시작 QR</div>
+        <div class="sq-sub">설명을 다 들은 뒤, 조별로 이 QR을 찍어 게임을 시작하세요</div>
+        <div class="sq-box" id="startQrBox"></div>`;
+      new QRCode(document.getElementById('startQrBox'), {
+        text: base + '/index.html?fresh=1', width: 220, height: 220,
+        colorDark: '#1a1a2e', colorLight: '#ffffff',
+      });
+
       const grid = document.getElementById('grid');
       grid.innerHTML = '';
 
