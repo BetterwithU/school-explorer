@@ -204,16 +204,6 @@
     }
     .rstep.finale .num { background: linear-gradient(135deg, #e0a82e, #c8870f); }
 
-    /* 본 게임 시작 QR (규칙 설명 후 아이들이 폰으로 찍어 진입) */
-    .start-qr {
-      margin-top: 18px; padding: 18px; text-align: center;
-      background: #fff; border: 2px dashed #c89b3c; border-radius: 14px;
-    }
-    .start-qr .sq-title { font-size: 1.05rem; font-weight: 900; color: #6b3410; margin-bottom: 4px; }
-    .start-qr .sq-sub { font-size: 0.82rem; color: #8a7a55; margin-bottom: 12px; }
-    .start-qr .sq-box { display: inline-block; padding: 10px; background: #fff; border-radius: 10px; }
-    .start-qr .sq-box img, .start-qr .sq-box canvas { display: block; }
-
     .resume-box {
       background: rgba(100,65,20,0.08);
       border: 1px solid rgba(100,65,20,0.3);
@@ -333,7 +323,6 @@
     <p style="text-align:center;color:rgba(100,65,20,0.5)">불러오는 중...</p>
   </div>
 
-  <script src="qrcode.min.js"></script>
   <script src="firebase-config.js"></script>
   <script src="app.js"></script>
   <script type="module" src="sync.js"></script>
@@ -352,15 +341,6 @@
     // dev 콘솔의 '시작 화면' 버튼(?fresh=1)은 진행 중이어도 조 선택부터 보이게 함
     const FRESH = new URLSearchParams(location.search).get('fresh') === '1';
     let rulesSeen = false; // 규칙 화면을 한 번 보면 true → 조 선택으로
-
-    // 규칙 화면에 '본 게임 시작 QR' 생성 — 현재 사이트 주소 기준 index.html?fresh=1
-    function renderStartQR() {
-      const box = document.getElementById('startQrBox');
-      if (!box || typeof QRCode === 'undefined') return;
-      const url = location.origin + location.pathname.replace(/[^/]*$/, '') + 'index.html?fresh=1';
-      box.innerHTML = '';
-      new QRCode(box, { text: url, width: 200, height: 200, correctLevel: QRCode.CorrectLevel.M });
-    }
 
     function render() {
       const panel = document.getElementById('panel');
@@ -418,17 +398,11 @@
               </div>
             </div>
             <a class="btn btn-primary" href="#" id="toTeamsBtn">🚀 시작하기 →</a>
-            <div class="start-qr">
-              <div class="sq-title">📷 이 QR을 찍고 시작!</div>
-              <div class="sq-sub">설명을 다 들었으면, 조별로 이 QR을 찍어 게임을 시작하세요</div>
-              <div class="sq-box" id="startQrBox"></div>
-            </div>
           </div>
         `;
         document.getElementById('toTeamsBtn').onclick = (e) => {
           e.preventDefault(); rulesSeen = true; render();
         };
-        renderStartQR();
         return;
       }
 
