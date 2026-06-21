@@ -336,8 +336,13 @@ function campScreenHtml() {
 let __gameGateBound = false;
 function gateGameOn(onOpen, targetEl) {
   const showCamp = () => {
-    // 게임 관련 글자(제목·부제 등)까지 안 보이게 body 전체를 캠핑 화면으로 교체
-    document.body.innerHTML = campScreenHtml();
+    // panel 컨테이너 안쪽만 캠핑 화면으로 교체한다.
+    // (예전엔 document.body 전체를 덮어 #subtitle/#panel을 파괴 → 게임 off→on 전환 시
+    //  onOpen()이 사라진 DOM을 참조해 TypeError로 멈추고 캠핑 화면에 갇히는 버그가 있었음.)
+    const el = targetEl || document.getElementById('panel') || document.body;
+    el.innerHTML = campScreenHtml();
+    const sub = document.getElementById('subtitle');
+    if (sub) sub.textContent = '';   // 대기 중엔 게임 부제 숨김
   };
   const apply = () => {
     const s = window.SchoolExplorerSync;
