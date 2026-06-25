@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🔳 QR 인쇄 — 중2 탐험 레이스</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Apple SD Gothic Neo','Malgun Gothic',sans-serif; background: #f4f5f8; color: #1a1a2e; padding: 18px; }
+    .wrap { max-width: 900px; margin: 0 auto; }
+    h1 { font-size: 1.4rem; color: #1a3a6e; text-align: center; }
+    .lead { text-align: center; color: #555; font-size: 0.86rem; margin: 6px 0 14px; }
+    .bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; justify-content: center; background: #fff; border: 1px solid #dde; border-radius: 12px; padding: 14px; margin-bottom: 16px; }
+    .bar label { font-size: 0.76rem; color: #666; display: block; margin-bottom: 4px; }
+    .bar input { border: 1px solid #ccd; border-radius: 7px; padding: 8px 10px; font-size: 0.9rem; width: 360px; max-width: 70vw; }
+    .btn { border: none; border-radius: 9px; padding: 10px 18px; font-weight: 800; cursor: pointer; background: #2e74c4; color: #fff; }
+    .btn.print { background: #1a9b6f; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px; }
+    .qr-card { background: #fff; border: 1px solid #dde; border-radius: 12px; padding: 14px; text-align: center; break-inside: avoid; }
+    .qr-no { font-size: 1.5rem; font-weight: 900; color: #1a3a6e; }
+    .qr-place { font-size: 0.86rem; color: #333; margin: 2px 0 10px; min-height: 2.2em; }
+    .qr-box { display: flex; justify-content: center; }
+    .qr-tag { margin-top: 8px; font-size: 0.72rem; color: #888; }
+    .qr-indoor { display: inline-block; font-size: 0.7rem; padding: 1px 7px; border-radius: 10px; margin-top: 4px; }
+    .qr-indoor.in { background: #e3f3ec; color: #1a9b6f; }
+    .qr-indoor.out { background: #fdeee0; color: #c2740c; }
+    @media print {
+      body { background: #fff; padding: 0; }
+      .bar, .lead, .noprint { display: none !important; }
+      .qr-card { border: 1px dashed #bbb; }
+      .grid { gap: 10px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>🔳 QR 코드 인쇄</h1>
+    <p class="lead">각 장소에 붙일 QR입니다. 학생이 스캔하면 그 장소의 문제가 열려요. (번호 = station)</p>
+    <div class="bar noprint">
+      <div>
+        <label>게임 주소(배포 후 실제 주소로) — 끝에 /play.html 까지</label>
+        <input type="text" id="baseUrl" placeholder="예: https://betterwithu.github.io/school-explorer/games/B1/play.html">
+      </div>
+      <button class="btn" id="regen">🔄 다시 생성</button>
+      <button class="btn print" onclick="window.print()">🖨️ 인쇄</button>
+    </div>
+    <div class="grid" id="grid"></div>
+  </div>
+
+  <script src="../../qrcode.min.js"></script>
+  <script src="../../modes/B/engine.js"></script>
+  <script>
+  const E = window.BEngine;
+  let DATA;
+  // 기본 배포주소 추정: 현재 위치에서 play.html
+  const DEFAULT_BASE = new URL('play.html', location.href).href;
+
+  E.loadStations('stations.json').then(d => {
+    DATA = d;
+    document.getElementById('baseUrl').value = DEFAULT_BASE;
+    render();
+  }).catch(e => { document.getElementById('grid').innerHTML = '데이터 로드 실패: ' + e.message; });
+
+  function render() {
+    const base = (document.getElementById('baseUrl').value || DEFAULT_BASE).trim();
+    const grid = document.getElementById('grid');
+    grid.innerHTML = '';
+    DATA.stations.forEach(s => {
+      const url = base + (base.includes('?') ? '&' : '?') + 's=' + encodeURIComponent(s.id);
+      const card = document.createElement('div');
+      card.className = 'qr-card';
+      card.innerHTML = `
+        <div class="qr-no">${s.id}</div>
+        <div class="qr-place">${esc(s.place || '')}</div>
+        <div class="qr-box" id="qr-${s.id}"></div>
+        <div class="qr-indoor ${s.indoor ? 'in' : 'out'}">${s.indoor ? '🏠 실내' : '🌳 실외'}</div>
+        <div class="qr-tag">스캔 → ${s.id}번 문제</div>`;
+      grid.appendChild(card);
+      new QRCode(document.getElementById('qr-' + s.id), { text: url, width: 150, height: 150, colorDark: '#1a1a2e', colorLight: '#ffffff' });
+    });
+  }
+  function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+  document.getElementById('regen').onclick = render;
+  </script>
+</body>
+</html>

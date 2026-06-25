@@ -127,6 +127,10 @@
   /* games/B1 — 게임 화면 (B 엔진 backbone, 오프라인-우선)
    * ① 결정적 라우팅으로 완전 플레이 가능. ②(실시간)·HQ보고는 다음 단계에서 얹음. */
   const E = window.BEngine;
+  // 오프라인-우선: 서비스워커 등록(루트 스코프 — 상위 폴더 파일들까지 캐시). B만 가로채 A 영향 0.
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('../../sw.js', { scope: '../../' }).catch(() => {});
+  }
   const params = new URLSearchParams(location.search);
   const DEV = params.get('dev') === '1';
   const CURTEAM_KEY = 'b1_currentTeam';
