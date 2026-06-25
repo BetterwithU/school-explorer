@@ -94,6 +94,7 @@
 
   <script src="../../firebase-config.js"></script>
   <script>window.SYNC_SESSION = 'B1';</script>
+  <script type="module" src="../../core/auth.js"></script>
   <script type="module" src="../../core/sync.js"></script>
   <script src="../../modes/B/engine.js"></script>
   <script>
@@ -105,8 +106,31 @@
     DATA = data;
     document.getElementById('subt').textContent = `${data.meta.title || '탐험 레이스'} · 전체 ${data.stations.length}곳 · 우승 ${E.winNeed(data)}곳`;
     renderBank();
-    initSync();
+    authGateHQ(initSync);
   }).catch(e => { document.getElementById('live').innerHTML = `<div class="offline">데이터 로드 실패: ${e.message}</div>`; });
+
+  // 로그인 게이트 — 학교 구글 계정(@snu.ms.kr) 통과해야 대시보드 표시
+  function authGateHQ(onReady) {
+    let passed = false;
+    const go = () => { if (passed) return; passed = true; onReady(); };
+    const apply = () => {
+      if (!window.BAuth || !window.BAuth.configured) { go(); return; }
+      window.BAuth.onChange(u => { if (u) go(); else if (!passed) showHQLogin(); });
+    };
+    if (window.BAUTH_READY) apply();
+    else window.addEventListener('bauth-ready', apply, { once: true });
+  }
+  function showHQLogin() {
+    document.getElementById('live').innerHTML = `<div class="offline" style="text-align:center">
+      <b>로그인 필요</b><br>학교 구글 계정(@snu.ms.kr)으로 로그인하세요.<br><br>
+      <button id="hqLoginBtn" style="background:#2e74c4;color:#fff;border:none;padding:10px 18px;border-radius:9px;font-weight:800;cursor:pointer">🔑 학교 구글 로그인</button>
+      <div id="hqLoginFb" style="margin-top:8px;color:#ff8a9c"></div></div>`;
+    document.getElementById('hqLoginBtn').onclick = async () => {
+      const fb = document.getElementById('hqLoginFb'); fb.textContent = '';
+      try { await window.BAuth.signIn(); }
+      catch (e) { fb.textContent = e.message === 'DOMAIN' ? '학교 계정(@snu.ms.kr)만 가능' : '로그인 실패'; }
+    };
+  }
 
   function initSync() {
     const apply = () => {

@@ -32,11 +32,11 @@ function getDeviceId() {
 
 if (cfg && cfg.apiKey && cfg.databaseURL) {
   try {
-    const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
+    const { initializeApp, getApps, getApp } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
     const { getDatabase, ref, set, get, onValue, remove, serverTimestamp } = await import(
       'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js'
     );
-    const app = initializeApp(cfg);
+    const app = getApps().length ? getApp() : initializeApp(cfg);  // auth.js와 같은 앱 공유
     const db = getDatabase(app);
     const deviceId = getDeviceId();
     const base = `sessions/${SESSION}`;
