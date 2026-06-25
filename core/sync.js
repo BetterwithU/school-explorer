@@ -68,6 +68,19 @@ if (cfg && cfg.apiKey && cfg.databaseURL) {
       resetTeams() {
         return remove(ref(db, `${base}/teams`)).catch(() => {});
       },
+      // ── 수동 개입(override) — HQ가 특정 조를 특정 station으로 강제 배정 ──
+      // 라이브 이벤트의 비상 탈출구. play 클라이언트가 다음 내비에서 1회 소비.
+      setOverride(team, stationId) {
+        if (!team) return Promise.resolve();
+        return set(ref(db, `${base}/override/${team}`), stationId == null ? null : stationId).catch(() => {});
+      },
+      clearOverride(team) {
+        if (!team) return Promise.resolve();
+        return remove(ref(db, `${base}/override/${team}`)).catch(() => {});
+      },
+      subscribeOverrides(cb) {
+        onValue(ref(db, `${base}/override`), (snap) => cb(snap.val() || {}));
+      },
     };
   } catch (e) {
     console.warn('BSync 비활성(초기화 실패) — 오프라인으로 진행:', e && e.message);

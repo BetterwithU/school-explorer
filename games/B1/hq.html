@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📊 HQ — 중2 탐험 레이스</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Apple SD Gothic Neo','Malgun Gothic',sans-serif; background: #0f1424; color: #e6eefc; min-height: 100dvh; padding: 18px 14px; }
+    .wrap { max-width: 820px; margin: 0 auto; }
+    header { text-align: center; margin-bottom: 8px; }
+    header h1 { font-size: 1.4rem; color: #7dd3fc; }
+    header p { color: #8b9bb4; font-size: 0.82rem; margin-top: 3px; }
+    .controls { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 12px 0; }
+    .controls a, .controls button { background: #1e2840; color: #cfe3ff; text-decoration: none; padding: 8px 13px; border-radius: 9px; font-size: 0.82rem; border: 1px solid #28365e; cursor: pointer; }
+    .controls button.danger { background: rgba(233,69,96,.12); color: #ff8a9c; border-color: rgba(233,69,96,.4); }
+
+    .section-title { font-size: 0.9rem; color: #7dd3fc; margin: 22px 0 10px; font-weight: bold; }
+    .muted { color: #8b9bb4; font-size: 0.9rem; text-align: center; padding: 16px; }
+    .offline { background: #2a1f15; border: 1px solid #7b4f12; border-radius: 12px; padding: 14px; color: #ffe8b3; font-size: 0.86rem; line-height: 1.6; }
+    .offline b { color: #ffd166; }
+
+    /* 우승 순위 */
+    .rank { display: flex; flex-direction: column; gap: 7px; }
+    .rank-row { display: flex; align-items: center; gap: 10px; background: #16213e; border-radius: 10px; padding: 10px 14px; }
+    .rank-row.gold { background: linear-gradient(135deg,#3a2e00,#1c2336); border: 1px solid #ffd166; }
+    .rank-medal { font-size: 1.2rem; width: 30px; text-align: center; }
+    .rank-name { font-weight: 800; }
+    .rank-time { margin-left: auto; color: #ffd166; font-size: 0.84rem; }
+
+    /* 팀 카드 */
+    .team-card { background: #16213e; border-radius: 14px; padding: 14px; margin-bottom: 10px; }
+    .tc-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+    .tc-dot { width: 13px; height: 13px; border-radius: 50%; flex-shrink: 0; }
+    .tc-name { font-weight: 800; font-size: 1.02rem; }
+    .tc-meta { margin-left: auto; font-size: 0.76rem; color: #8b9bb4; }
+    .tc-target { color: #ffd166; font-size: 0.9rem; margin-bottom: 8px; }
+    .bar { background: #0f3460; border-radius: 8px; height: 13px; overflow: hidden; }
+    .bar > span { display: block; height: 100%; background: #2ec4b6; transition: width .4s; }
+    .tc-prog { font-size: 0.8rem; color: #b7e4c7; margin-top: 6px; }
+    .tc-done { color: #ffd166; font-weight: bold; }
+    /* 수동개입 */
+    .ovr { display: flex; gap: 6px; margin-top: 10px; align-items: center; flex-wrap: wrap; }
+    .ovr select { background: #0f1424; color: #e6eefc; border: 1px solid #28365e; border-radius: 7px; padding: 6px 8px; font-size: 0.8rem; flex: 1; min-width: 130px; }
+    .ovr button { background: rgba(124,58,237,.15); color: #c4b5fd; border: 1px solid rgba(124,58,237,.5); border-radius: 7px; padding: 6px 11px; font-size: 0.8rem; font-weight: 700; cursor: pointer; }
+    .ovr .ov-state { font-size: 0.74rem; color: #c4b5fd; }
+
+    /* 장소 혼잡도 */
+    .occ-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(150px,1fr)); gap: 8px; }
+    .occ-cell { background: #16213e; border-radius: 10px; padding: 10px 12px; border-left: 4px solid #28365e; }
+    .occ-cell.hot { border-left-color: #e94560; }
+    .occ-cell.warm { border-left-color: #f4a261; }
+    .occ-place { font-size: 0.84rem; color: #cfe3ff; }
+    .occ-count { font-size: 1.3rem; font-weight: 900; margin-top: 3px; }
+    .occ-count.zero { color: #5b6b8a; }
+
+    details { background: #16213e; border-radius: 12px; padding: 12px 14px; margin-bottom: 10px; }
+    summary { cursor: pointer; color: #cfe3ff; font-size: 0.9rem; font-weight: bold; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.8rem; }
+    th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #1e2840; vertical-align: top; }
+    th { color: #7dd3fc; }
+    .ans { color: #ffd166; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>📊 HQ 대시보드</h1>
+      <p id="subt">중2 탐험 레이스 · 실시간 진행</p>
+    </header>
+
+    <div class="controls">
+      <a href="play.html?dev=1" target="_blank">🎮 게임(DEV)</a>
+      <a href="출제.html" target="_blank">🎯 출제</a>
+      <button class="danger" id="resetBtn">♻️ 진행 초기화</button>
+    </div>
+
+    <div class="section-title">🏆 우승 순위 (12개… 아니, need개 달성 순)</div>
+    <div id="rank"><div class="muted">아직 완주한 조 없음</div></div>
+
+    <div class="section-title">📡 실시간 조별 진행</div>
+    <div id="live"><div class="muted">불러오는 중…</div></div>
+
+    <div class="section-title">📊 장소 혼잡도 (지금 향하는 조 수)</div>
+    <div id="occ" class="occ-grid"></div>
+
+    <div class="section-title">📚 전체 문제·정답 (커닝지)</div>
+    <div id="bank"></div>
+  </div>
+
+  <script src="../../firebase-config.js"></script>
+  <script>window.SYNC_SESSION = 'B1';</script>
+  <script type="module" src="../../core/sync.js"></script>
+  <script src="../../modes/B/engine.js"></script>
+  <script>
+  const E = window.BEngine;
+  const COLORS = ['#e94560','#f4a261','#2ec4b6','#a8dadc','#b7e4c7','#ffb3c1','#7dd3fc','#c4b5fd','#ffd166','#90e0ef','#f6bd60','#84a98c'];
+  let DATA, LIVE = {};
+
+  E.loadStations('stations.json').then(data => {
+    DATA = data;
+    document.getElementById('subt').textContent = `${data.meta.title || '탐험 레이스'} · 전체 ${data.stations.length}곳 · 우승 ${E.winNeed(data)}곳`;
+    renderBank();
+    initSync();
+  }).catch(e => { document.getElementById('live').innerHTML = `<div class="offline">데이터 로드 실패: ${e.message}</div>`; });
+
+  function initSync() {
+    const apply = () => {
+      const online = !!(window.BSync && window.BSync.online);
+      if (online) {
+        document.getElementById('resetBtn').onclick = onReset;
+        window.BSync.subscribeTeams(d => { LIVE = d || {}; renderAll(); });
+      } else {
+        document.getElementById('live').innerHTML = `<div class="offline"><b>오프라인 모드</b> — 실시간 진행이 비활성화됐어요.<br><code>firebase-config.js</code> 설정 시 켜집니다. (게임·출제는 정상 동작)</div>`;
+        document.getElementById('resetBtn').disabled = true;
+        renderOcc(); // 빈 혼잡도
+      }
+    };
+    if (window.BSYNC_READY) apply();
+    else window.addEventListener('bsync-ready', apply, { once: true });
+    setTimeout(() => { if (!window.BSYNC_READY) apply(); }, 1500);
+  }
+
+  // 조별 최신(가장 앞선) 기록 + 기기수
+  function agg() {
+    const out = {};
+    for (const team in LIVE) {
+      const arr = Object.values(LIVE[team] || {});
+      if (!arr.length) continue;
+      const best = arr.reduce((a, b) => ((b.step || 0) > (a.step || 0) ? b : a));
+      out[team] = { ...best, deviceCount: arr.length };
+    }
+    return out;
+  }
+
+  function renderAll() { renderRank(); renderLive(); renderOcc(); }
+
+  function renderRank() {
+    const a = agg();
+    const winners = Object.keys(a).filter(t => a[t].wonAt).map(t => ({ team: t, wonAt: a[t].wonAt }))
+      .sort((x, y) => x.wonAt - y.wonAt);
+    const el = document.getElementById('rank');
+    if (!winners.length) { el.innerHTML = '<div class="muted">아직 완주한 조 없음</div>'; return; }
+    const medal = ['🥇', '🥈', '🥉'];
+    el.innerHTML = `<div class="rank">${winners.map((w, i) =>
+      `<div class="rank-row ${i === 0 ? 'gold' : ''}"><span class="rank-medal">${medal[i] || (i + 1)}</span>
+        <span class="rank-name">${esc(w.team)}</span>
+        <span class="rank-time">완주 ${new Date(w.wonAt).toLocaleTimeString('ko-KR')}</span></div>`).join('')}</div>`;
+  }
+
+  function renderLive() {
+    const a = agg();
+    const teams = (DATA.meta.teams && DATA.meta.teams.length) ? DATA.meta.teams : Object.keys(a);
+    if (!teams.length) { document.getElementById('live').innerHTML = '<div class="muted">실시간 연결됨 — 조 진행 대기 중…</div>'; return; }
+    const need = E.winNeed(DATA);
+    document.getElementById('live').innerHTML = teams.map((team, i) => {
+      const d = a[team]; const color = COLORS[i % COLORS.length];
+      if (!d) return `<div class="team-card"><div class="tc-head"><span class="tc-dot" style="background:${color}"></span><span class="tc-name">${esc(team)}</span><span class="tc-meta">대기 중</span></div><div class="tc-prog" style="color:#5b6b8a">아직 시작 전</div></div>`;
+      const solved = d.solvedCount || 0;
+      const pct = Math.round((solved / need) * 100);
+      const place = d.wonAt ? '🏆 복귀(완주)' : (d.placeName || '-');
+      const prog = d.wonAt ? '<span class="tc-done">완주 🎉</span>' : `${solved} / ${need} 해결`;
+      return `<div class="team-card">
+        <div class="tc-head"><span class="tc-dot" style="background:${color}"></span><span class="tc-name">${esc(team)}</span>
+          <span class="tc-meta">기기 ${d.deviceCount} · ${timeAgo(d.ts)}</span></div>
+        <div class="tc-target">📍 ${esc(place)}</div>
+        <div class="bar"><span style="width:${Math.min(100, pct)}%"></span></div>
+        <div class="tc-prog">${prog}</div>
+        <div class="ovr">
+          <select data-team="${esc(team)}">${DATA.stations.map(s => `<option value="${s.id}">${s.id}. ${esc(s.place || '')}</option>`).join('')}</select>
+          <button data-ovr="${esc(team)}">🛠 강제 이동</button>
+          <span class="ov-state" data-ovstate="${esc(team)}"></span>
+        </div>
+      </div>`;
+    }).join('');
+    // 수동개입 바인딩
+    document.querySelectorAll('[data-ovr]').forEach(btn => {
+      btn.onclick = () => {
+        const team = btn.dataset.ovr;
+        const sel = document.querySelector(`select[data-team="${cssEsc(team)}"]`);
+        const sid = sel ? +sel.value : null;
+        if (sid == null) return;
+        if (window.BSync && window.BSync.setOverride) window.BSync.setOverride(team, sid);
+        const st = document.querySelector(`[data-ovstate="${cssEsc(team)}"]`);
+        if (st) { st.textContent = `→ ${sid}번 배정됨`; setTimeout(() => { st.textContent = ''; }, 2500); }
+      };
+    });
+  }
+
+  function renderOcc() {
+    const a = agg();
+    const occ = {};
+    DATA.stations.forEach(s => { occ[s.id] = 0; });
+    for (const team in a) {
+      const t = a[team];
+      if (t.wonAt) continue;
+      const tgt = t.currentTarget;
+      if (tgt != null && tgt !== '' && occ[tgt] != null) occ[tgt]++;
+    }
+    document.getElementById('occ').innerHTML = DATA.stations.map(s => {
+      const c = occ[s.id];
+      const cls = c >= 3 ? 'hot' : c === 2 ? 'warm' : '';
+      return `<div class="occ-cell ${cls}"><div class="occ-place">${s.id}. ${esc(s.place || '')}</div><div class="occ-count ${c === 0 ? 'zero' : ''}">${c}팀</div></div>`;
+    }).join('');
+  }
+
+  function renderBank() {
+    document.getElementById('bank').innerHTML = `<details><summary>전체 ${DATA.stations.length}문제 보기</summary>
+      <table><tr><th>#</th><th>장소</th><th>문제</th><th>정답</th></tr>
+      ${DATA.stations.map(s => `<tr><td>${s.id}</td><td>${esc(s.place || '')}</td><td>${esc((s.question || '').replace(/\n/g, ' ')).slice(0, 60)}</td><td class="ans">${esc(Array.isArray(s.answer) ? s.answer.join(' / ') : (s.answer || ''))}</td></tr>`).join('')}
+      </table></details>`;
+  }
+
+  function onReset() {
+    if (!confirm('⚠️ 모든 조의 진행 기록을 삭제합니다.\n실제 게임 중이면 누르지 마세요.\n계속할까요?')) return;
+    if (window.BSync && window.BSync.resetTeams) window.BSync.resetTeams();
+  }
+
+  function timeAgo(ts) { if (!ts) return ''; const s = Math.max(0, Math.round((Date.now() - ts) / 1000)); if (s < 60) return s + '초 전'; const m = Math.round(s / 60); return m < 60 ? m + '분 전' : Math.round(m / 60) + '시간 전'; }
+  function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+  function cssEsc(s) { return String(s).replace(/"/g, '\\"'); }
+  </script>
+</body>
+</html>

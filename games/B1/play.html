@@ -131,7 +131,7 @@
   const DEV = params.get('dev') === '1';
   const CURTEAM_KEY = 'b1_currentTeam';
 
-  let DATA, PROGRESS, CURQ = null, LIVE = null;   // CURQ: 현재 풀고 있는 station / LIVE: 실시간 조 상태 캐시
+  let DATA, PROGRESS, CURQ = null, LIVE = null, OVERRIDES = {}, CURSCREEN = '';   // CURQ: 현재 풀고 있는 station / LIVE: 실시간 조 상태 / OVERRIDES: HQ 강제배정
   let scanStream = null, scanRAF = null, scanDone = false, barcodeDetector = null;
 
   E.loadStations('stations.json').then(data => {
@@ -161,8 +161,14 @@
   function isOnline() { return !!(window.BSync && window.BSync.online); }
   function initSync() {
     const apply = () => {
-      if (isOnline() && typeof window.BSync.subscribeTeams === 'function') {
-        window.BSync.subscribeTeams(d => { LIVE = d || {}; });
+      if (!isOnline()) return;
+      if (typeof window.BSync.subscribeTeams === 'function') window.BSync.subscribeTeams(d => { LIVE = d || {}; });
+      if (typeof window.BSync.subscribeOverrides === 'function') {
+        window.BSync.subscribeOverrides(o => {
+          OVERRIDES = o || {};
+          // 내비 화면에서 대기 중이면 즉시 강제배정 반영
+          if (CURSCREEN === 'nav' && PROGRESS) screenNav();
+        });
       }
     };
     if (window.BSYNC_READY) apply();
@@ -176,6 +182,7 @@
 
   /* ---------- 화면: 시작(팀 선택) ---------- */
   function screenStart() {
+    CURSCREEN = 'start';
     const teams = E.teamList(DATA);
     const grid = teams.length
       ? `<div class="team-grid">${teams.map(t => `<button class="team-btn" data-team="${esc(t)}">${esc(t)}</button>`).join('')}</div>`
@@ -197,13 +204,22 @@
 
   /* ---------- 화면: 내비(사진 단서) ---------- */
   function screenNav() {
+    CURSCREEN = 'nav';
     if (location.search) history.replaceState(null, '', DEV ? 'play.html?dev=1' : 'play.html');
     scanDone = false;
-    // 목적지 결정:
-    //  - 이미 배정된(아직 안 푼) 목적지가 있으면 그대로 유지 → 걷는 중 사진이 안 바뀜.
-    //  - 없으면 새로 배정: 온라인이면 ②(혼잡도 회피), 오프라인이면 ①(루트순). 배정 후 고정+보고.
+    // 목적지 결정 (우선순위):
+    //  0) HQ 수동개입(override)이 있으면 그곳으로 강제 — 1회성 소비.
+    //  1) 이미 배정된(아직 안 푼) 목적지가 있으면 유지 → 걷는 중 사진이 안 바뀜.
+    //  2) 없으면 새로 배정: 온라인이면 ②(혼잡도 회피), 오프라인이면 ①(루트순). 배정 후 고정+보고.
     let target = null;
-    if (PROGRESS.currentTarget != null && !PROGRESS.solved[PROGRESS.currentTarget]) {
+    const ov = OVERRIDES && OVERRIDES[PROGRESS.team];
+    if (ov != null && ov !== '' && E.stationById(DATA, ov) && !PROGRESS.solved[ov]) {
+      E.setTarget(PROGRESS, ov);
+      if (isOnline()) window.BSync.clearOverride(PROGRESS.team); // 소비
+      report();
+      target = E.stationById(DATA, ov);
+    }
+    if (!target && PROGRESS.currentTarget != null && !PROGRESS.solved[PROGRESS.currentTarget]) {
       target = E.stationById(DATA, PROGRESS.currentTarget);
     }
     if (!target) {
@@ -241,6 +257,7 @@
       return;
     }
     CURQ = st;
+    CURSCREEN = 'q';
     let revealed = 0; // 이 문제에서 공개한 힌트 수
 
     document.getElementById('card').innerHTML = `
@@ -307,6 +324,7 @@
 
   /* ---------- 화면: 우승 ---------- */
   function screenWin() {
+    CURSCREEN = 'win';
     report();
     const need = E.winNeed(DATA), solved = E.solvedCount(PROGRESS);
     document.getElementById('card').innerHTML = `
