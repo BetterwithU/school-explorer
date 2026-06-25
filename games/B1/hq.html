@@ -17,6 +17,8 @@
 
     .section-title { font-size: 0.9rem; color: #7dd3fc; margin: 22px 0 10px; font-weight: bold; }
     .muted { color: #8b9bb4; font-size: 0.9rem; text-align: center; padding: 16px; }
+    .alert-hot { background: rgba(233,69,96,.18); border: 1px solid #e94560; color: #ffb3bd; border-radius: 10px; padding: 12px 14px; margin: 10px 0; font-weight: 800; font-size: 0.92rem; line-height: 1.5; }
+    .tc-meta.stale { color: #ff8a9c; font-weight: 800; }
     .offline { background: #2a1f15; border: 1px solid #7b4f12; border-radius: 12px; padding: 14px; color: #ffe8b3; font-size: 0.86rem; line-height: 1.6; }
     .offline b { color: #ffd166; }
 
@@ -74,6 +76,8 @@
       <a href="출제.html" target="_blank">🎯 출제</a>
       <button class="danger" id="resetBtn">♻️ 진행 초기화</button>
     </div>
+
+    <div id="alertBar"></div>
 
     <div class="section-title">🏁 12개 달성 순서 <span style="color:#8b9bb4;font-weight:normal;font-size:0.78rem">(참고용 — 실제 우승은 본부 도착 순, 선생님 판정)</span></div>
     <div id="rank"><div class="muted">아직 12개 달성한 조 없음</div></div>
@@ -133,7 +137,16 @@
     return out;
   }
 
-  function renderAll() { renderRank(); renderLive(); renderOcc(); }
+  function renderAll() { renderAlert(); renderRank(); renderLive(); renderOcc(); }
+
+  // 한 곳에 3팀 이상 몰리면 상단에 빨간 경고 → 선생님이 직접 분산 안내
+  function renderAlert() {
+    const a = agg(); const occ = {}; DATA.stations.forEach(s => occ[s.id] = 0);
+    for (const t in a) { const x = a[t]; if (x.wonAt) continue; const tg = x.currentTarget; if (tg != null && tg !== '' && occ[tg] != null) occ[tg]++; }
+    const hot = DATA.stations.filter(s => occ[s.id] >= 3).map(s => `${esc(s.place)} (${occ[s.id]}팀)`);
+    const el = document.getElementById('alertBar');
+    el.innerHTML = hot.length ? `<div class="alert-hot">🚨 몰림 주의 — ${hot.join(' · ')}<br>→ 한 조를 다른 곳으로 안내하거나, 아래에서 🛠 강제 이동하세요.</div>` : '';
+  }
 
   function renderRank() {
     const a = agg();
@@ -162,7 +175,7 @@
       const prog = d.wonAt ? '<span class="tc-done">완주 🎉</span>' : `${solved} / ${need} 해결`;
       return `<div class="team-card">
         <div class="tc-head"><span class="tc-dot" style="background:${color}"></span><span class="tc-name">${esc(team)}</span>
-          <span class="tc-meta">기기 ${d.deviceCount} · ${timeAgo(d.ts)}</span></div>
+          <span class="tc-meta${(d.ts && Date.now() - d.ts > 60000) ? ' stale' : ''}">${(d.ts && Date.now() - d.ts > 60000) ? '📵 ' : ''}기기 ${d.deviceCount} · ${timeAgo(d.ts)}</span></div>
         <div class="tc-target">📍 ${esc(place)}</div>
         <div class="bar"><span style="width:${Math.min(100, pct)}%"></span></div>
         <div class="tc-prog">${prog}</div>

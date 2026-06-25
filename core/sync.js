@@ -33,7 +33,7 @@ function getDeviceId() {
 if (cfg && cfg.apiKey && cfg.databaseURL) {
   try {
     const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
-    const { getDatabase, ref, set, get, onValue, remove } = await import(
+    const { getDatabase, ref, set, get, onValue, remove, serverTimestamp } = await import(
       'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js'
     );
     const app = initializeApp(cfg);
@@ -48,7 +48,8 @@ if (cfg && cfg.apiKey && cfg.databaseURL) {
       // 진행 보고 — 실패해도 조용히 무시(게임 진행에 영향 0)
       report(team, data) {
         if (!team) return;
-        set(ref(db, `${base}/teams/${team}/${deviceId}`), { ...data, ts: Date.now() }).catch(() => {});
+        // ts는 서버 시계(serverTimestamp) — 기기마다 시계가 달라도 '마지막 확인 시각'이 일관됨.
+        set(ref(db, `${base}/teams/${team}/${deviceId}`), { ...data, ts: serverTimestamp() }).catch(() => {});
       },
       // 모든 조의 실시간 상태 구독(② 배정 + HQ 공용)
       subscribeTeams(cb) {
