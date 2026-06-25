@@ -1,24 +1,24 @@
 {
   "rules": {
-    ".read": "auth != null && auth.token.email.matches(/@snu[.]ms[.]kr$/)",
-    ".write": "auth != null && auth.token.email.matches(/@snu[.]ms[.]kr$/)",
+    ".read": false,
+    ".write": false,
     "sessions": {
-      "$session": {
-        "gameOn": {
-          ".validate": "newData.isBoolean()"
-        },
+      "B1": {
+        ".read": "auth != null && auth.token.email.matches(/@snu[.]ms[.]kr$/)",
+        ".write": "auth != null && auth.token.email.matches(/@snu[.]ms[.]kr$/)",
+        "gameOn": { ".validate": "newData.isBoolean()" },
         "override": {
-          "$team": {
-            ".validate": "newData.isNumber() || !newData.exists()"
-          }
+          "$team": { ".validate": "newData.isNumber() || !newData.exists()" }
         },
         "teams": {
           "$team": {
-            "$device": {
-              ".validate": "newData.hasChild('step') || !newData.exists()"
-            }
+            "$device": { ".validate": "newData.hasChild('step') || !newData.exists()" }
           }
         }
+      },
+      "$session": {
+        ".read": true,
+        ".write": true
       }
     }
   }
