@@ -1,28 +1,75 @@
 {
   "meta": {
-    "title": "중2 학교 탐험 레이스 (더미 16)",
+    "title": "중2 도형 단원평가 탐험 레이스",
     "stationCount": 16,
     "need": 12,
     "hintBudget": 6,
     "teams": ["1조", "2조", "3조", "4조", "5조", "6조", "7조", "8조", "9조", "10조", "11조", "12조"],
-    "createdWith": "시스템 테스트용 더미(실제 문제로 교체 예정)"
+    "createdWith": "_source/문제_전달.md (16문제, station 무작위 배정)"
   },
   "stations": [
-    { "id": 1,  "place": "도서관 입구 (1층)",   "indoor": true,  "cluePhoto": "", "question": "$\\frac{3}{4} + \\frac{1}{6}$ 을 계산하시오.", "questionImage": "", "answer": "11/12", "hints": ["통분: 분모 12", "9/12 + 2/12"] },
-    { "id": 2,  "place": "급식실 앞",            "indoor": false, "cluePhoto": "", "question": "2024년 노벨 문학상을 받은 한국 작가는? (성+이름)", "questionImage": "", "answer": "한강", "hints": ["<소년이 온다>의 작가"] },
-    { "id": 3,  "place": "운동장 스탠드",        "indoor": false, "cluePhoto": "", "question": "$2x + 5 = 17$ 을 푸시오.", "questionImage": "", "answer": "6", "hints": ["2x=12"] },
-    { "id": 4,  "place": "과학실 (2층)",         "indoor": true,  "cluePhoto": "", "question": "물의 화학식은? (기호)", "questionImage": "", "answer": "H2O", "hints": ["수소2 산소1"] },
-    { "id": 5,  "place": "음악실 (3층)",         "indoor": true,  "cluePhoto": "", "question": "온음계 한 옥타브는 도~다음도 전까지 몇 음? (숫자)", "questionImage": "", "answer": "7", "hints": ["도레미파솔라시"] },
-    { "id": 6,  "place": "미술실 (3층)",         "indoor": true,  "cluePhoto": "", "question": "<별이 빛나는 밤>을 그린 네덜란드 화가? (성)", "questionImage": "", "answer": "고흐", "hints": ["빈센트 반 ○○"] },
-    { "id": 7,  "place": "강당 입구",            "indoor": false, "cluePhoto": "", "question": "$3^3$ 의 값은?", "questionImage": "", "answer": "27", "hints": ["9×3"] },
-    { "id": 8,  "place": "본관 현관",            "indoor": false, "cluePhoto": "", "question": "대한민국의 수도는?", "questionImage": "", "answer": "서울", "hints": ["한강이 흐름"] },
-    { "id": 9,  "place": "체육관 뒤편",          "indoor": false, "cluePhoto": "", "question": "삼각형 내각의 합은 몇 도? (숫자)", "questionImage": "", "answer": "180", "hints": ["평각"] },
-    { "id": 10, "place": "정문 화단",            "indoor": false, "cluePhoto": "", "question": "지구에서 가장 가까운 별(항성)은?", "questionImage": "", "answer": "태양", "hints": ["낮에 보임"] },
-    { "id": 11, "place": "후문 주차장",          "indoor": false, "cluePhoto": "", "question": "영어로 '화요일'은? (소문자)", "questionImage": "", "answer": "tuesday", "hints": ["월요일 다음"] },
-    { "id": 12, "place": "1학년 복도",           "indoor": true,  "cluePhoto": "", "question": "$\\sqrt{144}$ 의 값은?", "questionImage": "", "answer": "12", "hints": ["12×12=144"] },
-    { "id": 13, "place": "컴퓨터실 (2층)",       "indoor": true,  "cluePhoto": "", "question": "1바이트는 몇 비트? (숫자)", "questionImage": "", "answer": "8", "hints": ["2의 3승"] },
-    { "id": 14, "place": "교무실 앞",            "indoor": true,  "cluePhoto": "", "question": "조선을 건국한 왕의 이름은? (성+이름)", "questionImage": "", "answer": "이성계", "hints": ["태조"] },
-    { "id": 15, "place": "매점 옆",              "indoor": false, "cluePhoto": "", "question": "물이 끓는 온도는 몇 ℃? (1기압, 숫자)", "questionImage": "", "answer": "100", "hints": ["섭씨"] },
-    { "id": 16, "place": "방송실 (1층)",         "indoor": true,  "cluePhoto": "", "question": "태양계에서 가장 큰 행성은?", "questionImage": "", "answer": "목성", "hints": ["줄무늬와 대적점"] }
+    { "id": 1, "place": "실외1", "indoor": false, "cluePhoto": "", "questionImage": "images/Q3.jpg",
+      "question": "오른쪽 그림과 같은 평행사변형 ABCD에서 두 대각선이 서로 수직으로 만난다. 이 사각형은 어떤 사각형인가?",
+      "answer": "마름모", "hints": ["대각선이 수직 → 네 변의 길이가 같아져요"] },
+
+    { "id": 2, "place": "실내1", "indoor": true, "cluePhoto": "", "questionImage": "images/S5.jpg",
+      "question": "오른쪽 그림과 같이 $\\overline{AD}$와 $\\overline{BE}$의 교점을 C라고 하자. (맞꼭지각을 낀 두 변의 길이의 비가 같아 SAS 닮음) $\\overline{DE}$의 길이를 구하시오.",
+      "answer": "10", "hints": ["$\\triangle ABC \\sim \\triangle DEC$, 닮음비 $3:2$"] },
+
+    { "id": 3, "place": "실외2", "indoor": false, "cluePhoto": "", "questionImage": "images/T2.jpg",
+      "question": "다음 그림의 두 직각삼각형은 빗변의 길이와 한 예각의 크기가 각각 같아 서로 합동이다. $\\overline{AB}$의 길이를 구하시오.",
+      "answer": "2", "hints": ["RHA 합동 → 대응하는 변의 길이가 같아요"] },
+
+    { "id": 4, "place": "실내2", "indoor": true, "cluePhoto": "", "questionImage": "images/S1.jpg",
+      "question": "오른쪽 그림에서 $\\triangle ABC \\sim \\triangle DEF$이다. $\\overline{EF}$의 길이를 구하시오. ($\\overline{AB}=15$ cm, $\\overline{BC}=20$ cm, $\\overline{DE}=12$ cm)",
+      "answer": "16", "hints": ["닮음비 $15:12=5:4$, $\\overline{BC}:\\overline{EF}=5:4$"] },
+
+    { "id": 5, "place": "실외3", "indoor": false, "cluePhoto": "", "questionImage": "images/Q6.jpg",
+      "question": "오른쪽 그림과 같은 평행사변형 ABCD에서 두 대각선의 길이가 같고 서로 수직으로 만난다. 이 사각형은 어떤 사각형인가?",
+      "answer": "정사각형", "hints": ["직사각형 조건 + 마름모 조건 둘 다 만족"] },
+
+    { "id": 6, "place": "실내3", "indoor": true, "cluePhoto": "", "questionImage": "images/T4.jpg",
+      "question": "오른쪽 그림에서 점 I는 $\\triangle ABC$의 내심이고 $\\angle A=80^\\circ$이다. $\\angle BIC$의 크기를 구하시오.",
+      "answer": "130", "hints": ["$\\angle BIC = 90^\\circ + \\dfrac{1}{2}\\angle A$"] },
+
+    { "id": 7, "place": "실외4", "indoor": false, "cluePhoto": "", "questionImage": "images/S3.jpg",
+      "question": "다음 그림의 두 사각뿔은 서로 닮은 도형이다. 큰 사각뿔의 부피가 $135$ cm³일 때, 작은 사각뿔의 부피를 구하시오. (대응하는 모서리 $6$ cm, $9$ cm)",
+      "answer": "40", "hints": ["닮음비 $2:3$ → 부피비 $8:27$"] },
+
+    { "id": 8, "place": "실내4", "indoor": true, "cluePhoto": "", "questionImage": "images/Q1.jpg",
+      "question": "오른쪽 평행사변형 ABCD에서 $x+y$의 값을 구하시오.",
+      "answer": "11", "hints": ["대변의 길이가 같으므로 $x=7$, $y=4$ → $x+y=11$"] },
+
+    { "id": 9, "place": "실외5", "indoor": false, "cluePhoto": "", "questionImage": "images/S6.jpg",
+      "question": "오른쪽 그림에서 $\\angle C=\\angle ABD$이다. $\\overline{CD}$의 길이를 구하시오. ($\\overline{AB}=6$ cm, $\\overline{AD}=4$ cm)",
+      "answer": "5", "hints": ["$\\triangle ABC \\sim \\triangle ADB$ (AA 닮음), $\\overline{AC}=9$이므로 $\\overline{CD}=\\overline{AC}-\\overline{AD}$"] },
+
+    { "id": 10, "place": "실내5", "indoor": true, "cluePhoto": "", "questionImage": "images/T1.jpg",
+      "question": "오른쪽 그림에서 $\\triangle ABC$가 $\\overline{AB}=\\overline{AC}$인 이등변삼각형이고 $\\overline{BC}=\\overline{DC}$, $\\angle A=40^\\circ$이다. $\\angle x$의 크기를 구하시오.",
+      "answer": "70", "hints": ["$\\angle B=\\angle C=70^\\circ$, $\\triangle DBC$에서 $\\overline{BC}=\\overline{DC}$이므로 $\\angle x=\\angle B$"] },
+
+    { "id": 11, "place": "실외6", "indoor": false, "cluePhoto": "", "questionImage": "images/Q5.jpg",
+      "question": "오른쪽 그림과 같이 $\\overline{AD} \\parallel \\overline{BC}$인 등변사다리꼴 ABCD에서 $\\overline{DC}=6$ cm, $\\angle B=55^\\circ$이다. $x \\times y$의 값을 구하시오.",
+      "answer": "330", "hints": ["평행하지 않은 두 변이 같아 $x=6$, 아랫변 두 밑각이 같아 $y=55$ → $x \\times y=330$"] },
+
+    { "id": 12, "place": "실내6", "indoor": true, "cluePhoto": "", "questionImage": "images/S2.jpg",
+      "question": "오른쪽 그림에서 $\\triangle ABC \\sim \\triangle DEF$이고 $\\overline{BC}=8$ cm, $\\overline{EF}=16$ cm이다. $\\triangle ABC$의 넓이가 $24$ cm²일 때, $\\triangle DEF$의 넓이를 구하시오.",
+      "answer": "96", "hints": ["닮음비 $1:2$ → 넓이비 $1:4$"] },
+
+    { "id": 13, "place": "실외7", "indoor": false, "cluePhoto": "", "questionImage": "images/Q4.jpg",
+      "question": "오른쪽 그림과 같은 평행사변형 ABCD에서 두 대각선의 길이가 같다. 이 사각형은 어떤 사각형인가?",
+      "answer": "직사각형", "hints": ["대각선 길이가 같음 → 네 내각이 모두 직각"] },
+
+    { "id": 14, "place": "실내7", "indoor": true, "cluePhoto": "", "questionImage": "images/S4.jpg",
+      "question": "다음 그림에서 $\\triangle ABC$와 닮은 삼각형을 찾아 기호 $\\sim$를 사용하여 $\\triangle ABC \\sim \\triangle \\square\\square\\square$ 와 같이 나타낼 때, 세 꼭짓점을 순서대로 쓰시오.",
+      "answer": "NMO", "hints": ["세 변의 비 $3:4:5=6:8:10$. 대응 꼭짓점 A↔N, B↔M, C↔O → $\\triangle ABC \\sim \\triangle NMO$"] },
+
+    { "id": 15, "place": "실외8", "indoor": false, "cluePhoto": "", "questionImage": "images/T3.jpg",
+      "question": "오른쪽 그림에서 점 O는 $\\triangle ABC$의 외심이고 $\\angle A=60^\\circ$이다. $\\angle BOC$의 크기를 구하시오.",
+      "answer": "120", "hints": ["$\\angle BOC = 2\\,\\angle A$"] },
+
+    { "id": 16, "place": "실내8", "indoor": true, "cluePhoto": "", "questionImage": "images/Q2.jpg",
+      "question": "오른쪽 사각형이 평행사변형이 되도록 하는 $x$, $y$에 대하여 $x-y$의 값을 구하시오.",
+      "answer": "43", "hints": ["대각이 같아 $x=50$, 한 쌍의 대변이 같아 $y=7$ → $x-y=43$"] }
   ]
 }
