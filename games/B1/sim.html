@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🧪 시뮬레이터 — B 분산 테스트</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Apple SD Gothic Neo','Malgun Gothic',sans-serif; background: #0f1424; color: #e6eefc; min-height: 100dvh; padding: 18px 14px; }
+    .wrap { max-width: 820px; margin: 0 auto; }
+    h1 { font-size: 1.3rem; color: #7dd3fc; text-align: center; }
+    .lead { text-align: center; color: #8b9bb4; font-size: 0.82rem; margin: 4px 0 14px; }
+    .panel { background: #16213e; border: 1px solid #28365e; border-radius: 12px; padding: 14px; margin-bottom: 12px; }
+    .ctrls { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; }
+    .ctrls label { font-size: 0.76rem; color: #8b9bb4; display: block; margin-bottom: 4px; }
+    .ctrls input { background: #0f1424; color: #e6eefc; border: 1px solid #28365e; border-radius: 7px; padding: 7px 9px; width: 90px; }
+    .btn { border: none; border-radius: 9px; padding: 9px 16px; font-weight: 800; cursor: pointer; }
+    .btn.start { background: linear-gradient(135deg,#2ec4b6,#1a9b8f); color: #04231a; }
+    .btn.stop { background: linear-gradient(135deg,#e94560,#b8293f); color: #fff; }
+    .btn.ghost { background: transparent; color: #cfe3ff; border: 1px solid #28365e; }
+    .stat { display: flex; gap: 16px; flex-wrap: wrap; font-size: 0.85rem; margin-top: 6px; }
+    .stat b { color: #ffd166; }
+    .warnbox { background: #2a1f15; border: 1px solid #7b4f12; border-radius: 10px; padding: 10px; color: #ffe8b3; font-size: 0.82rem; margin-top: 10px; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.8rem; margin-top: 8px; }
+    th, td { padding: 5px 7px; border-bottom: 1px solid #1e2840; text-align: left; }
+    th { color: #7dd3fc; }
+    .occ { display: grid; grid-template-columns: repeat(auto-fill,minmax(96px,1fr)); gap: 6px; margin-top: 8px; }
+    .occ-cell { background: #0f3460; border-radius: 8px; padding: 7px; text-align: center; font-size: 0.78rem; }
+    .occ-cell.hot { background: #5a1020; color: #ff9aa9; }
+    .occ-cell.warm { background: #4a3410; color: #ffd166; }
+    .log { font-family: monospace; font-size: 0.74rem; color: #9fd8c4; max-height: 140px; overflow-y: auto; background: #0b1020; border-radius: 8px; padding: 8px; margin-top: 8px; white-space: pre-line; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>🧪 분산 시뮬레이터</h1>
+    <p class="lead">가상 조들을 굴려 ② 실시간 배정을 검증합니다. HQ(다른 탭)를 같이 열어 동선을 관찰하세요.</p>
+
+    <div class="panel">
+      <div class="ctrls">
+        <div><label>가상 조 수</label><input type="number" id="nTeams" min="2" max="12" value="12"></div>
+        <div><label>틱 간격(ms)</label><input type="number" id="tickMs" min="120" max="2000" value="500"></div>
+        <button class="btn start" id="startBtn">▶ 시작</button>
+        <button class="btn stop" id="stopBtn" disabled>■ 정지</button>
+        <button class="btn ghost" id="resetBtn">♻ 초기화(로컬+서버)</button>
+      </div>
+      <div class="stat">
+        <span>모드: <b id="mode">확인 중…</b></span>
+        <span>완주: <b id="doneCount">0</b>/<span id="totTeams">0</span></span>
+        <span>최대 동시혼잡: <b id="maxOcc">0</b>팀</span>
+        <span>틱: <b id="tickN">0</b></span>
+      </div>
+      <div class="warnbox" id="offwarn" style="display:none">⚠️ 오프라인(Firebase 미연결/규칙잠금) — HQ엔 안 뜹니다. 그래도 로컬 분산 통계는 계산됩니다. ② 실배정 검증은 ①폴백 분산으로 동작.</div>
+    </div>
+
+    <div class="panel">
+      <b style="font-size:0.85rem;color:#7dd3fc">📊 장소 혼잡도 (지금 향하는 가상 조 수)</b>
+      <div class="occ" id="occ"></div>
+    </div>
+
+    <div class="panel">
+      <b style="font-size:0.85rem;color:#7dd3fc">조별 상태</b>
+      <table id="teamTbl"><thead><tr><th>조</th><th>해결</th><th>목적지</th><th>상태</th></tr></thead><tbody></tbody></table>
+    </div>
+
+    <div class="log" id="log"></div>
+  </div>
+
+  <script src="../../firebase-config.js"></script>
+  <script>window.SYNC_SESSION = 'B1';</script>
+  <script type="module" src="../../core/sync.js"></script>
+  <script src="../../modes/B/engine.js"></script>
+  <script>
+  const E = window.BEngine;
+  let DATA, LIVE = {}, VTS = [], timer = null, tick = 0, maxOcc = 0;
+
+  E.loadStations('stations.json').then(d => { DATA = d; document.getElementById('nTeams').value = Math.min(12, (d.meta.teams||[]).length || 12); initSync(); }).catch(e => log('로드 실패: ' + e.message));
+
+  function online() { return !!(window.BSync && window.BSync.online); }
+  function initSync() {
+    const apply = () => {
+      document.getElementById('mode').textContent = online() ? '🟢 온라인(Firebase)' : '🔴 오프라인(로컬만)';
+      if (!online()) document.getElementById('offwarn').style.display = 'block';
+      if (online()) window.BSync.subscribeTeams(d => { LIVE = d || {}; });
+    };
+    if (window.BSYNC_READY) apply(); else window.addEventListener('bsync-ready', apply, { once: true });
+    setTimeout(() => { if (!window.BSYNC_READY) apply(); }, 1500);
+  }
+
+  function report(vt) { if (online()) window.BSync.report(vt.team, E.reportPayload(DATA, vt.p)); }
+  function rand(a, b) { return a + Math.floor(Math.random() * (b - a + 1)); }
+  function log(m) { const el = document.getElementById('log'); el.textContent = `[${tick}] ${m}\n` + el.textContent.slice(0, 4000); }
+
+  function start() {
+    const n = Math.max(2, Math.min(12, +document.getElementById('nTeams').value || 12));
+    const teams = (DATA.meta.teams || []).slice(0, n);
+    while (teams.length < n) teams.push((teams.length + 1) + '조');
+    // 가상 조 생성(로컬에 신규 시작)
+    VTS = teams.map(t => { E.clearProgress(t); return { team: t, p: E.startGame(DATA, t), state: 'idle', left: 0 }; });
+    tick = 0; maxOcc = 0;
+    document.getElementById('totTeams').textContent = n;
+    // 오프라인이면 LIVE를 가상조 보고로 직접 채워 ② 혼잡계산이 동작하게(로컬 모델)
+    const ms = Math.max(120, +document.getElementById('tickMs').value || 500);
+    document.getElementById('startBtn').disabled = true;
+    document.getElementById('stopBtn').disabled = false;
+    timer = setInterval(step, ms);
+    log(`시작: ${n}개 조, need ${E.winNeed(DATA)} / 전체 ${DATA.stations.length}곳`);
+  }
+  function stop() {
+    if (timer) clearInterval(timer); timer = null;
+    document.getElementById('startBtn').disabled = false;
+    document.getElementById('stopBtn').disabled = true;
+  }
+
+  // 혼잡 계산용 라이브 스냅샷: 온라인이면 Firebase LIVE, 아니면 가상조 currentTarget으로 합성
+  function liveSnapshot() {
+    if (online() && Object.keys(LIVE).length) return LIVE;
+    const snap = {};
+    VTS.forEach(vt => { snap[vt.team] = { d: { step: vt.p.step, currentTarget: vt.p.currentTarget == null ? '' : vt.p.currentTarget } }; });
+    return snap;
+  }
+
+  function step() {
+    tick++;
+    const snap = liveSnapshot();
+    let done = 0;
+    VTS.forEach(vt => {
+      if (vt.state === 'done') { done++; return; }
+      if (vt.state === 'idle') {
+        const tgt = E.nextTargetSmart(DATA, vt.p, snap);
+        if (!tgt) { vt.state = 'done'; report(vt); return; }
+        E.setTarget(vt.p, tgt.id); report(vt); vt.state = 'walking'; vt.left = rand(2, 5);
+      } else if (vt.state === 'walking') {
+        if (--vt.left <= 0) { vt.state = 'solving'; vt.left = rand(1, 3); }
+      } else if (vt.state === 'solving') {
+        if (--vt.left <= 0) {
+          E.markSolved(DATA, vt.p, vt.p.currentTarget, 'sim'); report(vt);
+          if (E.isWin(DATA, vt.p)) { vt.state = 'done'; report(vt); log(`🏆 ${vt.team} 완주`); }
+          else vt.state = 'idle';
+        }
+      }
+    });
+    document.getElementById('doneCount').textContent = done;
+    document.getElementById('tickN').textContent = tick;
+    renderOcc(snap); renderTeams();
+    if (done >= VTS.length) { stop(); log(`✅ 전원 완주 (틱 ${tick}, 최대 동시혼잡 ${maxOcc}팀)`); }
+  }
+
+  function renderOcc(snap) {
+    const occ = {}; DATA.stations.forEach(s => occ[s.id] = 0);
+    for (const t in snap) {
+      const rec = E.aggregateTeamRecord(snap[t]); const tg = rec && rec.currentTarget;
+      if (tg != null && tg !== '' && occ[tg] != null) occ[tg]++;
+    }
+    const cur = Math.max(0, ...Object.values(occ));
+    if (cur > maxOcc) { maxOcc = cur; document.getElementById('maxOcc').textContent = maxOcc; }
+    document.getElementById('occ').innerHTML = DATA.stations.map(s => {
+      const c = occ[s.id]; const cls = c >= 3 ? 'hot' : c === 2 ? 'warm' : '';
+      return `<div class="occ-cell ${cls}">${s.id}곳<br><b>${c}</b></div>`;
+    }).join('');
+  }
+  function renderTeams() {
+    document.querySelector('#teamTbl tbody').innerHTML = VTS.map(vt => {
+      const tgt = vt.p.currentTarget; const st = tgt != null ? E.stationById(DATA, tgt) : null;
+      return `<tr><td>${vt.team}</td><td>${E.solvedCount(vt.p)}/${E.winNeed(DATA)}</td><td>${st ? (st.id + '. ' + st.place) : '-'}</td><td>${vt.p.wonAt ? '🏆완주' : vt.state}</td></tr>`;
+    }).join('');
+  }
+
+  function reset() {
+    stop();
+    VTS.forEach(vt => E.clearProgress(vt.team));
+    (DATA.meta.teams || []).forEach(t => E.clearProgress(t));
+    if (online() && window.BSync.resetTeams) window.BSync.resetTeams();
+    VTS = []; tick = 0; maxOcc = 0;
+    document.getElementById('doneCount').textContent = 0; document.getElementById('maxOcc').textContent = 0; document.getElementById('tickN').textContent = 0;
+    document.getElementById('occ').innerHTML = ''; document.querySelector('#teamTbl tbody').innerHTML = '';
+    log('초기화 완료');
+  }
+
+  document.getElementById('startBtn').onclick = start;
+  document.getElementById('stopBtn').onclick = stop;
+  document.getElementById('resetBtn').onclick = reset;
+  </script>
+</body>
+</html>

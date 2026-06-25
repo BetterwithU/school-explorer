@@ -1,84 +1,27 @@
 {
   "meta": {
-    "title": "중2 학교 탐험 레이스 (더미)",
-    "stationCount": 8,
-    "need": 5,
-    "hintBudget": 4,
+    "title": "중2 학교 탐험 레이스 (더미 15)",
+    "stationCount": 15,
+    "need": 12,
+    "hintBudget": 6,
     "teams": ["1조", "2조", "3조", "4조", "5조", "6조", "7조", "8조", "9조", "10조", "11조", "12조"],
-    "createdWith": "시스템빌드 더미 데이터"
+    "createdWith": "시스템 테스트용 더미(실제 문제로 교체 예정)"
   },
   "stations": [
-    {
-      "id": 1,
-      "place": "도서관 입구 (1층)",
-      "cluePhoto": "",
-      "question": "책이 가장 많이 모여 있는 이곳. 다음을 계산하시오.\n$$\\frac{3}{4} + \\frac{1}{6}$$",
-      "questionImage": "",
-      "answer": "11/12",
-      "hints": ["통분: 분모를 12로 맞춰요", "9/12 + 2/12 는?"]
-    },
-    {
-      "id": 2,
-      "place": "급식실 앞",
-      "cluePhoto": "",
-      "question": "2024년 노벨 문학상을 받은 한국 작가는 누구일까요? (성+이름)",
-      "questionImage": "",
-      "answer": "한강",
-      "hints": ["소설 <채식주의자>, <소년이 온다>의 작가예요", "성은 '한'이에요"]
-    },
-    {
-      "id": 3,
-      "place": "운동장 스탠드",
-      "cluePhoto": "",
-      "question": "일차방정식을 푸시오.\n$2x + 5 = 17$",
-      "questionImage": "",
-      "answer": "6",
-      "hints": ["양변에서 5를 빼요", "2x = 12"]
-    },
-    {
-      "id": 4,
-      "place": "과학실 (2층)",
-      "cluePhoto": "",
-      "question": "물의 화학식은 무엇일까요? (영문·기호)",
-      "questionImage": "",
-      "answer": "H2O",
-      "hints": ["수소 2개와 산소 1개", "H와 O로 이루어져요"]
-    },
-    {
-      "id": 5,
-      "place": "음악실 (3층)",
-      "cluePhoto": "",
-      "question": "한 옥타브는 몇 개의 음으로 이루어져 있을까요? (도~다음 도 전까지, 온음계 기준 숫자)",
-      "questionImage": "",
-      "answer": "7",
-      "hints": ["도 레 미 파 솔 라 시", "다음 '도'는 빼고 세요"]
-    },
-    {
-      "id": 6,
-      "place": "미술실 (3층)",
-      "cluePhoto": "",
-      "question": "<별이 빛나는 밤>, <해바라기>를 그린 네덜란드 화가의 이름은? (성)",
-      "questionImage": "",
-      "answer": "고흐",
-      "hints": ["빈센트 반 ○○", "귀를 자른 일화로도 유명해요"]
-    },
-    {
-      "id": 7,
-      "place": "강당 입구",
-      "cluePhoto": "",
-      "question": "$3^3$ 의 값은?",
-      "questionImage": "",
-      "answer": "27",
-      "hints": ["3 × 3 × 3", "9 × 3"]
-    },
-    {
-      "id": 8,
-      "place": "본관 현관",
-      "cluePhoto": "",
-      "question": "대한민국의 현재 수도는 어디일까요?",
-      "questionImage": "",
-      "answer": "서울",
-      "hints": ["한강이 흐르는 도시", "○○특별시"]
-    }
+    { "id": 1,  "place": "도서관 입구 (1층)",   "indoor": true,  "cluePhoto": "", "question": "$\\frac{3}{4} + \\frac{1}{6}$ 을 계산하시오.", "questionImage": "", "answer": "11/12", "hints": ["통분: 분모 12", "9/12 + 2/12"] },
+    { "id": 2,  "place": "급식실 앞",            "indoor": false, "cluePhoto": "", "question": "2024년 노벨 문학상을 받은 한국 작가는? (성+이름)", "questionImage": "", "answer": "한강", "hints": ["<소년이 온다>의 작가"] },
+    { "id": 3,  "place": "운동장 스탠드",        "indoor": false, "cluePhoto": "", "question": "$2x + 5 = 17$ 을 푸시오.", "questionImage": "", "answer": "6", "hints": ["2x=12"] },
+    { "id": 4,  "place": "과학실 (2층)",         "indoor": true,  "cluePhoto": "", "question": "물의 화학식은? (기호)", "questionImage": "", "answer": "H2O", "hints": ["수소2 산소1"] },
+    { "id": 5,  "place": "음악실 (3층)",         "indoor": true,  "cluePhoto": "", "question": "온음계 한 옥타브는 도~다음도 전까지 몇 음? (숫자)", "questionImage": "", "answer": "7", "hints": ["도레미파솔라시"] },
+    { "id": 6,  "place": "미술실 (3층)",         "indoor": true,  "cluePhoto": "", "question": "<별이 빛나는 밤>을 그린 네덜란드 화가? (성)", "questionImage": "", "answer": "고흐", "hints": ["빈센트 반 ○○"] },
+    { "id": 7,  "place": "강당 입구",            "indoor": false, "cluePhoto": "", "question": "$3^3$ 의 값은?", "questionImage": "", "answer": "27", "hints": ["9×3"] },
+    { "id": 8,  "place": "본관 현관",            "indoor": false, "cluePhoto": "", "question": "대한민국의 수도는?", "questionImage": "", "answer": "서울", "hints": ["한강이 흐름"] },
+    { "id": 9,  "place": "체육관 뒤편",          "indoor": false, "cluePhoto": "", "question": "삼각형 내각의 합은 몇 도? (숫자)", "questionImage": "", "answer": "180", "hints": ["평각"] },
+    { "id": 10, "place": "정문 화단",            "indoor": false, "cluePhoto": "", "question": "지구에서 가장 가까운 별(항성)은?", "questionImage": "", "answer": "태양", "hints": ["낮에 보임"] },
+    { "id": 11, "place": "후문 주차장",          "indoor": false, "cluePhoto": "", "question": "영어로 '화요일'은? (소문자)", "questionImage": "", "answer": "tuesday", "hints": ["월요일 다음"] },
+    { "id": 12, "place": "1학년 복도",           "indoor": true,  "cluePhoto": "", "question": "$\\sqrt{144}$ 의 값은?", "questionImage": "", "answer": "12", "hints": ["12×12=144"] },
+    { "id": 13, "place": "컴퓨터실 (2층)",       "indoor": true,  "cluePhoto": "", "question": "1바이트는 몇 비트? (숫자)", "questionImage": "", "answer": "8", "hints": ["2의 3승"] },
+    { "id": 14, "place": "교무실 앞",            "indoor": true,  "cluePhoto": "", "question": "조선을 건국한 왕의 이름은? (성+이름)", "questionImage": "", "answer": "이성계", "hints": ["태조"] },
+    { "id": 15, "place": "매점 옆",              "indoor": false, "cluePhoto": "", "question": "물이 끓는 온도는 몇 ℃? (1기압, 숫자)", "questionImage": "", "answer": "100", "hints": ["섭씨"] }
   ]
 }

@@ -75,8 +75,8 @@
       <button class="danger" id="resetBtn">♻️ 진행 초기화</button>
     </div>
 
-    <div class="section-title">🏆 우승 순위 (12개… 아니, need개 달성 순)</div>
-    <div id="rank"><div class="muted">아직 완주한 조 없음</div></div>
+    <div class="section-title">🏁 12개 달성 순서 <span style="color:#8b9bb4;font-weight:normal;font-size:0.78rem">(참고용 — 실제 우승은 본부 도착 순, 선생님 판정)</span></div>
+    <div id="rank"><div class="muted">아직 12개 달성한 조 없음</div></div>
 
     <div class="section-title">📡 실시간 조별 진행</div>
     <div id="live"><div class="muted">불러오는 중…</div></div>
@@ -140,12 +140,12 @@
     const winners = Object.keys(a).filter(t => a[t].wonAt).map(t => ({ team: t, wonAt: a[t].wonAt }))
       .sort((x, y) => x.wonAt - y.wonAt);
     const el = document.getElementById('rank');
-    if (!winners.length) { el.innerHTML = '<div class="muted">아직 완주한 조 없음</div>'; return; }
+    if (!winners.length) { el.innerHTML = '<div class="muted">아직 12개 달성한 조 없음</div>'; return; }
     const medal = ['🥇', '🥈', '🥉'];
     el.innerHTML = `<div class="rank">${winners.map((w, i) =>
       `<div class="rank-row ${i === 0 ? 'gold' : ''}"><span class="rank-medal">${medal[i] || (i + 1)}</span>
         <span class="rank-name">${esc(w.team)}</span>
-        <span class="rank-time">완주 ${new Date(w.wonAt).toLocaleTimeString('ko-KR')}</span></div>`).join('')}</div>`;
+        <span class="rank-time">12개 달성 ${new Date(w.wonAt).toLocaleTimeString('ko-KR')}</span></div>`).join('')}</div>`;
   }
 
   function renderLive() {

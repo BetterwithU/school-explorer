@@ -239,7 +239,7 @@
     clearTimeout(window.__tt); window.__tt = setTimeout(() => t.classList.remove('show'), 2200);
   }
   function newStation() {
-    return { _id: uid++, place: '', cluePhoto: '', question: '', questionImage: '', answer: '', hints: [''] };
+    return { _id: uid++, place: '', indoor: false, cluePhoto: '', question: '', questionImage: '', answer: '', hints: [''] };
   }
   function fssSupported() { return 'showDirectoryPicker' in window; }
 
@@ -317,6 +317,13 @@
       </div>
 
       <div class="row">
+        <label class="fld">🏠 장소 유형 (와이파이 끊긴 조를 실내로 보내 재접속시킴)</label>
+        <label style="font-size:0.92rem;color:var(--ink);display:inline-flex;align-items:center;gap:8px;cursor:pointer">
+          <input type="checkbox" data-indoor ${st.indoor ? 'checked' : ''} style="width:auto;transform:scale(1.3)"> 실내 (와이파이 잡히는 곳)
+        </label>
+      </div>
+
+      <div class="row">
         <label class="fld">🧭 장소 단서 사진 (이 station을 찾아가게 하는 내비 사진)</label>
         ${imgFieldHtml('cluePhoto', st.cluePhoto)}
       </div>
@@ -356,6 +363,9 @@
         scheduleSave();
       });
     });
+    // 실내/실외 체크
+    const indoorCb = $('[data-indoor]', el);
+    if (indoorCb) indoorCb.addEventListener('change', () => { st.indoor = indoorCb.checked; scheduleSave(); });
     // 카드 액션
     $$('[data-act]', el).forEach(btn => {
       btn.addEventListener('click', () => handleAction(btn.dataset.act, st, idx, el));
@@ -541,6 +551,7 @@
       stations: state.stations.map((st, i) => ({
         id: i + 1,
         place: st.place || '',
+        indoor: !!st.indoor,
         cluePhoto: st.cluePhoto || '',
         question: st.question || '',
         questionImage: st.questionImage || '',
@@ -599,7 +610,7 @@
     };
     state.stations = (data.stations || []).map(s => ({
       _id: uid++,
-      place: s.place || '', cluePhoto: s.cluePhoto || '',
+      place: s.place || '', indoor: !!s.indoor, cluePhoto: s.cluePhoto || '',
       question: s.question || '', questionImage: s.questionImage || '',
       answer: s.answer || '', hints: (s.hints && s.hints.length ? s.hints : ['']),
     }));

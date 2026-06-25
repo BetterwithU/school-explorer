@@ -200,6 +200,15 @@
     return stationById(data, id);
   }
 
+  // 오프라인 폴백: 안 간 곳 중 '실내' 우선 배정(거기서 와이파이 재접속 → 추적 재개).
+  // 실내가 다 끝났으면 안 간 아무 곳. 루트 순서 유지 → 결정적.
+  function nextTargetOffline(data, p) {
+    const unv = p.route.filter(id => !p.solved[id]);
+    if (!unv.length) return null;
+    const indoor = unv.find(id => { const s = stationById(data, id); return s && s.indoor; });
+    return stationById(data, indoor != null ? indoor : unv[0]);
+  }
+
   /* ---------- ② 실시간 동적 배정 ----------
    * WiFi 양호 시: 다른 조의 currentTarget을 읽어 "가장 한산한 미방문 station"을 배정.
    * 실패/오프라인(liveTeams 없음) 시: 루트순 첫 미방문(=①)으로 폴백 → 게임 안 멈춤.
@@ -216,7 +225,7 @@
   function nextTargetSmart(data, p, liveTeams) {
     const unvisited = p.route.filter(id => !p.solved[id]); // 루트 순서 유지(동률 tiebreak)
     if (!unvisited.length) return null;
-    if (!liveTeams) return stationById(data, unvisited[0]); // ① 폴백
+    if (!liveTeams) return nextTargetOffline(data, p); // 오프라인 폴백(실내 우선)
     // 다른 조의 목적지 혼잡도 집계
     const occ = {};
     for (const team in liveTeams) {
@@ -262,7 +271,7 @@
     solvedCount, isWin, currentStationId, markSolved,
     checkAnswer, normalize,
     hintsRemaining, useHint,
-    nextTarget, nextTargetSmart, setTarget, reportPayload, aggregateTeamRecord,
+    nextTarget, nextTargetOffline, nextTargetSmart, setTarget, reportPayload, aggregateTeamRecord,
     // 내부 유틸도 테스트용으로 노출
     _hashSeed: hashSeed,
   };

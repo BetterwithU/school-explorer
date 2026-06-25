@@ -137,7 +137,8 @@
   E.loadStations('stations.json').then(data => {
     DATA = data;
     initSync();
-    const savedTeam = DEV ? (localStorage.getItem(CURTEAM_KEY) || (E.teamList(data)[0] || '1조')) : localStorage.getItem(CURTEAM_KEY);
+    const urlTeam = params.get('team');   // ?team=3조 → 탭/기기마다 다른 조로 테스트(CURTEAM_KEY 안 건드림)
+    const savedTeam = urlTeam || (DEV ? (localStorage.getItem(CURTEAM_KEY) || (E.teamList(data)[0] || '1조')) : localStorage.getItem(CURTEAM_KEY));
     if (savedTeam) {
       PROGRESS = E.loadProgress(DATA, savedTeam) || E.startGame(DATA, savedTeam);
       report();
@@ -223,7 +224,7 @@
       target = E.stationById(DATA, PROGRESS.currentTarget);
     }
     if (!target) {
-      target = isOnline() ? E.nextTargetSmart(DATA, PROGRESS, LIVE) : E.nextTarget(DATA, PROGRESS);
+      target = isOnline() ? E.nextTargetSmart(DATA, PROGRESS, LIVE) : E.nextTargetOffline(DATA, PROGRESS);
       if (target) { E.setTarget(PROGRESS, target.id); report(); }
     }
     if (!target) { screenWin(); return; }
@@ -329,9 +330,9 @@
     const need = E.winNeed(DATA), solved = E.solvedCount(PROGRESS);
     document.getElementById('card').innerHTML = `
       ${topbar()}
-      <h2 style="color:#ffd166">🏆 ${esc(PROGRESS.team)} 미션 완료!</h2>
-      <p class="lead">${need}곳을 모두 해결했어요! (${solved}곳 완료)<br>지금 바로 <b style="color:#ffd166">본부로 복귀</b>하세요!</p>
-      <div class="clue-place"><div class="lbl">완료 시각</div><div class="nm" style="font-size:1.1rem">${PROGRESS.wonAt ? new Date(PROGRESS.wonAt).toLocaleTimeString('ko-KR') : '-'}</div></div>
+      <h2 style="color:#ffd166">🏁 ${need}곳 완료!</h2>
+      <p class="lead">${esc(PROGRESS.team)}, ${need}곳을 다 풀었어요! (${solved}곳)<br>이제 <b style="color:#ffd166">출발점(본부)으로 가장 먼저 도착</b>하면 우승!<br>지금 바로 달려가세요! 🏃‍♂️💨</p>
+      <div class="clue-place"><div class="lbl">12곳 달성 시각 (참고용)</div><div class="nm" style="font-size:1.1rem">${PROGRESS.wonAt ? new Date(PROGRESS.wonAt).toLocaleTimeString('ko-KR') : '-'}</div></div>
       ${DEV ? '<button class="btn ghost" id="resetWin">진행 초기화</button>' : ''}`;
     const rw = document.getElementById('resetWin');
     if (rw) rw.onclick = () => { E.clearProgress(PROGRESS.team); PROGRESS = E.startGame(DATA, PROGRESS.team); screenNav(); };
