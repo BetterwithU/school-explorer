@@ -200,6 +200,7 @@
       return `<div class="team-card">
         <div class="tc-head"><span class="tc-dot" style="background:${color}"></span><span class="tc-name">${esc(team)}</span>
           <span class="tc-meta${(d.ts && Date.now() - d.ts > 60000) ? ' stale' : ''}">${(d.ts && Date.now() - d.ts > 60000) ? '📵 ' : ''}기기 ${d.deviceCount} · ${timeAgo(d.ts)}</span></div>
+        ${(d.myName || d.partnerName) ? `<div style="font-size:0.78rem;color:#9fd8c4;margin-bottom:6px">👤 ${esc(d.myName || '?')}${d.partnerName ? ' · ' + esc(d.partnerName) : ''}${d.email ? ` <span style="color:#5b6b8a">(${esc(d.email)})</span>` : ''}</div>` : ''}
         <div class="tc-target">📍 ${esc(place)}</div>
         <div class="bar"><span style="width:${Math.min(100, pct)}%"></span></div>
         <div class="tc-prog">${prog}</div>

@@ -224,20 +224,37 @@
   function screenStart() {
     CURSCREEN = 'start';
     const teams = E.teamList(DATA);
-    const grid = teams.length
-      ? `<div class="team-grid">${teams.map(t => `<button class="team-btn" data-team="${esc(t)}">${esc(t)}</button>`).join('')}</div>`
-      : `<input class="answer-input" id="teamName" placeholder="우리 조 이름 입력 (예: 1조)"><button class="btn" id="teamGo">시작</button>`;
+    const u = (window.BAuth && window.BAuth.user && window.BAuth.user()) ? window.BAuth.user() : null;
+    const teamPicker = teams.length
+      ? `<select class="answer-input" id="teamSel"><option value="">— 우리 조 선택 —</option>${teams.map(t => `<option value="${esc(t)}">${esc(t)}</option>`).join('')}</select>`
+      : `<input class="answer-input" id="teamSel" placeholder="우리 조 (예: 1조)">`;
     document.getElementById('card').innerHTML = `
       <h2>🏕️ ${esc(DATA.meta.title || '탐험 레이스')}</h2>
-      <p class="lead">우리 조를 선택하세요.<br>QR ${DATA.stations.length}곳 중 <b style="color:#ffd166">${E.winNeed(DATA)}곳</b>을 먼저 풀고 돌아오면 우승!</p>
-      ${grid}`;
-    document.querySelectorAll('[data-team]').forEach(b => b.onclick = () => pickTeam(b.dataset.team));
-    const go = document.getElementById('teamGo');
-    if (go) go.onclick = () => { const v = document.getElementById('teamName').value.trim(); if (v) pickTeam(v); };
+      <p class="lead">참가 정보를 입력하세요.<br>QR ${DATA.stations.length}곳 중 <b style="color:#ffd166">${E.winNeed(DATA)}곳</b> 먼저 풀고 오면 우승!</p>
+      ${u ? `<p class="lead" style="font-size:0.78rem;color:#9fd8c4">🔑 로그인: ${esc(u.email)}</p>` : ''}
+      ${teamPicker}
+      <input class="answer-input" id="myName" placeholder="내 이름" autocomplete="off">
+      <input class="answer-input" id="partnerName" placeholder="짝 이름" autocomplete="off">
+      <button class="btn" id="startBtn2">🚩 시작하기</button>
+      <div class="feedback" id="startFb"></div>`;
+    document.getElementById('startBtn2').onclick = () => {
+      const team = (document.getElementById('teamSel').value || '').trim();
+      const my = document.getElementById('myName').value.trim();
+      const partner = document.getElementById('partnerName').value.trim();
+      const fb = document.getElementById('startFb');
+      if (!team) { fb.className = 'feedback show wrong'; fb.textContent = '우리 조를 선택하세요.'; return; }
+      if (!my || !partner) { fb.className = 'feedback show wrong'; fb.textContent = '내 이름과 짝 이름을 모두 입력하세요.'; return; }
+      pickTeam(team, my, partner);
+    };
   }
-  function pickTeam(team) {
+  function pickTeam(team, myName, partnerName) {
     localStorage.setItem(CURTEAM_KEY, team);
     PROGRESS = E.loadProgress(DATA, team) || E.startGame(DATA, team);
+    PROGRESS.myName = myName || PROGRESS.myName || '';
+    PROGRESS.partnerName = partnerName || PROGRESS.partnerName || '';
+    const u = (window.BAuth && window.BAuth.user && window.BAuth.user()) ? window.BAuth.user() : null;
+    PROGRESS.email = (u && u.email) || PROGRESS.email || '';
+    E.saveProgress(PROGRESS);
     report();
     screenNav();
   }

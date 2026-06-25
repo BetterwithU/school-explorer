@@ -261,6 +261,9 @@
       currentTarget: (p.currentTarget != null) ? p.currentTarget : '',
       placeName: tgt ? (tgt.place || '-') : (isWin(data, p) ? '🏆 복귀' : '-'),
       wonAt: p.wonAt || null,
+      myName: p.myName || '',
+      partnerName: p.partnerName || '',
+      email: p.email || '',
     };
   }
 
