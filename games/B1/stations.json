@@ -1,7 +1,7 @@
 {
   "meta": {
-    "title": "중2 학교 탐험 레이스 (더미 15)",
-    "stationCount": 15,
+    "title": "중2 학교 탐험 레이스 (더미 16)",
+    "stationCount": 16,
     "need": 12,
     "hintBudget": 6,
     "teams": ["1조", "2조", "3조", "4조", "5조", "6조", "7조", "8조", "9조", "10조", "11조", "12조"],
@@ -22,6 +22,7 @@
     { "id": 12, "place": "1학년 복도",           "indoor": true,  "cluePhoto": "", "question": "$\\sqrt{144}$ 의 값은?", "questionImage": "", "answer": "12", "hints": ["12×12=144"] },
     { "id": 13, "place": "컴퓨터실 (2층)",       "indoor": true,  "cluePhoto": "", "question": "1바이트는 몇 비트? (숫자)", "questionImage": "", "answer": "8", "hints": ["2의 3승"] },
     { "id": 14, "place": "교무실 앞",            "indoor": true,  "cluePhoto": "", "question": "조선을 건국한 왕의 이름은? (성+이름)", "questionImage": "", "answer": "이성계", "hints": ["태조"] },
-    { "id": 15, "place": "매점 옆",              "indoor": false, "cluePhoto": "", "question": "물이 끓는 온도는 몇 ℃? (1기압, 숫자)", "questionImage": "", "answer": "100", "hints": ["섭씨"] }
+    { "id": 15, "place": "매점 옆",              "indoor": false, "cluePhoto": "", "question": "물이 끓는 온도는 몇 ℃? (1기압, 숫자)", "questionImage": "", "answer": "100", "hints": ["섭씨"] },
+    { "id": 16, "place": "방송실 (1층)",         "indoor": true,  "cluePhoto": "", "question": "태양계에서 가장 큰 행성은?", "questionImage": "", "answer": "목성", "hints": ["줄무늬와 대적점"] }
   ]
 }
