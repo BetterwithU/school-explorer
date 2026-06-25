@@ -1,0 +1,84 @@
+{
+  "meta": {
+    "title": "중2 학교 탐험 레이스 (더미)",
+    "stationCount": 8,
+    "need": 5,
+    "hintBudget": 4,
+    "teams": ["1조", "2조", "3조", "4조", "5조", "6조", "7조", "8조", "9조", "10조", "11조", "12조"],
+    "createdWith": "시스템빌드 더미 데이터"
+  },
+  "stations": [
+    {
+      "id": 1,
+      "place": "도서관 입구 (1층)",
+      "cluePhoto": "",
+      "question": "책이 가장 많이 모여 있는 이곳. 다음을 계산하시오.\n$$\\frac{3}{4} + \\frac{1}{6}$$",
+      "questionImage": "",
+      "answer": "11/12",
+      "hints": ["통분: 분모를 12로 맞춰요", "9/12 + 2/12 는?"]
+    },
+    {
+      "id": 2,
+      "place": "급식실 앞",
+      "cluePhoto": "",
+      "question": "2024년 노벨 문학상을 받은 한국 작가는 누구일까요? (성+이름)",
+      "questionImage": "",
+      "answer": "한강",
+      "hints": ["소설 <채식주의자>, <소년이 온다>의 작가예요", "성은 '한'이에요"]
+    },
+    {
+      "id": 3,
+      "place": "운동장 스탠드",
+      "cluePhoto": "",
+      "question": "일차방정식을 푸시오.\n$2x + 5 = 17$",
+      "questionImage": "",
+      "answer": "6",
+      "hints": ["양변에서 5를 빼요", "2x = 12"]
+    },
+    {
+      "id": 4,
+      "place": "과학실 (2층)",
+      "cluePhoto": "",
+      "question": "물의 화학식은 무엇일까요? (영문·기호)",
+      "questionImage": "",
+      "answer": "H2O",
+      "hints": ["수소 2개와 산소 1개", "H와 O로 이루어져요"]
+    },
+    {
+      "id": 5,
+      "place": "음악실 (3층)",
+      "cluePhoto": "",
+      "question": "한 옥타브는 몇 개의 음으로 이루어져 있을까요? (도~다음 도 전까지, 온음계 기준 숫자)",
+      "questionImage": "",
+      "answer": "7",
+      "hints": ["도 레 미 파 솔 라 시", "다음 '도'는 빼고 세요"]
+    },
+    {
+      "id": 6,
+      "place": "미술실 (3층)",
+      "cluePhoto": "",
+      "question": "<별이 빛나는 밤>, <해바라기>를 그린 네덜란드 화가의 이름은? (성)",
+      "questionImage": "",
+      "answer": "고흐",
+      "hints": ["빈센트 반 ○○", "귀를 자른 일화로도 유명해요"]
+    },
+    {
+      "id": 7,
+      "place": "강당 입구",
+      "cluePhoto": "",
+      "question": "$3^3$ 의 값은?",
+      "questionImage": "",
+      "answer": "27",
+      "hints": ["3 × 3 × 3", "9 × 3"]
+    },
+    {
+      "id": 8,
+      "place": "본관 현관",
+      "cluePhoto": "",
+      "question": "대한민국의 현재 수도는 어디일까요?",
+      "questionImage": "",
+      "answer": "서울",
+      "hints": ["한강이 흐르는 도시", "○○특별시"]
+    }
+  ]
+}

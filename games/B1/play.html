@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>탐험 레이스</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+      background: #10241b; color: #eafaf2; min-height: 100dvh;
+      display: flex; flex-direction: column; align-items: center; padding: 18px;
+    }
+    .card { width: 100%; max-width: 460px; }
+    .topbar {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 0.82rem; color: #9fd8c4; margin-bottom: 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;
+    }
+    .topbar .team { font-weight: 800; color: #2ec4b6; }
+    .dev-badge { background: #7c3aed; color: #fff; font-size: 0.66rem; padding: 2px 7px; border-radius: 9px; margin-left: 5px; }
+
+    .progress { display: flex; gap: 5px; margin-bottom: 16px; }
+    .pchip { flex: 1; height: 7px; border-radius: 4px; background: rgba(255,255,255,0.12); }
+    .pchip.done { background: #2ec4b6; }
+    .pneed { color: #ffd166; font-size: 0.78rem; text-align: center; margin-top: -8px; margin-bottom: 14px; }
+
+    h2 { font-size: 1.25rem; margin-bottom: 14px; text-align: center; color: #d7fff0; }
+    .lead { text-align: center; color: #9fd8c4; font-size: 0.92rem; line-height: 1.6; margin-bottom: 16px; }
+
+    .btn {
+      display: block; width: 100%; padding: 14px; border: none; border-radius: 11px;
+      font-size: 1rem; font-weight: 800; cursor: pointer; margin-bottom: 10px;
+      background: linear-gradient(135deg,#2ec4b6,#1a9b8f); color: #04231a;
+      transition: transform .12s;
+    }
+    .btn:active { transform: scale(.97); }
+    .btn.ghost { background: transparent; color: #9fd8c4; border: 1px solid rgba(255,255,255,0.18); }
+    .btn.gold { background: linear-gradient(135deg,#ffd166,#f0a500); color: #3a2600; }
+
+    /* 팀 선택 */
+    .team-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 9px; margin-bottom: 14px; }
+    .team-btn {
+      padding: 13px 6px; border-radius: 10px; border: 1px solid rgba(46,196,182,.4);
+      background: rgba(46,196,182,.08); color: #d7fff0; font-weight: 800; cursor: pointer; font-size: 0.92rem;
+    }
+    .team-btn:active { transform: scale(.96); }
+
+    /* 사진 단서 내비 */
+    .clue-photo {
+      width: 100%; border-radius: 14px; border: 1px solid rgba(255,255,255,0.15);
+      margin-bottom: 14px; max-height: 300px; object-fit: cover; display: block;
+    }
+    .clue-place {
+      background: rgba(255,209,102,.1); border: 1px dashed rgba(255,209,102,.5);
+      border-radius: 12px; padding: 18px; text-align: center; margin-bottom: 14px;
+    }
+    .clue-place .lbl { font-size: 0.74rem; color: #d8b96a; letter-spacing: 1px; }
+    .clue-place .nm { font-size: 1.4rem; font-weight: 900; color: #ffd166; margin-top: 6px; }
+
+    /* 문제 */
+    .qbox {
+      background: #fbfaf5; color: #1a1a1a; border-radius: 14px; padding: 18px;
+      font-size: 1.08rem; line-height: 1.75; margin-bottom: 14px; white-space: pre-line;
+    }
+    .qbox img { max-width: 100%; border-radius: 8px; margin-top: 10px; }
+    .answer-input {
+      width: 100%; padding: 14px; border-radius: 11px; border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.06); color: #fff; font-size: 1.1rem; text-align: center; margin-bottom: 12px;
+    }
+    .answer-input:focus { outline: none; border-color: #2ec4b6; }
+    .feedback { text-align: center; padding: 11px; border-radius: 10px; margin-bottom: 12px; display: none; font-weight: 700; }
+    .feedback.show { display: block; }
+    .feedback.right { background: rgba(46,196,182,.15); color: #6ee7c8; }
+    .feedback.wrong { background: rgba(233,69,96,.15); color: #ff9aa9; }
+
+    .hint-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .hint-btn {
+      flex: 1; padding: 11px; border-radius: 10px; cursor: pointer; font-weight: 700; font-size: 0.9rem;
+      background: rgba(255,209,102,.12); border: 1px solid rgba(255,209,102,.4); color: #ffd166;
+    }
+    .hint-btn:disabled { opacity: .4; cursor: not-allowed; }
+    .hint-left { font-size: 0.78rem; color: #9fd8c4; white-space: nowrap; }
+    .hint-list { margin-bottom: 12px; }
+    .hint-item {
+      background: rgba(255,255,255,0.05); border-left: 3px solid rgba(255,209,102,.6);
+      border-radius: 6px; padding: 9px 12px; margin-bottom: 7px; font-size: 0.9rem; color: #e6f5ee;
+    }
+
+    /* DEV 패널 */
+    .dev-panel { margin-top: 16px; border: 1px dashed rgba(124,58,237,.5); border-radius: 12px; padding: 12px; background: rgba(124,58,237,.06); }
+    .dev-title { font-size: 0.76rem; color: #c4b5fd; font-weight: 800; margin-bottom: 9px; text-align: center; }
+    .dev-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 6px; }
+    .dev-scan { padding: 9px 4px; border-radius: 8px; border: 1px solid rgba(124,58,237,.5); background: rgba(124,58,237,.12); color: #ddd6fe; font-weight: 700; cursor: pointer; font-size: 0.82rem; }
+    .dev-scan.solved { opacity: .4; }
+
+    /* 스캐너 */
+    .scanner { display: none; position: fixed; inset: 0; background: rgba(8,16,12,.96); z-index: 100; flex-direction: column; align-items: center; justify-content: center; }
+    .scanner.active { display: flex; }
+    #qr-video { width: min(86vw,340px); height: min(86vw,340px); object-fit: cover; border-radius: 12px; border: 2px solid #2ec4b6; }
+    .scanner-msg { color: #9fd8c4; margin-top: 14px; font-size: 0.88rem; text-align: center; }
+    .scanner-cancel { margin-top: 18px; padding: 11px 30px; border-radius: 9px; background: rgba(255,255,255,0.12); color: #fff; border: 1px solid rgba(255,255,255,0.25); cursor: pointer; }
+    #qr-canvas { display: none; }
+
+    .small-link { display: block; text-align: center; color: rgba(255,255,255,0.4); font-size: 0.78rem; margin-top: 8px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div class="card" id="card"><p style="text-align:center;color:#9fd8c4">불러오는 중…</p></div>
+
+  <div class="scanner" id="scanner">
+    <video id="qr-video" autoplay playsinline muted></video>
+    <canvas id="qr-canvas"></canvas>
+    <p class="scanner-msg" id="scannerMsg">QR코드를 화면 안에 맞춰주세요</p>
+    <button class="scanner-cancel" id="scannerCancel">✕ 취소</button>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+  <script src="../../modes/B/engine.js"></script>
+  <script>
+  /* games/B1 — 게임 화면 (B 엔진 backbone, 오프라인-우선)
+   * ① 결정적 라우팅으로 완전 플레이 가능. ②(실시간)·HQ보고는 다음 단계에서 얹음. */
+  const E = window.BEngine;
+  const params = new URLSearchParams(location.search);
+  const DEV = params.get('dev') === '1';
+  const CURTEAM_KEY = 'b1_currentTeam';
+
+  let DATA, PROGRESS, CURQ = null;     // CURQ: 현재 풀고 있는 station
+  let scanStream = null, scanRAF = null, scanDone = false, barcodeDetector = null;
+
+  E.loadStations('stations.json').then(data => {
+    DATA = data;
+    const savedTeam = DEV ? (localStorage.getItem(CURTEAM_KEY) || (E.teamList(data)[0] || '1조')) : localStorage.getItem(CURTEAM_KEY);
+    if (savedTeam) {
+      PROGRESS = E.loadProgress(DATA, savedTeam) || E.startGame(DATA, savedTeam);
+      route();
+    } else {
+      screenStart();
+    }
+  }).catch(err => {
+    document.getElementById('card').innerHTML = `<p style="color:#ff9aa9;text-align:center">데이터 로드 실패<br><small>${err.message}</small></p>`;
+  });
+
+  /* ---------- 라우팅 ---------- */
+  function route() {
+    const scanned = params.get('s');
+    if (E.isWin(DATA, PROGRESS)) { screenWin(); return; }
+    if (scanned) { openStation(scanned); return; }
+    screenNav();
+  }
+
+  /* ---------- 화면: 시작(팀 선택) ---------- */
+  function screenStart() {
+    const teams = E.teamList(DATA);
+    const grid = teams.length
+      ? `<div class="team-grid">${teams.map(t => `<button class="team-btn" data-team="${esc(t)}">${esc(t)}</button>`).join('')}</div>`
+      : `<input class="answer-input" id="teamName" placeholder="우리 조 이름 입력 (예: 1조)"><button class="btn" id="teamGo">시작</button>`;
+    document.getElementById('card').innerHTML = `
+      <h2>🏕️ ${esc(DATA.meta.title || '탐험 레이스')}</h2>
+      <p class="lead">우리 조를 선택하세요.<br>QR ${DATA.stations.length}곳 중 <b style="color:#ffd166">${E.winNeed(DATA)}곳</b>을 먼저 풀고 돌아오면 우승!</p>
+      ${grid}`;
+    document.querySelectorAll('[data-team]').forEach(b => b.onclick = () => pickTeam(b.dataset.team));
+    const go = document.getElementById('teamGo');
+    if (go) go.onclick = () => { const v = document.getElementById('teamName').value.trim(); if (v) pickTeam(v); };
+  }
+  function pickTeam(team) {
+    localStorage.setItem(CURTEAM_KEY, team);
+    PROGRESS = E.loadProgress(DATA, team) || E.startGame(DATA, team);
+    screenNav();
+  }
+
+  /* ---------- 화면: 내비(사진 단서) ---------- */
+  function screenNav() {
+    if (location.search) history.replaceState(null, '', DEV ? 'play.html?dev=1' : 'play.html');
+    scanDone = false;
+    const target = E.nextTarget(DATA, PROGRESS);
+    if (!target) { screenWin(); return; }
+    const clue = target.cluePhoto
+      ? `<img class="clue-photo" src="${esc(target.cluePhoto)}" alt="장소 단서" onerror="this.outerHTML='<div class=&quot;clue-place&quot;><div class=&quot;lbl&quot;>다음 목적지</div><div class=&quot;nm&quot;>${esc(target.place)}</div></div>'">`
+      : `<div class="clue-place"><div class="lbl">📷 다음 목적지 — 사진 단서</div><div class="nm">${esc(target.place || '???')}</div></div>`;
+
+    document.getElementById('card').innerHTML = `
+      ${topbar()}
+      ${progressBar()}
+      <h2>🧭 다음 장소를 찾아라!</h2>
+      <p class="lead">아래 ${target.cluePhoto ? '사진' : '장소'}를 보고 그곳을 찾아가서 QR을 스캔하세요.</p>
+      ${clue}
+      <button class="btn" id="scanBtn">📷 QR 스캔하기</button>
+      ${DEV ? devPanel() : ''}
+      <span class="small-link" id="resetLink">진행 초기화(이 조)</span>`;
+
+    document.getElementById('scanBtn').onclick = openScanner;
+    bindDev();
+    document.getElementById('resetLink').onclick = () => {
+      if (confirm('이 조의 진행을 초기화할까요?')) { E.clearProgress(PROGRESS.team); PROGRESS = E.startGame(DATA, PROGRESS.team); screenNav(); }
+    };
+  }
+
+  /* ---------- 화면: 문제 ---------- */
+  function openStation(stationId) {
+    const st = E.stationById(DATA, stationId);
+    if (!st) { alert('이 QR은 우리 게임 station이 아니에요 🙅'); screenNav(); return; }
+    if (PROGRESS.solved[st.id] && !DEV) {
+      flashGuide('✅', '이미 푼 곳이에요', `'${st.place}'은(는) 이미 풀었어요. 다음 단서로!`);
+      return;
+    }
+    CURQ = st;
+    let revealed = 0; // 이 문제에서 공개한 힌트 수
+
+    document.getElementById('card').innerHTML = `
+      ${topbar()}
+      ${progressBar()}
+      <div class="qbox" id="qbox">${esc(st.question)}${st.questionImage ? `<img src="${esc(st.questionImage)}" alt="문제 이미지" onerror="this.style.display='none'">` : ''}</div>
+      <div class="hint-list" id="hintList"></div>
+      <div class="hint-bar">
+        <button class="hint-btn" id="hintBtn">💡 힌트 보기</button>
+        <span class="hint-left" id="hintLeft"></span>
+      </div>
+      <input class="answer-input" id="ans" placeholder="정답 입력" autocomplete="off">
+      <button class="btn" id="submitBtn">✅ 정답 제출</button>
+      <div class="feedback" id="fb"></div>
+      ${DEV ? '<span class="small-link" id="navBack">← 내비로</span>' : ''}`;
+
+    renderMath(document.getElementById('qbox'));
+    updateHintUI(st, revealed);
+
+    document.getElementById('hintBtn').onclick = () => {
+      const hints = st.hints || [];
+      if (revealed >= hints.length) return;
+      if (E.hintsRemaining(DATA, PROGRESS) <= 0) { toast('남은 힌트가 없어요'); return; }
+      if (!E.useHint(DATA, PROGRESS)) return;
+      const item = document.createElement('div');
+      item.className = 'hint-item';
+      item.textContent = '💡 ' + hints[revealed];
+      document.getElementById('hintList').appendChild(item);
+      revealed++;
+      updateHintUI(st, revealed);
+    };
+
+    document.getElementById('submitBtn').onclick = () => submitAnswer(st);
+    document.getElementById('ans').addEventListener('keydown', e => { if (e.key === 'Enter') submitAnswer(st); });
+    const nb = document.getElementById('navBack'); if (nb) nb.onclick = screenNav;
+  }
+
+  function updateHintUI(st, revealed) {
+    const hints = st.hints || [];
+    const rem = E.hintsRemaining(DATA, PROGRESS);
+    const btn = document.getElementById('hintBtn');
+    const left = document.getElementById('hintLeft');
+    const noMore = revealed >= hints.length;
+    btn.disabled = noMore || rem <= 0;
+    btn.textContent = noMore ? '힌트 끝' : '💡 힌트 보기';
+    left.textContent = rem === Infinity ? '' : `남은 힌트 ${rem}개 (조 전체)`;
+  }
+
+  function submitAnswer(st) {
+    const input = document.getElementById('ans').value || '';
+    const fb = document.getElementById('fb');
+    if (!input.trim()) { fb.className = 'feedback show wrong'; fb.textContent = '정답을 입력해주세요!'; return; }
+    if (E.checkAnswer(st, input)) {
+      E.markSolved(DATA, PROGRESS, st.id, input.trim());
+      fb.className = 'feedback show right';
+      fb.textContent = '🎉 정답! 다음 단서로 이동합니다…';
+      setTimeout(() => { E.isWin(DATA, PROGRESS) ? screenWin() : screenNav(); }, 900);
+    } else {
+      fb.className = 'feedback show wrong';
+      fb.textContent = '아쉬워요! 다시 생각해볼까요?';
+    }
+  }
+
+  /* ---------- 화면: 우승 ---------- */
+  function screenWin() {
+    const need = E.winNeed(DATA), solved = E.solvedCount(PROGRESS);
+    document.getElementById('card').innerHTML = `
+      ${topbar()}
+      <h2 style="color:#ffd166">🏆 ${esc(PROGRESS.team)} 미션 완료!</h2>
+      <p class="lead">${need}곳을 모두 해결했어요! (${solved}곳 완료)<br>지금 바로 <b style="color:#ffd166">본부로 복귀</b>하세요!</p>
+      <div class="clue-place"><div class="lbl">완료 시각</div><div class="nm" style="font-size:1.1rem">${PROGRESS.wonAt ? new Date(PROGRESS.wonAt).toLocaleTimeString('ko-KR') : '-'}</div></div>
+      ${DEV ? '<button class="btn ghost" id="resetWin">진행 초기화</button>' : ''}`;
+    const rw = document.getElementById('resetWin');
+    if (rw) rw.onclick = () => { E.clearProgress(PROGRESS.team); PROGRESS = E.startGame(DATA, PROGRESS.team); screenNav(); };
+  }
+
+  /* ---------- 공통 조각 ---------- */
+  function topbar() {
+    return `<div class="topbar"><span class="team">📜 ${esc(PROGRESS.team)}${DEV ? '<span class="dev-badge">DEV</span>' : ''}</span>
+      <span>${E.solvedCount(PROGRESS)} / ${E.winNeed(DATA)} 해결</span></div>`;
+  }
+  function progressBar() {
+    const need = E.winNeed(DATA), solved = E.solvedCount(PROGRESS);
+    let chips = '';
+    for (let i = 0; i < need; i++) chips += `<div class="pchip ${i < solved ? 'done' : ''}"></div>`;
+    return `<div class="progress">${chips}</div><div class="pneed">🏁 ${need}곳 풀면 우승 (전체 ${DATA.stations.length}곳)</div>`;
+  }
+  function devPanel() {
+    const btns = DATA.stations.map(s =>
+      `<button class="dev-scan ${PROGRESS.solved[s.id] ? 'solved' : ''}" data-sid="${s.id}">${s.id}${PROGRESS.solved[s.id] ? '✓' : ''}</button>`).join('');
+    return `<div class="dev-panel"><div class="dev-title">🛠 DEV — 카메라 없이 station 열기 (번호=QR)</div><div class="dev-grid">${btns}</div></div>`;
+  }
+  function bindDev() {
+    document.querySelectorAll('.dev-scan').forEach(b => b.onclick = () => openStation(b.dataset.sid));
+  }
+  function flashGuide(ico, ttl, desc) {
+    document.getElementById('card').innerHTML = `${topbar()}<h2>${ico} ${esc(ttl)}</h2><p class="lead">${esc(desc)}</p><button class="btn" id="okBtn">다음 단서로 →</button>`;
+    document.getElementById('okBtn').onclick = screenNav;
+  }
+
+  function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+  function renderMath(el) { if (window.renderMathInElement) { try { window.renderMathInElement(el, { delimiters: [{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}], throwOnError: false }); } catch (e) {} } }
+  function toast(m) { const fb = document.getElementById('fb'); if (fb) { fb.className = 'feedback show wrong'; fb.textContent = m; } }
+
+  /* ---------- QR 스캐너 (A의 mission.html 로직 이식) ---------- */
+  function openScanner() { scanDone = false; document.getElementById('scanner').classList.add('active'); startCamera(); }
+  function closeScanner() { stopCamera(); document.getElementById('scanner').classList.remove('active'); }
+  document.getElementById('scannerCancel').onclick = closeScanner;
+
+  async function initDetector() {
+    try {
+      if ('BarcodeDetector' in window) {
+        const f = await window.BarcodeDetector.getSupportedFormats();
+        if (f.includes('qr_code')) barcodeDetector = new window.BarcodeDetector({ formats: ['qr_code'] });
+      }
+    } catch { barcodeDetector = null; }
+  }
+  async function startCamera() {
+    try {
+      await initDetector();
+      scanStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } } });
+      const v = document.getElementById('qr-video'); v.srcObject = scanStream;
+      v.onloadedmetadata = () => { v.play(); requestAnimationFrame(scanTick); };
+    } catch { document.getElementById('scannerMsg').textContent = '카메라 권한이 필요해요. 설정에서 허용해주세요.'; }
+  }
+  function stopCamera() {
+    if (scanRAF) { cancelAnimationFrame(scanRAF); scanRAF = null; }
+    if (scanStream) { scanStream.getTracks().forEach(t => t.stop()); scanStream = null; }
+    document.getElementById('qr-video').srcObject = null;
+  }
+  async function scanTick() {
+    if (scanDone) return;
+    const v = document.getElementById('qr-video');
+    if (v.readyState !== v.HAVE_ENOUGH_DATA) { scanRAF = requestAnimationFrame(scanTick); return; }
+    if (barcodeDetector) {
+      try { const codes = await barcodeDetector.detect(v); if (scanDone) return; if (codes && codes.length && codes[0].rawValue) { handleQr(codes[0].rawValue); return; } } catch {}
+      scanRAF = requestAnimationFrame(scanTick); return;
+    }
+    const c = document.getElementById('qr-canvas');
+    const src = Math.min(v.videoWidth, v.videoHeight), D = Math.min(400, src);
+    c.width = D; c.height = D;
+    const ctx = c.getContext('2d', { willReadFrequently: true });
+    const ox = (v.videoWidth - src) / 2, oy = (v.videoHeight - src) / 2;
+    ctx.drawImage(v, ox, oy, src, src, 0, 0, D, D);
+    const img = ctx.getImageData(0, 0, D, D);
+    const code = jsQR(img.data, img.width, img.height, { inversionAttempts: 'attemptBoth' });
+    if (code && code.data) handleQr(code.data); else scanRAF = requestAnimationFrame(scanTick);
+  }
+  function handleQr(raw) {
+    scanDone = true; closeScanner();
+    try {
+      let sid = null;
+      const t = String(raw).trim();
+      if (t.includes('play.html') || t.includes('?s=')) sid = new URL(t, location.href).searchParams.get('s');
+      else if (/^\d+$/.test(t)) sid = t;            // 순수 station 번호
+      if (sid && E.stationById(DATA, sid)) openStation(sid);
+      else alert('이 QR은 우리 게임 station이 아니에요 🙅');
+    } catch { alert('QR을 읽을 수 없어요. 다시 시도해주세요.'); }
+  }
+  </script>
+</body>
+</html>
