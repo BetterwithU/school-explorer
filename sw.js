@@ -8,7 +8,7 @@
  *  - stations.json: 네트워크 우선(최신 반영) + 실패 시 캐시.
  *  - 그 외 B 자산·이미지·CDN(KaTeX/jsQR/firebase): 캐시 우선 + 런타임 캐싱.
  * ============================================================ */
-const CACHE = 'b1-offline-v1';
+const CACHE = 'b1-offline-v2';
 
 // 설치 시 미리 받아둘 핵심 파일(개별 best-effort — 하나 실패해도 설치 계속)
 const PRECACHE = [
@@ -57,32 +57,31 @@ self.addEventListener('fetch', (e) => {
   if (!isB(req.url)) return;                    // B 무관(A 등) → 통과(브라우저 기본)
 
   const url = new URL(req.url);
-  // stations.json: 네트워크 우선(최신) → 실패 시 캐시
-  if (url.pathname.endsWith('/stations.json')) {
+  const sameOrigin = (url.origin === self.location.origin);
+
+  if (sameOrigin) {
+    // 우리 코드·문제·이미지(같은 출처) → 네트워크 우선(항상 최신) → 실패 시 캐시(오프라인)
     e.respondWith((async () => {
       try {
         const fresh = await fetch(req);
-        const c = await caches.open(CACHE); c.put(req, fresh.clone());
+        if (fresh && fresh.ok) { const c = await caches.open(CACHE); c.put(req, fresh.clone()); }
         return fresh;
       } catch {
         return (await caches.match(req)) || Response.error();
       }
     })());
-    return;
-  }
-
-  // 그 외 B 자산·이미지·CDN: 캐시 우선 → 없으면 네트워크(받아서 캐시)
-  e.respondWith((async () => {
-    const cached = await caches.match(req);
-    if (cached) return cached;
-    try {
-      const res = await fetch(req);
-      if (res && (res.ok || res.type === 'opaque')) {
-        const c = await caches.open(CACHE); c.put(req, res.clone());
+  } else {
+    // 외부 라이브러리(KaTeX/jsQR/firebase) → 캐시 우선(오프라인 대비) → 없으면 네트워크
+    e.respondWith((async () => {
+      const cached = await caches.match(req);
+      if (cached) return cached;
+      try {
+        const res = await fetch(req);
+        if (res && (res.ok || res.type === 'opaque')) { const c = await caches.open(CACHE); c.put(req, res.clone()); }
+        return res;
+      } catch {
+        return cached || Response.error();
       }
-      return res;
-    } catch {
-      return cached || Response.error();
-    }
-  })());
+    })());
+  }
 });

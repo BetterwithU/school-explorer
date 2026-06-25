@@ -341,8 +341,9 @@
       if (!E.useHint(DATA, PROGRESS)) return;
       const item = document.createElement('div');
       item.className = 'hint-item';
-      item.textContent = '💡 ' + hints[revealed];
+      item.innerHTML = '💡 ' + esc(hints[revealed]);
       document.getElementById('hintList').appendChild(item);
+      renderMath(item);   // 힌트 속 수식도 렌더
       revealed++;
       updateHintUI(st, revealed);
     };
@@ -419,7 +420,14 @@
   }
 
   function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
-  function renderMath(el) { if (window.renderMathInElement) { try { window.renderMathInElement(el, { delimiters: [{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}], throwOnError: false }); } catch (e) {} } }
+  function renderMath(el, tries) {
+    tries = tries || 0;
+    if (window.renderMathInElement) {
+      try { window.renderMathInElement(el, { delimiters: [{ left: '$$', right: '$$', display: true }, { left: '$', right: '$', display: false }], throwOnError: false }); } catch (e) {}
+    } else if (tries < 25) {
+      setTimeout(() => renderMath(el, tries + 1), 150);   // KaTeX 아직 로딩 중 → 잠시 후 재시도
+    }
+  }
   function toast(m) { const fb = document.getElementById('fb'); if (fb) { fb.className = 'feedback show wrong'; fb.textContent = m; } }
 
   /* ---------- QR 스캐너 (A의 mission.html 로직 이식) ---------- */
