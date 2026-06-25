@@ -101,6 +101,7 @@
       solved: {},       // { stationId: true }
       answers: {},      // { stationId: "입력답" }
       hintsUsed: 0,     // 누적 힌트 사용 수(예산 차감)
+      currentTarget: null, // 지금 향하는 station id(② 배정 결과; 한 leg 동안 고정)
       startedAt: Date.now(),
       wonAt: null,      // 우승(need 달성) 시각
     };
@@ -157,6 +158,7 @@
     let s = p.route.findIndex(id => !p.solved[id]);
     p.step = s === -1 ? p.route.length : s;
     if (!p.wonAt && isWin(data, p)) p.wonAt = Date.now();
+    p.currentTarget = null; // 이 leg 완료 → 다음 진입 시 재배정
     saveProgress(p);
     return p;
   }
@@ -198,16 +200,59 @@
     return stationById(data, id);
   }
 
-  /* ---------- ② 실시간 동적 배정 (TODO) ----------
-   * WiFi 양호 시: 다른 조의 currentTarget/위치를 읽어 "가장 한산한 미방문 station"을 배정.
-   * 실패/오프라인 시: nextTarget(① 결정적)으로 폴백.
-   * sync 연동 후 구현. 지금은 ①만으로 완전히 플레이 가능.
+  /* ---------- ② 실시간 동적 배정 ----------
+   * WiFi 양호 시: 다른 조의 currentTarget을 읽어 "가장 한산한 미방문 station"을 배정.
+   * 실패/오프라인(liveTeams 없음) 시: 루트순 첫 미방문(=①)으로 폴백 → 게임 안 멈춤.
+   * 동률은 '이 조의 루트 순서'로 깸 → 조마다 루트가 달라 자연 분산(결정적, 무작위 없음).
+   * liveTeams 형태: { teamName: { deviceId: { step, currentTarget, ... } } }
    */
-  function nextTargetSmart(data, p, liveState) {
-    // 라이브 상태 없으면 결정적 폴백
-    if (!liveState) return nextTarget(data, p);
-    // --- TODO: 혼잡도 계산 후 최소혼잡 미방문지 선택 ---
-    return nextTarget(data, p);
+  // 한 조의 여러 기기 기록 중 가장 앞선(step 큰) 것
+  function aggregateTeamRecord(teamData) {
+    const arr = Object.values(teamData || {});
+    if (!arr.length) return null;
+    return arr.reduce((a, b) => ((b.step || 0) > (a.step || 0) ? b : a));
+  }
+
+  function nextTargetSmart(data, p, liveTeams) {
+    const unvisited = p.route.filter(id => !p.solved[id]); // 루트 순서 유지(동률 tiebreak)
+    if (!unvisited.length) return null;
+    if (!liveTeams) return stationById(data, unvisited[0]); // ① 폴백
+    // 다른 조의 목적지 혼잡도 집계
+    const occ = {};
+    for (const team in liveTeams) {
+      if (team === p.team) continue;
+      const rec = aggregateTeamRecord(liveTeams[team]);
+      const tgt = rec && rec.currentTarget;
+      if (tgt != null && tgt !== '') occ[tgt] = (occ[tgt] || 0) + 1;
+    }
+    // 최소 혼잡 미방문지(동률이면 이 조의 루트순 먼저)
+    let best = unvisited[0], bestOcc = Infinity;
+    for (const id of unvisited) {
+      const o = occ[id] || 0;
+      if (o < bestOcc) { bestOcc = o; best = id; }
+    }
+    return stationById(data, best);
+  }
+
+  // 지금 향하는 목적지 고정/해제 (한 leg 동안 사진이 안 바뀌게)
+  function setTarget(p, stationId) {
+    p.currentTarget = (stationId == null) ? null : stationId;
+    saveProgress(p);
+    return p;
+  }
+
+  // HQ/배정용 보고 페이로드
+  function reportPayload(data, p) {
+    const tgt = (p.currentTarget != null) ? stationById(data, p.currentTarget) : null;
+    return {
+      step: p.step,
+      solvedCount: solvedCount(p),
+      total: p.route.length,
+      need: winNeed(data),
+      currentTarget: (p.currentTarget != null) ? p.currentTarget : '',
+      placeName: tgt ? (tgt.place || '-') : (isWin(data, p) ? '🏆 복귀' : '-'),
+      wonAt: p.wonAt || null,
+    };
   }
 
   /* ---------- 노출 ---------- */
@@ -217,7 +262,7 @@
     solvedCount, isWin, currentStationId, markSolved,
     checkAnswer, normalize,
     hintsRemaining, useHint,
-    nextTarget, nextTargetSmart,
+    nextTarget, nextTargetSmart, setTarget, reportPayload, aggregateTeamRecord,
     // 내부 유틸도 테스트용으로 노출
     _hashSeed: hashSeed,
   };

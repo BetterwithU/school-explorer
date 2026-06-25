@@ -119,6 +119,9 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+  <script src="../../firebase-config.js"></script>
+  <script>window.SYNC_SESSION = 'B1';</script>
+  <script type="module" src="../../core/sync.js"></script>
   <script src="../../modes/B/engine.js"></script>
   <script>
   /* games/B1 — 게임 화면 (B 엔진 backbone, 오프라인-우선)
@@ -128,14 +131,16 @@
   const DEV = params.get('dev') === '1';
   const CURTEAM_KEY = 'b1_currentTeam';
 
-  let DATA, PROGRESS, CURQ = null;     // CURQ: 현재 풀고 있는 station
+  let DATA, PROGRESS, CURQ = null, LIVE = null;   // CURQ: 현재 풀고 있는 station / LIVE: 실시간 조 상태 캐시
   let scanStream = null, scanRAF = null, scanDone = false, barcodeDetector = null;
 
   E.loadStations('stations.json').then(data => {
     DATA = data;
+    initSync();
     const savedTeam = DEV ? (localStorage.getItem(CURTEAM_KEY) || (E.teamList(data)[0] || '1조')) : localStorage.getItem(CURTEAM_KEY);
     if (savedTeam) {
       PROGRESS = E.loadProgress(DATA, savedTeam) || E.startGame(DATA, savedTeam);
+      report();
       route();
     } else {
       screenStart();
@@ -150,6 +155,23 @@
     if (E.isWin(DATA, PROGRESS)) { screenWin(); return; }
     if (scanned) { openStation(scanned); return; }
     screenNav();
+  }
+
+  /* ---------- 실시간(sync) — 오프라인이면 전부 no-op, 게임은 그대로 ---------- */
+  function isOnline() { return !!(window.BSync && window.BSync.online); }
+  function initSync() {
+    const apply = () => {
+      if (isOnline() && typeof window.BSync.subscribeTeams === 'function') {
+        window.BSync.subscribeTeams(d => { LIVE = d || {}; });
+      }
+    };
+    if (window.BSYNC_READY) apply();
+    else window.addEventListener('bsync-ready', apply, { once: true });
+  }
+  function report() {
+    try {
+      if (isOnline() && PROGRESS && PROGRESS.team) window.BSync.report(PROGRESS.team, E.reportPayload(DATA, PROGRESS));
+    } catch (e) { /* 보고 실패는 게임에 영향 없음 */ }
   }
 
   /* ---------- 화면: 시작(팀 선택) ---------- */
@@ -169,6 +191,7 @@
   function pickTeam(team) {
     localStorage.setItem(CURTEAM_KEY, team);
     PROGRESS = E.loadProgress(DATA, team) || E.startGame(DATA, team);
+    report();
     screenNav();
   }
 
@@ -176,7 +199,17 @@
   function screenNav() {
     if (location.search) history.replaceState(null, '', DEV ? 'play.html?dev=1' : 'play.html');
     scanDone = false;
-    const target = E.nextTarget(DATA, PROGRESS);
+    // 목적지 결정:
+    //  - 이미 배정된(아직 안 푼) 목적지가 있으면 그대로 유지 → 걷는 중 사진이 안 바뀜.
+    //  - 없으면 새로 배정: 온라인이면 ②(혼잡도 회피), 오프라인이면 ①(루트순). 배정 후 고정+보고.
+    let target = null;
+    if (PROGRESS.currentTarget != null && !PROGRESS.solved[PROGRESS.currentTarget]) {
+      target = E.stationById(DATA, PROGRESS.currentTarget);
+    }
+    if (!target) {
+      target = isOnline() ? E.nextTargetSmart(DATA, PROGRESS, LIVE) : E.nextTarget(DATA, PROGRESS);
+      if (target) { E.setTarget(PROGRESS, target.id); report(); }
+    }
     if (!target) { screenWin(); return; }
     const clue = target.cluePhoto
       ? `<img class="clue-photo" src="${esc(target.cluePhoto)}" alt="장소 단서" onerror="this.outerHTML='<div class=&quot;clue-place&quot;><div class=&quot;lbl&quot;>다음 목적지</div><div class=&quot;nm&quot;>${esc(target.place)}</div></div>'">`
@@ -262,6 +295,7 @@
     if (!input.trim()) { fb.className = 'feedback show wrong'; fb.textContent = '정답을 입력해주세요!'; return; }
     if (E.checkAnswer(st, input)) {
       E.markSolved(DATA, PROGRESS, st.id, input.trim());
+      report();
       fb.className = 'feedback show right';
       fb.textContent = '🎉 정답! 다음 단서로 이동합니다…';
       setTimeout(() => { E.isWin(DATA, PROGRESS) ? screenWin() : screenNav(); }, 900);
@@ -273,6 +307,7 @@
 
   /* ---------- 화면: 우승 ---------- */
   function screenWin() {
+    report();
     const need = E.winNeed(DATA), solved = E.solvedCount(PROGRESS);
     document.getElementById('card').innerHTML = `
       ${topbar()}
