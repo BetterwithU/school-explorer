@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🛠️ 개발자 페이지 — 게임 배정 허브</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Apple SD Gothic Neo','Malgun Gothic',sans-serif; background: #0f1424; color: #e6eefc; min-height: 100dvh; padding: 18px 14px; }
+    .wrap { max-width: 820px; margin: 0 auto; }
+    header { text-align: center; margin-bottom: 14px; }
+    header h1 { font-size: 1.4rem; color: #c4b5fd; }
+    header p { color: #8b9bb4; font-size: 0.82rem; margin-top: 3px; }
+
+    .tabs { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
+    .tab { flex: 1; min-width: 110px; background: #16213e; color: #8b9bb4; border: 1px solid #28365e; border-radius: 10px; padding: 10px; font-size: 0.86rem; font-weight: 700; cursor: pointer; text-align: center; }
+    .tab.active { background: rgba(124,58,237,.15); color: #c4b5fd; border-color: rgba(124,58,237,.5); }
+    .tab .badge { display: inline-block; background: #2e74c4; color: #fff; border-radius: 10px; font-size: 0.68rem; padding: 1px 6px; margin-left: 4px; }
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    .card { background: #16213e; border-radius: 14px; padding: 18px; margin-bottom: 12px; }
+    .card h2 { font-size: 1rem; color: #7dd3fc; margin-bottom: 12px; }
+    label.fld { display: block; font-size: 0.82rem; color: #cfe3ff; margin: 12px 0 5px; font-weight: 700; }
+    input, select { width: 100%; background: #0f1424; color: #e6eefc; border: 1px solid #28365e; border-radius: 9px; padding: 10px 12px; font-size: 0.95rem; }
+    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .btn { width: 100%; margin-top: 16px; background: #2e74c4; color: #fff; border: none; padding: 13px; border-radius: 11px; font-weight: 800; font-size: 1rem; cursor: pointer; }
+    .hint { font-size: 0.76rem; color: #8b9bb4; margin-top: 5px; line-height: 1.5; }
+
+    .modes { display: flex; flex-direction: column; gap: 8px; }
+    .mode-opt { display: flex; gap: 10px; align-items: flex-start; background: #0f1424; border: 1px solid #28365e; border-radius: 10px; padding: 11px 13px; cursor: pointer; }
+    .mode-opt.sel { border-color: #7dd3fc; background: rgba(125,211,252,.08); }
+    .mode-opt input { width: auto; margin-top: 3px; }
+    .mode-opt .mt { font-weight: 800; color: #e6eefc; font-size: 0.9rem; }
+    .mode-opt .md { font-size: 0.76rem; color: #8b9bb4; margin-top: 2px; line-height: 1.45; }
+
+    /* 배정 카드 (이력 항목) */
+    .assign { background: #0f1c33; border: 1px solid #28365e; border-radius: 14px; padding: 16px; margin-bottom: 12px; }
+    .assign-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+    .chip { font-size: 0.82rem; font-weight: 800; padding: 4px 11px; border-radius: 20px; }
+    .chip.set { background: rgba(125,211,252,.14); color: #7dd3fc; }
+    .chip.cls { background: rgba(46,196,182,.14); color: #6fe0d2; }
+    .chip.seq { background: rgba(255,209,102,.14); color: #ffd166; }
+    .chip.login { background: rgba(46,116,196,.2); color: #9fc4f0; }
+    .chip.open  { background: rgba(124,196,98,.16); color: #aee08a; }
+    .chip.test  { background: rgba(124,58,237,.18); color: #c4b5fd; }
+    .assign-del { margin-left: auto; background: transparent; border: 1px solid #5b3a44; color: #ff8a9c; border-radius: 8px; padding: 5px 10px; font-size: 0.76rem; cursor: pointer; }
+    .assign-time { font-size: 0.72rem; color: #6b7a99; margin-bottom: 10px; }
+    .assign-body { display: flex; gap: 14px; align-items: flex-start; flex-wrap: wrap; }
+    .assign-qr { background: #fff; padding: 8px; border-radius: 9px; flex-shrink: 0; }
+    .assign-qr img, .assign-qr canvas { display: block; }
+    .assign-links { flex: 1; min-width: 220px; display: flex; flex-direction: column; gap: 7px; }
+    .lk-row { display: flex; gap: 7px; align-items: center; }
+    .lk-row .lk { flex: 1; min-width: 0; background: #0f1424; border: 1px solid #28365e; border-radius: 7px; padding: 7px 9px; font-size: 0.74rem; color: #b7e4c7; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .lk-row button, .lk-row a { background: #1e2840; color: #cfe3ff; text-decoration: none; padding: 7px 11px; border-radius: 7px; font-size: 0.76rem; border: 1px solid #28365e; cursor: pointer; white-space: nowrap; }
+    .lk-label { font-size: 0.74rem; color: #8b9bb4; min-width: 50px; }
+    .assign-warn { font-size: 0.74rem; color: #b7c4dd; margin-top: 10px; line-height: 1.5; background: rgba(255,255,255,.03); border-radius: 8px; padding: 8px 11px; }
+
+    .empty { text-align: center; color: #6b7a99; padding: 30px 16px; font-size: 0.88rem; line-height: 1.6; }
+    .set-group { margin-bottom: 18px; }
+    .set-group > .sg-title { font-size: 0.86rem; color: #c4b5fd; font-weight: 800; margin: 4px 0 10px; }
+
+    .linkgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .linkgrid a { background: #1e2840; color: #cfe3ff; text-decoration: none; padding: 16px; border-radius: 11px; text-align: center; font-weight: 700; border: 1px solid #28365e; font-size: 0.9rem; cursor: pointer; }
+    .linkgrid a small { display: block; color: #8b9bb4; font-weight: 400; font-size: 0.72rem; margin-top: 4px; }
+
+    .warn { background: #2a1f15; border: 1px solid #7b4f12; border-radius: 10px; padding: 12px 14px; color: #ffe8b3; font-size: 0.8rem; line-height: 1.55; margin-top: 10px; }
+    .warn b { color: #ffd166; }
+    .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #2e74c4; color: #fff; padding: 10px 18px; border-radius: 10px; font-size: 0.88rem; font-weight: 700; opacity: 0; transition: opacity .25s; pointer-events: none; z-index: 999; }
+    .toast.show { opacity: 1; }
+  </style>
+</head>
+<body>
+  <!-- 교사 게이트: 화이트리스트 교사만 통과. 그 외엔 내용을 가린다(실제 데이터 보호는 보안규칙). -->
+  <div id="gate" style="position:fixed;inset:0;z-index:9999;background:#0f1424;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px">
+    <div style="font-size:2.4rem;margin-bottom:12px">🔒</div>
+    <h2 style="color:#c4b5fd;margin-bottom:8px">개발자 페이지 — 교사 전용</h2>
+    <p style="color:#8b9bb4;font-size:0.88rem;line-height:1.6;max-width:380px">등록된 교사 계정(@snu.ms.kr)으로 로그인해야 합니다.</p>
+    <button id="gateLogin" style="margin-top:18px;background:#2e74c4;color:#fff;border:none;padding:12px 22px;border-radius:11px;font-weight:800;font-size:1rem;cursor:pointer">🔑 학교 구글 로그인</button>
+    <div id="gateFb" style="margin-top:12px;color:#ff8a9c;font-size:0.85rem"></div>
+  </div>
+
+  <div class="wrap" id="appWrap" style="display:none">
+    <header>
+      <h1>🛠️ 개발자 페이지</h1>
+      <p>게임 배정 허브 — 누구에게 / 어떤 게임을 / 어떤 모드로 돌릴지 정한다</p>
+    </header>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="assign">🎯 새 배정</button>
+      <button class="tab" data-tab="history">📋 배정 이력 <span class="badge" id="histBadge" style="display:none">0</span></button>
+      <button class="tab" data-tab="roster">👥 반 명단</button>
+      <button class="tab" data-tab="test">🧪 테스트</button>
+      <button class="tab" data-tab="prep">🛠 준비</button>
+    </div>
+
+    <!-- 탭1: 새 배정 -->
+    <div class="panel active" id="panel-assign">
+      <div class="card">
+        <h2>새 게임 배정</h2>
+
+        <label class="fld">📚 게임세트</label>
+        <select id="gameSet">
+          <option value="B1">B1 — 중2 도형 단원평가 탐험 레이스</option>
+        </select>
+        <div class="hint">앞으로 B2, B3 게임세트가 추가되면 여기에 나타납니다.</div>
+
+        <div class="row2">
+          <div>
+            <label class="fld">👥 대상 (반)</label>
+            <input id="className" placeholder="예: 2반" autocomplete="off" list="classOptions">
+            <datalist id="classOptions"></datalist>
+          </div>
+          <div>
+            <label class="fld">🔁 회차</label>
+            <input id="seq" type="number" min="1" value="1">
+          </div>
+        </div>
+
+        <!-- 명단 연결 (로그인 모드 전용 — 학생이 짝 이름을 명단에서 고름) -->
+        <div id="rosterLink" style="margin-top:6px">
+          <div class="hint" id="rosterStatus"></div>
+          <div id="adhocBox" style="display:none;margin-top:6px">
+            <label class="fld">📄 즉석 명단 업로드 (동아리 등 — 등록 안 된 그룹)</label>
+            <input type="file" id="adhocFile" accept=".csv,.xlsx,.xls">
+            <div class="hint">양식: 반,번호,이름 (반 명단 탭의 샘플과 동일). 이 배정에만 쓰입니다.</div>
+          </div>
+        </div>
+
+        <label class="fld">🎮 모드</label>
+        <div class="modes" id="modes">
+          <label class="mode-opt sel">
+            <input type="radio" name="mode" value="login" checked>
+            <div><div class="mt">🔑 로그인 모드 — 정식 수업</div>
+            <div class="md">학교 구글 계정(@snu.ms.kr) 로그인 → 결과를 DB에 기록(채점용). 2인1조에서 1명만 로그인.</div></div>
+          </label>
+          <label class="mode-opt">
+            <input type="radio" name="mode" value="open">
+            <div><div class="mt">🌏 비로그인 모드 — 체험</div>
+            <div class="md">로그인 없이 누구나 학생으로 플레이. 결과 기록 안 함. 다른 학교 선생님이 게임을 체험할 때.</div></div>
+          </label>
+          <label class="mode-opt">
+            <input type="radio" name="mode" value="test">
+            <div><div class="mt">🧪 테스트 모드 — 리허설</div>
+            <div class="md">로그인·기록 없이 자유 플레이 + 카메라 없이 station 바로 열기. 게임을 미리 돌려볼 때.</div></div>
+          </label>
+        </div>
+
+        <button class="btn" id="assignBtn">🚀 이 설정으로 게임 만들기</button>
+        <div class="hint" id="assignHint" style="margin-top:10px"></div>
+      </div>
+    </div>
+
+    <!-- 탭2: 배정 이력 -->
+    <div class="panel" id="panel-history">
+      <div id="histList"></div>
+    </div>
+
+    <!-- 탭: 반 명단 -->
+    <div class="panel" id="panel-roster">
+      <div class="card">
+        <h2>👥 반 명단 등록 (상비)</h2>
+        <div class="hint" style="margin-bottom:10px">학기 내내 쓰는 반 명단을 등록해 두면, 로그인 모드 배정 시 학생이 짝 이름을 명단에서 고릅니다. (즉석 그룹은 배정 탭에서 그때 올릴 수 있어요)</div>
+        <div class="warn" style="margin-top:0;margin-bottom:12px">⚠️ 학생 실명입니다. 이 PC에만 저장되며, 공개되지 않습니다.</div>
+
+        <label class="fld">📄 양식 — <b>반, 번호, 이름</b> (첫 줄은 머리글)</label>
+        <div class="hint" style="margin-bottom:8px">예: <code>2반,1,김민준</code> · <a id="dlSample" style="color:#7dd3fc;cursor:pointer">샘플 CSV 받기</a></div>
+
+        <label class="fld">① CSV/엑셀 파일 업로드</label>
+        <input type="file" id="rosterFile" accept=".csv,.xlsx,.xls">
+
+        <label class="fld">② 또는 CSV 직접 붙여넣기</label>
+        <textarea id="rosterText" rows="4" placeholder="반,번호,이름&#10;2반,1,김민준&#10;2반,2,이서연" style="width:100%;background:#0f1424;color:#e6eefc;border:1px solid #28365e;border-radius:9px;padding:10px;font-size:0.9rem;resize:vertical"></textarea>
+        <button class="btn" id="rosterTextBtn" style="margin-top:8px">📥 붙여넣은 명단 등록</button>
+
+        <label class="fld">③ 또는 구글시트 공개 링크</label>
+        <div class="hint" style="margin-bottom:6px">시트를 "링크가 있는 모든 사용자 — 뷰어"로 공개한 뒤 주소를 붙여넣으세요.</div>
+        <input id="rosterSheet" placeholder="https://docs.google.com/spreadsheets/d/.../edit">
+        <button class="btn" id="rosterSheetBtn" style="margin-top:8px">📥 구글시트에서 가져오기</button>
+
+        <div class="hint" id="rosterMsg" style="margin-top:10px"></div>
+
+        <div id="rosterList" style="margin-top:16px"></div>
+      </div>
+    </div>
+
+    <!-- 탭3: 테스트 -->
+    <div class="panel" id="panel-test">
+      <div class="card">
+        <h2>🧪 테스트 도구</h2>
+        <div class="hint" style="margin-bottom:12px">게임이 잘 도는지 점검하는 도구입니다. (학생에게 배포하는 화면이 아닙니다)</div>
+        <div class="linkgrid">
+          <a id="simPlayLink">🎮 플레이 시뮬<small>카메라 없이 게임 걸어보기 (테스트 모드)</small></a>
+          <a href="sim.html" target="_blank">🧪 분산 시뮬레이터<small>가상 조로 혼잡 배정 검증</small></a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 탭4: 준비 -->
+    <div class="panel" id="panel-prep">
+      <div class="card">
+        <h2>🛠 준비 도구</h2>
+        <div class="hint" style="margin-bottom:12px">게임을 만들기 전에 쓰는 도구입니다.</div>
+        <div class="linkgrid">
+          <a href="출제.html" target="_blank">🎯 출제 빌더<small>문제·정답·힌트·이미지 편집</small></a>
+          <a href="qrcodes.html" target="_blank">🔳 QR 인쇄<small>장소별 QR코드 출력</small></a>
+        </div>
+        <div class="warn">⚠️ 이 개발자 페이지는 운영자 전용입니다. 학생에게는 <b>배정 이력</b>에서 만든 QR/링크만 주세요.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="roster.js"></script>
+  <script src="../../firebase-config.js"></script>
+  <script type="module" src="../../core/auth.js"></script>
+  <script>
+  /* games/B1/admin.html — 개발자 페이지(배정 허브)
+   * 배정 = 게임세트 + 대상(반) + 회차 + 모드 → ASCII 머신키 생성 → localStorage 이력에 저장.
+   * 이력은 누적·영구(이 PC). 게임세트별로 묶어 표시. 머신키: {mode}__{set}__{classSlug}__r{seq}. */
+
+  // ---- 교사 게이트 — 화이트리스트 교사만 내용 표시(데이터 진짜 보호는 보안규칙) ----
+  (function gate() {
+    const gateEl = document.getElementById('gate');
+    const appEl = document.getElementById('appWrap');
+    const fb = document.getElementById('gateFb');
+    const open = () => { gateEl.style.display = 'none'; appEl.style.display = 'block'; };
+    const apply = () => {
+      const A = window.BAuth;
+      if (!A || !A.configured) { fb.textContent = '⚠️ Firebase 미구성 — 로컬에선 게이트를 통과시킵니다.'; open(); return; }
+      A.onChange(u => {
+        if (u && A.isAdmin(u.email)) open();
+        else if (u) { fb.textContent = '이 계정은 교사로 등록되어 있지 않습니다: ' + u.email; }
+      });
+      document.getElementById('gateLogin').onclick = async () => {
+        fb.textContent = '';
+        try { const u = await A.signIn(); if (!A.isAdmin(u.email)) { fb.textContent = '교사로 등록되지 않은 계정입니다.'; await A.signOut(); } }
+        catch (e) { fb.textContent = e.message === 'DOMAIN' ? '학교 계정(@snu.ms.kr)만 가능합니다.' : '로그인 실패'; }
+      };
+    };
+    if (window.BAUTH_READY) apply(); else window.addEventListener('bauth-ready', apply, { once: true });
+  })();
+
+  const LS_KEY = 'b1_assignments';
+  let GAME_SETS = { B1: '중2 도형 단원평가 탐험 레이스' };  // sets/index.json 에서 동적 로드(폴백 기본값)
+  const MODE_INFO = {
+    login: { cls: 'login', label: '🔑 로그인', warn: '학생은 @snu.ms.kr 로그인 후 플레이 → 진행이 대시보드에 실시간 추적되고 결과가 기록됩니다(채점용).' },
+    open:  { cls: 'open',  label: '🌏 비로그인', warn: '로그인 없이 바로 플레이됩니다. <b>결과 기록·대시보드 추적 없음</b>(체험용).' },
+    test:  { cls: 'test',  label: '🧪 테스트', warn: '카메라 없이 station을 바로 열 수 있습니다. 기록 없음. 리허설용 — 학생에게 배포하지 마세요.' },
+  };
+
+  // ---- 탭 ----
+  document.querySelectorAll('.tab').forEach(t => t.onclick = () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById('panel-' + t.dataset.tab).classList.add('active');
+  });
+
+  // ---- 모드 라디오 시각 ----
+  document.querySelectorAll('.mode-opt input').forEach(r => r.onchange = () => {
+    document.querySelectorAll('.mode-opt').forEach(o => o.classList.remove('sel'));
+    if (r.checked) r.closest('.mode-opt').classList.add('sel');
+  });
+
+  // ---- 유틸 ----
+  function classSlug(raw) {
+    const s = (raw || '').trim();
+    const nums = s.match(/\d+/);
+    if (nums) return 'c' + nums[0];
+    const ascii = s.replace(/[^A-Za-z0-9]/g, '');
+    if (ascii) return ascii.toLowerCase().slice(0, 12);
+    let h = 0; for (const ch of s) h = (h * 31 + ch.charCodeAt(0)) % 100000;
+    return 'c' + h;
+  }
+  const pad2 = n => String(n).padStart(2, '0');
+  const esc = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  function toast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 1600); }
+  function playUrlFor(session) { const u = new URL('play.html', location.href); u.searchParams.set('session', session); return u.href; }
+  function dashUrlFor(session) { const u = new URL('hq.html', location.href); u.searchParams.set('session', session); return u.href; }
+
+  // ---- 저장소 ----
+  function loadAll() { try { return JSON.parse(localStorage.getItem(LS_KEY)) || []; } catch { return []; } }
+  function saveAll(list) { localStorage.setItem(LS_KEY, JSON.stringify(list)); }
+
+  // ---- 배정 ----
+  document.getElementById('assignBtn').onclick = () => {
+    const className = document.getElementById('className').value.trim();
+    if (!className) { document.getElementById('assignHint').textContent = '⚠️ 대상(반)을 입력하세요. 예: 2반'; return; }
+    const mode = document.querySelector('input[name=mode]:checked').value;
+    const gameSet = document.getElementById('gameSet').value;
+    const seqN = parseInt(document.getElementById('seq').value, 10) || 1;
+    const session = `${mode}__${gameSet}__${classSlug(className)}__r${pad2(seqN)}`;
+
+    const list = loadAll();
+    if (list.some(a => a.session === session)) {
+      document.getElementById('assignHint').innerHTML = `⚠️ 이미 같은 배정(<b>${esc(className)} · ${mode} · ${seqN}회차</b>)이 있습니다. 회차를 올리거나 이력에서 확인하세요.`;
+      switchTab('history');
+      return;
+    }
+    // 로그인 모드면 명단을 이 세션에 연결(짝 이름 드롭다운용). 즉석 명단 > 등록된 반 명단 순.
+    let rosterNames = null;
+    if (mode === 'login') {
+      if (pendingAdhoc && pendingAdhoc.length) rosterNames = R.nameList(pendingAdhoc);
+      else { const reg = R.getClass(className); if (reg.length) rosterNames = R.nameList(reg); }
+      if (rosterNames) localStorage.setItem('b1_roster_session_' + session, JSON.stringify(rosterNames));
+    }
+
+    list.unshift({ session, gameSet, className, seq: seqN, mode, createdAt: Date.now(), hasRoster: !!rosterNames });
+    saveAll(list);
+    const rmsg = mode === 'login' ? (rosterNames ? ` · 명단 ${rosterNames.length}명 연결됨` : ' · ⚠️ 명단 없음(짝 이름 자유입력)') : '';
+    document.getElementById('assignHint').innerHTML = `✅ <b>${esc(className)} · ${MODE_INFO[mode].label} · ${seqN}회차</b> 배정 완료${rmsg} — 배정 이력 탭에서 QR/링크를 확인하세요.`;
+    document.getElementById('className').value = '';
+    pendingAdhoc = null;
+    renderHistory();
+    switchTab('history');
+  };
+  let pendingAdhoc = null;  // 즉석 업로드 명단(이번 배정용)
+
+  function switchTab(name) {
+    document.querySelector(`.tab[data-tab="${name}"]`).click();
+  }
+
+  // ---- 이력 렌더 (게임세트별 묶음) ----
+  function renderHistory() {
+    const list = loadAll();
+    const badge = document.getElementById('histBadge');
+    badge.textContent = list.length;
+    badge.style.display = list.length ? 'inline-block' : 'none';
+
+    const wrap = document.getElementById('histList');
+    if (!list.length) {
+      wrap.innerHTML = `<div class="card"><div class="empty">아직 배정한 게임이 없습니다.<br>왼쪽 <b>🎯 새 배정</b> 탭에서 게임을 만들어 보세요.</div></div>`;
+      return;
+    }
+    // 게임세트별 그룹
+    const groups = {};
+    list.forEach(a => { (groups[a.gameSet] = groups[a.gameSet] || []).push(a); });
+
+    wrap.innerHTML = Object.keys(groups).map(gs => {
+      const items = groups[gs].map(renderAssign).join('');
+      return `<div class="set-group"><div class="sg-title">📚 ${esc(gs)} — ${esc(GAME_SETS[gs] || '')} (${groups[gs].length}건)</div>${items}</div>`;
+    }).join('');
+
+    // QR 그리기 + 버튼 바인딩
+    list.forEach(a => {
+      const box = document.getElementById('qr-' + a.session);
+      if (box && window.QRCode) { box.innerHTML = ''; new QRCode(box, { text: playUrlFor(a.session), width: 116, height: 116, colorDark: '#1a1a2e', colorLight: '#ffffff' }); }
+    });
+    wrap.querySelectorAll('[data-copy]').forEach(b => b.onclick = () => { navigator.clipboard?.writeText(b.dataset.copy); toast('링크를 복사했습니다'); });
+    wrap.querySelectorAll('[data-del]').forEach(b => b.onclick = () => {
+      if (!confirm('이 배정을 이력에서 삭제할까요?\n(게임 데이터는 지워지지 않습니다)')) return;
+      saveAll(loadAll().filter(a => a.session !== b.dataset.del));
+      localStorage.removeItem('b1_roster_session_' + b.dataset.del);  // 연결 명단도 정리
+      renderHistory();
+    });
+    const setStatus = (session, status) => { const l = loadAll(); const a = l.find(x => x.session === session); if (a) { a.status = status; saveAll(l); renderHistory(); } };
+    wrap.querySelectorAll('[data-end]').forEach(b => b.onclick = () => {
+      if (confirm('이 게임을 종료·보관할까요?\n(이력에 보관됨으로 표시됩니다. 되살릴 수 있어요)')) setStatus(b.dataset.end, 'ended');
+    });
+    wrap.querySelectorAll('[data-revive]').forEach(b => b.onclick = () => setStatus(b.dataset.revive, 'active'));
+  }
+
+  function fmtTime(ts) {
+    const d = new Date(ts);
+    const p = n => String(n).padStart(2, '0');
+    return `${d.getFullYear()}.${p(d.getMonth() + 1)}.${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+  }
+
+  function renderAssign(a) {
+    const mi = MODE_INFO[a.mode];
+    const playUrl = playUrlFor(a.session);
+    const dashUrl = dashUrlFor(a.session);
+    const dashRow = a.mode === 'login'
+      ? `<div class="lk-row"><span class="lk-label">대시보드</span><div class="lk" title="${esc(dashUrl)}">${esc(dashUrl)}</div><a href="${esc(dashUrl)}" target="_blank">📊 열기</a></div>`
+      : '';
+    const ended = a.status === 'ended';
+    const endBtn = ended
+      ? `<button class="assign-del" data-revive="${esc(a.session)}" style="border-color:#3a5; color:#aee08a">↺ 되살리기</button>`
+      : `<button class="assign-del" data-end="${esc(a.session)}" style="border-color:#7b5; color:#ffd166">🏁 종료·보관</button>`;
+    return `
+      <div class="assign" style="${ended ? 'opacity:.55' : ''}">
+        <div class="assign-head">
+          <span class="chip set">📚 ${esc(a.gameSet)}</span>
+          <span class="chip cls">👥 ${esc(a.className)}</span>
+          <span class="chip seq">🔁 ${a.seq}회차</span>
+          <span class="chip ${mi.cls}">${mi.label}</span>
+          ${ended ? '<span class="chip" style="background:rgba(139,155,180,.2);color:#8b9bb4">🗄 보관됨</span>' : ''}
+          ${endBtn}
+          <button class="assign-del" data-del="${esc(a.session)}">삭제</button>
+        </div>
+        <div class="assign-time">배정 ${fmtTime(a.createdAt)} · <code>${esc(a.session)}</code></div>
+        <div class="assign-body">
+          <div class="assign-qr" id="qr-${esc(a.session)}"></div>
+          <div class="assign-links">
+            <div class="lk-row"><span class="lk-label">학생용</span><div class="lk" title="${esc(playUrl)}">${esc(playUrl)}</div><button data-copy="${esc(playUrl)}">복사</button><a href="${esc(playUrl)}" target="_blank">열기</a></div>
+            ${dashRow}
+          </div>
+        </div>
+        <div class="assign-warn">${mi.warn}</div>
+      </div>`;
+  }
+
+  // 플레이 시뮬 (테스트 모드)
+  document.getElementById('simPlayLink').onclick = () => window.open(playUrlFor('test__B1__sim__r01'), '_blank');
+
+  // ---- 반 명단 탭 ----
+  const R = window.BRoster;
+  function rosterMsg(m, ok) { const e = document.getElementById('rosterMsg'); e.innerHTML = m; e.style.color = ok ? '#aee08a' : '#ff8a9c'; }
+  function renderRosterList() {
+    const wrap = document.getElementById('rosterList');
+    const classes = R.classNames();
+    if (!classes.length) { wrap.innerHTML = '<div class="hint">아직 등록된 반이 없습니다.</div>'; return; }
+    wrap.innerHTML = '<div class="sg-title" style="color:#7dd3fc">등록된 반</div>' + classes.map(c => {
+      const n = R.getClass(c).length;
+      return `<div class="assign" style="padding:12px"><div class="assign-head" style="margin-bottom:0">
+        <span class="chip cls">👥 ${esc(c)}</span><span class="chip seq">${n}명</span>
+        <button class="assign-del" data-rdel="${esc(c)}">삭제</button></div></div>`;
+    }).join('');
+    wrap.querySelectorAll('[data-rdel]').forEach(b => b.onclick = () => {
+      if (confirm(`'${b.dataset.rdel}' 명단을 삭제할까요?`)) { R.removeClass(b.dataset.rdel); renderRosterList(); }
+    });
+  }
+  async function importRows(rowsPromise) {
+    try {
+      const rows = await rowsPromise;
+      if (!rows.length) { rosterMsg('읽을 이름이 없습니다. 양식을 확인하세요.', false); return; }
+      const cls = R.saveRows(rows);
+      rosterMsg(`✅ ${cls.join(', ')} 명단 등록 완료 (총 ${rows.length}명)`, true);
+      renderRosterList();
+    } catch (e) { rosterMsg('⚠️ ' + e.message, false); }
+  }
+  document.getElementById('dlSample').onclick = () => {
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + R.SAMPLE_CSV], { type: 'text/csv' })); a.download = '반명단_양식.csv'; a.click();
+  };
+  document.getElementById('rosterFile').onchange = (e) => {
+    const f = e.target.files[0]; if (!f) return;
+    if (/\.xlsx?$/i.test(f.name)) importRows(R.parseXLSX(f));
+    else { const fr = new FileReader(); fr.onload = () => importRows(Promise.resolve(R.parseCSV(fr.result))); fr.readAsText(f, 'utf-8'); }
+  };
+  document.getElementById('rosterTextBtn').onclick = () => importRows(Promise.resolve(R.parseCSV(document.getElementById('rosterText').value)));
+  document.getElementById('rosterSheetBtn').onclick = () => importRows(R.parseGoogleSheet(document.getElementById('rosterSheet').value));
+  renderRosterList();
+
+  // ---- 배정 탭: 명단 연결 상태 표시 (모드·반에 따라) ----
+  function refreshRosterLink() {
+    const mode = document.querySelector('input[name=mode]:checked').value;
+    const cls = document.getElementById('className').value.trim();
+    const box = document.getElementById('rosterLink');
+    const status = document.getElementById('rosterStatus');
+    const adhoc = document.getElementById('adhocBox');
+    // 등록된 반 datalist 채우기
+    document.getElementById('classOptions').innerHTML = R.classNames().map(c => `<option value="${esc(c)}">`).join('');
+    if (mode !== 'login') { box.style.display = 'none'; pendingAdhoc = null; return; }
+    box.style.display = 'block';
+    const reg = cls ? R.getClass(cls) : [];
+    if (pendingAdhoc && pendingAdhoc.length) {
+      status.innerHTML = `📄 즉석 명단 <b style="color:#aee08a">${pendingAdhoc.length}명</b> 사용 — 이 배정에만 적용`;
+      adhoc.style.display = 'block';
+    } else if (reg.length) {
+      status.innerHTML = `👥 등록된 <b style="color:#aee08a">${esc(cls)}</b> 명단 ${reg.length}명 자동 연결됨`;
+      adhoc.style.display = 'none';
+    } else {
+      status.innerHTML = `⚠️ <b>${esc(cls || '이 반')}</b>은 등록된 명단이 없습니다. 아래에서 즉석 업로드하거나, 반 명단 탭에서 등록하세요. (없으면 짝 이름 자유입력)`;
+      adhoc.style.display = 'block';
+    }
+  }
+  document.querySelectorAll('input[name=mode]').forEach(r => r.addEventListener('change', refreshRosterLink));
+  document.getElementById('className').addEventListener('input', refreshRosterLink);
+  document.getElementById('adhocFile').onchange = (e) => {
+    const f = e.target.files[0]; if (!f) return;
+    const done = rows => { pendingAdhoc = rows; refreshRosterLink(); };
+    if (/\.xlsx?$/i.test(f.name)) R.parseXLSX(f).then(done).catch(err => alert(err.message));
+    else { const fr = new FileReader(); fr.onload = () => done(R.parseCSV(fr.result)); fr.readAsText(f, 'utf-8'); }
+  };
+  refreshRosterLink();
+
+  // 게임세트 목록을 sets/index.json 에서 동적 로드 → 드롭다운 채움.
+  // index.json은 "후보 힌트"일 뿐 — 실제 배포 여부는 sets/{id}/ push에 달림(아래 안내).
+  (async function loadSets() {
+    try {
+      const res = await fetch('sets/index.json', { cache: 'no-store' });
+      if (!res.ok) return;
+      const m = await res.json();
+      if (!Array.isArray(m.sets) || !m.sets.length) return;
+      GAME_SETS = {};
+      m.sets.forEach(s => { if (s.id) GAME_SETS[s.id] = s.title || s.id; });
+      const sel = document.getElementById('gameSet');
+      sel.innerHTML = m.sets.map(s => `<option value="${esc(s.id)}">${esc(s.id)} — ${esc(s.title || s.id)}${s.count ? ` (${s.count}문제)` : ''}</option>`).join('');
+    } catch {}
+  })();
+
+  renderHistory();
+  </script>
+</body>
+</html>

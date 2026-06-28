@@ -16,14 +16,54 @@
 
   const STORAGE_PREFIX = 'b1_progress_'; // 조별 진행키 접두 (게임/세션 단위로 분리 가능)
 
-  /* ---------- 데이터 로드 ---------- */
-  async function loadStations(path) {
+  /* ---------- 게임세트(set) 다중화 헬퍼 ----------
+   * 세션키 {mode}__{set}__{class}__r{seq} 의 2번째 토큰 = 게임세트(B1/B2/…).
+   * 화면은 set을 ?set= 또는 ?session= 에서 뽑아 sets/{set}/stations.json 을 로드한다. */
+  function resolveSet() {
+    let s = null;
+    try {
+      const p = new URLSearchParams(location.search);
+      s = p.get('set');
+      if (!s) {
+        const sess = p.get('session') || '';
+        const m = sess.match(/^(?:login|open|test)__([A-Za-z0-9]+)__/);
+        if (m) s = m[1];
+      }
+    } catch {}
+    // 안전: 영숫자만(경로 주입 방지). 없으면 기본 B1(과도기 — 단일 세트 호환).
+    if (!s || !/^[A-Za-z0-9]+$/.test(s)) s = 'B1';
+    return s;
+  }
+  function setBase(setId) { return 'sets/' + (setId || resolveSet()) + '/'; }
+
+  // 세션 모드(login/open/test) 추출 — 진행키 분리에 사용(test 리허설이 login 채점을 오염하지 않게).
+  function resolveMode() {
+    try {
+      const sess = new URLSearchParams(location.search).get('session') || '';
+      const m = sess.match(/^(login|open|test)__/);
+      if (m) return m[1];
+    } catch {}
+    return 'play';
+  }
+
+  // 이미지 경로 정규화: 절대 URL/data:는 그대로, 상대경로는 세트 폴더 기준으로 prefix.
+  function resolveImg(path, setId) {
+    if (!path) return '';
+    if (/^(https?:)?\/\/|^data:/.test(path)) return path; // 절대 URL · 프로토콜상대 · data URI
+    return setBase(setId) + String(path).replace(/^\.?\//, '');
+  }
+
+  /* ---------- 데이터 로드 ----------
+   * setId 주면 sets/{setId}/stations.json 로드(권장). 안 주면 path 그대로(과도기 호환). */
+  async function loadStations(pathOrSet) {
+    const setId = (pathOrSet && /^[A-Za-z0-9]+$/.test(pathOrSet)) ? pathOrSet : null;
+    const path = setId ? setBase(setId) + 'stations.json' : (pathOrSet || setBase() + 'stations.json');
     const res = await fetch(path, { cache: 'no-store' });
-    if (!res.ok) throw new Error('stations.json 로드 실패: ' + res.status);
+    if (!res.ok) throw new Error('stations.json 로드 실패(' + path + '): ' + res.status);
     const data = await res.json();
-    // 방어: 형태 보정
     data.meta = data.meta || {};
     data.stations = Array.isArray(data.stations) ? data.stations : [];
+    data.__set = setId || resolveSet();  // 이미지 정규화·진행키에 쓰일 세트 식별자
     return data;
   }
 
@@ -42,7 +82,7 @@
   function teamList(data) {
     const t = data.meta && data.meta.teams;
     if (Array.isArray(t) && t.length) return t.slice();
-    // 비어 있으면 조 수를 station 수에 맞춰 임시 생성(유동 — 실제론 HQ/설정에서)
+    // 비어 있으면 조 수를 station 수에 맞춰 임시 생성(유동 — 실제론 대시보드/설정에서)
     return [];
   }
 
@@ -90,12 +130,17 @@
   }
 
   /* ---------- 진행상태 (localStorage) ---------- */
-  function storageKey(teamName) { return STORAGE_PREFIX + (teamName || 'anon'); }
+  // 진행키에 모드+세트 포함 → (B1 3조 vs B2 3조) + (test 리허설 vs login 채점)이 섞이지 않는다.
+  function storageKey(teamName, setId, mode) {
+    return STORAGE_PREFIX + (mode || resolveMode()) + '_' + (setId || resolveSet()) + '_' + (teamName || 'anon');
+  }
 
   function startGame(data, teamName) {
     const route = teamRoute(data, teamName);
     const p = {
       team: teamName,
+      set: data.__set || resolveSet(),  // 이 진행이 속한 게임세트
+      mode: resolveMode(),              // login/open/test — 진행키 분리용
       route,            // 전체 station id 순서 [3,1,4,...]
       step: 0,          // 현재 몇 번째(0-based)
       solved: {},       // { stationId: true }
@@ -111,7 +156,7 @@
 
   function loadProgress(data, teamName) {
     let p = null;
-    try { p = JSON.parse(localStorage.getItem(storageKey(teamName))); } catch (e) { return null; }
+    try { p = JSON.parse(localStorage.getItem(storageKey(teamName, data.__set, resolveMode()))); } catch (e) { return null; }
     if (!p) return null;
     // 루트가 현재 station 구성과 다르면 보정(문항 추가/변경 대비) — 진행기록은 유지
     const cur = teamRoute(data, teamName);
@@ -127,10 +172,10 @@
   }
 
   function saveProgress(p) {
-    try { localStorage.setItem(storageKey(p.team), JSON.stringify(p)); } catch (e) {}
+    try { localStorage.setItem(storageKey(p.team, p.set, p.mode), JSON.stringify(p)); } catch (e) {}
   }
-  function clearProgress(teamName) {
-    try { localStorage.removeItem(storageKey(teamName)); } catch (e) {}
+  function clearProgress(teamName, setId, mode) {
+    try { localStorage.removeItem(storageKey(teamName, setId, mode)); } catch (e) {}
   }
 
   /* ---------- 진행/판정 ---------- */
@@ -250,7 +295,7 @@
     return p;
   }
 
-  // HQ/배정용 보고 페이로드
+  // 대시보드/배정용 보고 페이로드
   function reportPayload(data, p) {
     const tgt = (p.currentTarget != null) ? stationById(data, p.currentTarget) : null;
     return {
@@ -275,6 +320,8 @@
     checkAnswer, normalize,
     hintsRemaining, useHint,
     nextTarget, nextTargetOffline, nextTargetSmart, setTarget, reportPayload, aggregateTeamRecord,
+    // 게임세트 다중화 헬퍼
+    resolveSet, resolveMode, setBase, resolveImg,
     // 내부 유틸도 테스트용으로 노출
     _hashSeed: hashSeed,
   };

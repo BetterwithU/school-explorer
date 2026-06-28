@@ -109,6 +109,11 @@
   </style>
 </head>
 <body>
+  <!-- 대시보드 공지 배너 (운영자가 보내면 모든 폰에 즉시 표시) -->
+  <div id="announceBanner" style="display:none; position:fixed; top:0; left:0; right:0; z-index:9999; background:#2e74c4; color:#fff; padding:14px 16px; font-size:1.02rem; font-weight:800; text-align:center; line-height:1.5; box-shadow:0 4px 16px rgba(0,0,0,.4);"></div>
+  <!-- 게임 종료 화면 (소집) -->
+  <div id="endOverlay" style="display:none; position:fixed; inset:0; z-index:10000; background:rgba(8,12,24,.97); color:#e6eefc; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:32px;"></div>
+
   <div class="card" id="card"><p style="text-align:center;color:#9fd8c4">불러오는 중…</p></div>
 
   <div class="scanner" id="scanner">
@@ -120,35 +125,55 @@
 
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
   <script src="../../firebase-config.js"></script>
-  <script>window.SYNC_SESSION = 'B1';</script>
+  <!-- 세션은 URL ?session=login__B1__c2__r01 로 받는다(개발자 페이지가 배정 시 부여). 하드코딩 없음. -->
+  <script>window.SYNC_SESSION = null;</script>
   <script type="module" src="../../core/auth.js"></script>
   <script type="module" src="../../core/sync.js"></script>
   <script src="../../modes/B/engine.js"></script>
   <script>
   /* games/B1 — 게임 화면 (B 엔진 backbone, 오프라인-우선)
-   * ① 결정적 라우팅으로 완전 플레이 가능. ②(실시간)·HQ보고는 다음 단계에서 얹음. */
+   * ① 결정적 라우팅으로 완전 플레이 가능. ②(실시간)·대시보드보고는 다음 단계에서 얹음. */
   const E = window.BEngine;
   // 오프라인-우선: 서비스워커 등록(루트 스코프 — 상위 폴더 파일들까지 캐시). B만 가로채 A 영향 0.
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('../../sw.js', { scope: '../../' }).catch(() => {});
   }
   const params = new URLSearchParams(location.search);
-  const DEV = params.get('dev') === '1';
+  // 세션 키(login__/open__/test__) = 게임 모드의 단일 출처. 개발자 페이지가 배정 시 ?session= 으로 부여.
+  const SESSION = (params.get('session') || '').trim();
+  const MODE = /^(login|open|test)__/.test(SESSION) ? SESSION.split('__')[0] : null;  // login | open | test | null
+  // DEV(카메라 우회·진행초기화)는 test 모드에서만. login 모드에선 ?dev=1 을 무시(채점 우회 차단).
+  // open 모드에선 하위호환으로 ?dev=1 인정(체험 편의).
+  const DEV = MODE === 'test' || (MODE === 'open' && params.get('dev') === '1');
   const CURTEAM_KEY = 'b1_currentTeam';
 
-  let DATA, PROGRESS, CURQ = null, LIVE = null, OVERRIDES = {}, CURSCREEN = '';   // CURQ: 현재 풀고 있는 station / LIVE: 실시간 조 상태 / OVERRIDES: HQ 강제배정
+  let DATA, PROGRESS, CURQ = null, LIVE = null, OVERRIDES = {}, CURSCREEN = '';   // CURQ: 현재 풀고 있는 station / LIVE: 실시간 조 상태 / OVERRIDES: 대시보드 강제배정
   let scanStream = null, scanRAF = null, scanDone = false, barcodeDetector = null;
 
-  E.loadStations('stations.json').then(data => {
-    DATA = data;
-    authGate(startAfterAuth);   // 로그인 통과(또는 DEV/미구성) 후 게임 시작
-  }).catch(err => {
-    document.getElementById('card').innerHTML = `<p style="color:#ff9aa9;text-align:center">데이터 로드 실패<br><small>${err.message}</small></p>`;
-  });
+  // 세션 키가 없거나 형식이 틀리면: 게임을 죽이지 않고 친절히 안내(QR 재스캔 유도). 오프라인-우선 원칙 유지.
+  if (!MODE) {
+    document.getElementById('card').innerHTML = `
+      <h2 style="text-align:center">📷 게임 입장 안내</h2>
+      <p class="lead" style="text-align:center">선생님이 나눠준 <b>QR코드</b>로 들어와야 게임이 시작돼요.<br>
+      주소가 짧거나 끊겼을 수 있으니, QR을 다시 한 번 스캔해 주세요.</p>
+      <p class="lead" style="text-align:center;font-size:0.78rem;color:#8b9bb4">(선생님: 개발자 페이지에서 배정한 <code>?session=</code> 링크/QR로 입장해야 합니다.)</p>`;
+  } else {
+    const SET = SESSION.split('__')[1] || 'B1';   // 세션키 2번째 토큰 = 게임세트
+    E.loadStations(SET).then(data => {
+      DATA = data;
+      authGate(startAfterAuth);   // 모드에 따라 로그인 게이트(login만) 통과 후 게임 시작
+    }).catch(err => {
+      // 세트 폴더가 아직 배포 안 됐을 때(404) 학생에게 친절히 안내(개발자/교사용 힌트 별도).
+      document.getElementById('card').innerHTML = `
+        <h2 style="text-align:center">🚧 게임 준비 중</h2>
+        <p class="lead" style="text-align:center">이 게임은 아직 준비 중이에요.<br>선생님께 알려주세요.</p>
+        <p class="lead" style="text-align:center;font-size:0.72rem;color:#8b9bb4">(${esc(SET)} 데이터를 불러오지 못했습니다 — sets/${esc(SET)}/ 배포 확인)</p>`;
+    });
+  }
 
   /* ---------- 로그인 게이트 (학교 구글 계정 @snu.ms.kr) ----------
-   * DEV(?dev=1) 또는 Firebase 미구성 → 로그인 생략(오프라인 연습).
-   * 그 외 → 로그인 + 도메인 통과해야 게임 시작. */
+   * login 모드 → 로그인 + 도메인 통과해야 게임 시작(결과 DB 기록·채점).
+   * open/test 모드 또는 Firebase 미구성 → 로그인 생략(체험·연습, DB 미기록). */
   function startAfterAuth() {
     initSync();
     const urlTeam = params.get('team');   // ?team=3조 → 탭/기기마다 다른 조로 테스트
@@ -164,7 +189,8 @@
     let passed = false;
     const go = () => { if (passed) return; passed = true; onReady(); };
     const apply = () => {
-      if (DEV || !window.BAuth || !window.BAuth.configured) { go(); return; } // 로그인 생략
+      // login 모드가 아니거나(open/test) Firebase 미구성 → 로그인 생략. login 모드만 게이트 강제.
+      if (MODE !== 'login' || !window.BAuth || !window.BAuth.configured) { go(); return; }
       window.BAuth.onChange(u => { if (u) go(); else if (!passed) screenLogin(); });
     };
     if (window.BAUTH_READY) apply();
@@ -210,6 +236,10 @@
           if (CURSCREEN === 'nav' && PROGRESS) screenNav();
         });
       }
+      // 대시보드 공지/소집 수신 — 배너 표시, end면 게임 마감
+      if (typeof window.BSync.subscribeAnnounce === 'function') {
+        window.BSync.subscribeAnnounce(a => showAnnounce(a));
+      }
     };
     if (window.BSYNC_READY) apply();
     else window.addEventListener('bsync-ready', apply, { once: true });
@@ -218,6 +248,39 @@
     try {
       if (isOnline() && PROGRESS && PROGRESS.team) window.BSync.report(PROGRESS.team, E.reportPayload(DATA, PROGRESS));
     } catch (e) { /* 보고 실패는 게임에 영향 없음 */ }
+  }
+
+  // 대시보드 공지/소집 표시. a.end면 게임 마감 오버레이(되돌릴 수 없게 고정).
+  function showAnnounce(a) {
+    const banner = document.getElementById('announceBanner');
+    const overlay = document.getElementById('endOverlay');
+    if (a && a.end) {
+      overlay.style.display = 'flex';
+      overlay.innerHTML = `<div style="font-size:3rem;margin-bottom:14px">🏁</div>
+        <div style="font-size:1.5rem;font-weight:900;margin-bottom:10px">게임 종료</div>
+        <div style="font-size:1.1rem;color:#cfe3ff;line-height:1.6">${esc(a.text || '본부로 모여주세요!')}</div>`;
+      banner.style.display = 'none';
+      return;
+    }
+    overlay.style.display = 'none';
+    if (a && a.text) {
+      banner.textContent = '📢 ' + a.text;
+      banner.style.display = 'block';
+    } else {
+      banner.style.display = 'none';
+    }
+  }
+
+  // 이 세션(login 모드)에 연결된 반 명단 — 개발자 페이지 배정 시 저장됨.
+  function rosterList() {
+    try { return JSON.parse(localStorage.getItem('b1_roster_session_' + SESSION)) || []; } catch { return []; }
+  }
+  function rosterOptions() { return rosterList().map(n => `<option value="${esc(n)}">`).join(''); }
+  // 짝 이름: 명단 있으면 드롭다운(select), 없으면 자유입력.
+  function partnerPicker() {
+    const names = rosterList();
+    if (names.length) return `<select class="answer-input" id="partnerName"><option value="">— 짝 이름 선택 —</option>${names.map(n => `<option value="${esc(n)}">${esc(n)}</option>`).join('')}</select>`;
+    return `<input class="answer-input" id="partnerName" placeholder="짝 이름" autocomplete="off" list="rosterNames">`;
   }
 
   /* ---------- 화면: 시작(팀 선택) ---------- */
@@ -233,8 +296,9 @@
       <p class="lead">참가 정보를 입력하세요.<br>QR ${DATA.stations.length}곳 중 <b style="color:#ffd166">${E.winNeed(DATA)}곳</b> 먼저 풀고 오면 우승!</p>
       ${u ? `<p class="lead" style="font-size:0.78rem;color:#9fd8c4">🔑 로그인: ${esc(u.email)}</p>` : ''}
       ${teamPicker}
-      <input class="answer-input" id="myName" placeholder="내 이름" autocomplete="off">
-      <input class="answer-input" id="partnerName" placeholder="짝 이름" autocomplete="off">
+      <input class="answer-input" id="myName" placeholder="내 이름" autocomplete="off" list="rosterNames">
+      ${partnerPicker()}
+      <datalist id="rosterNames">${rosterOptions()}</datalist>
       <button class="btn" id="startBtn2">🚩 시작하기</button>
       <div class="feedback" id="startFb"></div>`;
     document.getElementById('startBtn2').onclick = () => {
@@ -265,7 +329,7 @@
     if (location.search) history.replaceState(null, '', DEV ? 'play.html?dev=1' : 'play.html');
     scanDone = false;
     // 목적지 결정 (우선순위):
-    //  0) HQ 수동개입(override)이 있으면 그곳으로 강제 — 1회성 소비.
+    //  0) 대시보드 수동개입(override)이 있으면 그곳으로 강제 — 1회성 소비.
     //  1) 이미 배정된(아직 안 푼) 목적지가 있으면 유지 → 걷는 중 사진이 안 바뀜.
     //  2) 없으면 새로 배정: 온라인이면 ②(혼잡도 회피), 오프라인이면 ①(루트순). 배정 후 고정+보고.
     let target = null;
@@ -285,7 +349,7 @@
     }
     if (!target) { screenWin(); return; }
     const clue = target.cluePhoto
-      ? `<img class="clue-photo" src="${esc(target.cluePhoto)}" alt="장소 단서" onerror="this.outerHTML='<div class=&quot;clue-place&quot;><div class=&quot;lbl&quot;>다음 목적지</div><div class=&quot;nm&quot;>${esc(target.place)}</div></div>'">`
+      ? `<img class="clue-photo" src="${esc(E.resolveImg(target.cluePhoto, DATA.__set))}" alt="장소 단서" onerror="this.outerHTML='<div class=&quot;clue-place&quot;><div class=&quot;lbl&quot;>다음 목적지</div><div class=&quot;nm&quot;>${esc(target.place)}</div></div>'">`
       : `<div class="clue-place"><div class="lbl">📷 다음 목적지 — 사진 단서</div><div class="nm">${esc(target.place || '???')}</div></div>`;
 
     document.getElementById('card').innerHTML = `
@@ -296,11 +360,13 @@
       ${clue}
       <button class="btn" id="scanBtn">📷 QR 스캔하기</button>
       ${DEV ? devPanel() : ''}
-      <span class="small-link" id="resetLink">진행 초기화(이 조)</span>`;
+      ${DEV ? '<span class="small-link" id="resetLink">진행 초기화(이 조)</span>' : ''}`;
 
     document.getElementById('scanBtn').onclick = openScanner;
     bindDev();
-    document.getElementById('resetLink').onclick = () => {
+    // 진행 초기화는 테스트 모드에서만(학생은 자기 진행을 못 지움 — 실제 초기화는 대시보드에서).
+    const rl = document.getElementById('resetLink');
+    if (rl) rl.onclick = () => {
       if (confirm('이 조의 진행을 초기화할까요?')) { E.clearProgress(PROGRESS.team); PROGRESS = E.startGame(DATA, PROGRESS.team); screenNav(); }
     };
   }
@@ -320,7 +386,7 @@
     document.getElementById('card').innerHTML = `
       ${topbar()}
       ${progressBar()}
-      <div class="qbox" id="qbox">${esc(st.question)}${st.questionImage ? `<img src="${esc(st.questionImage)}" alt="문제 이미지" onerror="this.style.display='none'">` : ''}</div>
+      <div class="qbox" id="qbox">${esc(st.question)}${st.questionImage ? `<img src="${esc(E.resolveImg(st.questionImage, DATA.__set))}" alt="문제 이미지" onerror="this.style.display='none'">` : ''}</div>
       <div class="hint-list" id="hintList"></div>
       <div class="hint-bar">
         <button class="hint-btn" id="hintBtn">💡 힌트 보기</button>
@@ -420,6 +486,7 @@
   }
 
   function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+  // 점·꼭짓점 대문자는 데이터(stations.json)에서 \mathrm{...}로 묶어 로만체로 표기한다.
   function renderMath(el, tries) {
     tries = tries || 0;
     if (window.renderMathInElement) {

@@ -3,7 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>📊 HQ — 중2 탐험 레이스</title>
+  <title>📊 대시보드 — 중2 탐험 레이스</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Apple SD Gothic Neo','Malgun Gothic',sans-serif; background: #0f1424; color: #e6eefc; min-height: 100dvh; padding: 18px 14px; }
@@ -67,14 +70,32 @@
 <body>
   <div class="wrap">
     <header>
-      <h1>📊 HQ 대시보드</h1>
+      <h1>📊 대시보드</h1>
       <p id="subt">중2 탐험 레이스 · 실시간 진행</p>
     </header>
 
     <div class="controls">
-      <a href="play.html?dev=1" target="_blank">🎮 게임(DEV)</a>
-      <a href="출제.html" target="_blank">🎯 출제</a>
+      <a href="admin.html" target="_blank">🛠️ 개발자 페이지</a>
+      <a href="play.html?session=test__B1__sim__r01" target="_blank">🎮 테스트 플레이</a>
+      <button id="msgBtn">📢 전체 공지</button>
+      <button class="danger" id="endBtn">🏁 게임 종료·소집</button>
       <button class="danger" id="resetBtn">♻️ 진행 초기화</button>
+    </div>
+
+    <!-- 전체 공지/소집 패널 -->
+    <div id="msgPanel" style="display:none; background:#16213e; border:1px solid #28365e; border-radius:12px; padding:14px; margin:10px 0;">
+      <div style="font-size:0.86rem; color:#7dd3fc; font-weight:800; margin-bottom:8px;">📢 전체 학생 단말기로 보낼 메시지</div>
+      <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px;">
+        <button class="quick-msg" data-q="⏰ 5분 남았어요! 마무리하세요.">⏰ 5분 남음</button>
+        <button class="quick-msg" data-q="📣 본부로 모여주세요!">📣 본부 소집</button>
+        <button class="quick-msg" data-q="✋ 잠깐 멈추고 안내를 들어주세요.">✋ 잠깐 멈춰</button>
+      </div>
+      <textarea id="msgText" rows="2" placeholder="보낼 메시지를 입력하세요" style="width:100%; background:#0f1424; color:#e6eefc; border:1px solid #28365e; border-radius:8px; padding:8px; font-size:0.9rem; resize:vertical;"></textarea>
+      <div style="display:flex; gap:8px; margin-top:8px; align-items:center;">
+        <button id="msgSend" style="background:#2e74c4; color:#fff; border:none; padding:8px 16px; border-radius:9px; font-weight:800; cursor:pointer;">📨 보내기</button>
+        <button id="msgClear" style="background:#1e2840; color:#cfe3ff; border:1px solid #28365e; padding:8px 14px; border-radius:9px; cursor:pointer;">배너 내리기</button>
+        <span id="msgState" style="font-size:0.8rem; color:#b7e4c7;"></span>
+      </div>
     </div>
 
     <div id="alertBar"></div>
@@ -88,12 +109,16 @@
     <div class="section-title">📊 장소 혼잡도 (지금 향하는 조 수)</div>
     <div id="occ" class="occ-grid"></div>
 
-    <div class="section-title">📚 전체 문제·정답 (커닝지)</div>
-    <div id="bank"></div>
+    <details>
+      <summary>📚 전체 문제·정답 (커닝지) — 펼치기</summary>
+      <div style="font-size:0.74rem;color:#8b9bb4;margin-top:6px">⚠️ 정답이 보입니다. 학생 근처에서 펼치지 마세요.</div>
+      <div id="bank"></div>
+    </details>
   </div>
 
   <script src="../../firebase-config.js"></script>
-  <script>window.SYNC_SESSION = 'B1';</script>
+  <!-- 대시보드는 ?session=login__B1__c2__r01 로 특정 게임 인스턴스에 연결된다. -->
+  <script>window.SYNC_SESSION = null;</script>
   <script type="module" src="../../core/auth.js"></script>
   <script type="module" src="../../core/sync.js"></script>
   <script src="../../modes/B/engine.js"></script>
@@ -102,32 +127,36 @@
   const COLORS = ['#e94560','#f4a261','#2ec4b6','#a8dadc','#b7e4c7','#ffb3c1','#7dd3fc','#c4b5fd','#ffd166','#90e0ef','#f6bd60','#84a98c'];
   let DATA, LIVE = {};
 
-  E.loadStations('stations.json').then(data => {
+  E.loadStations(E.resolveSet()).then(data => {   // 세션/URL의 set으로 sets/{set}/stations.json 로드
     DATA = data;
     document.getElementById('subt').textContent = `${data.meta.title || '탐험 레이스'} · 전체 ${data.stations.length}곳 · 우승 ${E.winNeed(data)}곳`;
     renderBank();
-    authGateHQ(initSync);
+    authGateDash(initSync);
   }).catch(e => { document.getElementById('live').innerHTML = `<div class="offline">데이터 로드 실패: ${e.message}</div>`; });
 
   // 로그인 게이트 — 학교 구글 계정(@snu.ms.kr) 통과해야 대시보드 표시
-  function authGateHQ(onReady) {
+  function authGateDash(onReady) {
     let passed = false;
     const go = () => { if (passed) return; passed = true; onReady(); };
     const apply = () => {
       if (!window.BAuth || !window.BAuth.configured) { go(); return; }
-      window.BAuth.onChange(u => { if (u) go(); else if (!passed) showHQLogin(); });
+      // 대시보드는 등록된 교사(화이트리스트)만. 일반 @snu 학생은 통과 못 함.
+      window.BAuth.onChange(u => {
+        if (u && window.BAuth.isAdmin(u.email)) go();
+        else if (!passed) showDashLogin(u && !window.BAuth.isAdmin(u.email) ? u.email : null);
+      });
     };
     if (window.BAUTH_READY) apply();
     else window.addEventListener('bauth-ready', apply, { once: true });
   }
-  function showHQLogin() {
+  function showDashLogin(notAdminEmail) {
     document.getElementById('live').innerHTML = `<div class="offline" style="text-align:center">
-      <b>로그인 필요</b><br>학교 구글 계정(@snu.ms.kr)으로 로그인하세요.<br><br>
-      <button id="hqLoginBtn" style="background:#2e74c4;color:#fff;border:none;padding:10px 18px;border-radius:9px;font-weight:800;cursor:pointer">🔑 학교 구글 로그인</button>
-      <div id="hqLoginFb" style="margin-top:8px;color:#ff8a9c"></div></div>`;
-    document.getElementById('hqLoginBtn').onclick = async () => {
-      const fb = document.getElementById('hqLoginFb'); fb.textContent = '';
-      try { await window.BAuth.signIn(); }
+      <b>교사 전용 — 로그인 필요</b><br>등록된 교사 계정(@snu.ms.kr)으로 로그인하세요.<br><br>
+      <button id="dashLoginBtn" style="background:#2e74c4;color:#fff;border:none;padding:10px 18px;border-radius:9px;font-weight:800;cursor:pointer">🔑 학교 구글 로그인</button>
+      <div id="dashLoginFb" style="margin-top:8px;color:#ff8a9c">${notAdminEmail ? '이 계정은 교사로 등록되지 않았습니다: ' + notAdminEmail : ''}</div></div>`;
+    document.getElementById('dashLoginBtn').onclick = async () => {
+      const fb = document.getElementById('dashLoginFb'); fb.textContent = '';
+      try { const u = await window.BAuth.signIn(); if (!window.BAuth.isAdmin(u.email)) { fb.textContent = '교사로 등록되지 않은 계정입니다.'; await window.BAuth.signOut(); } }
       catch (e) { fb.textContent = e.message === 'DOMAIN' ? '학교 계정(@snu.ms.kr)만 가능' : '로그인 실패'; }
     };
   }
@@ -137,10 +166,13 @@
       const online = !!(window.BSync && window.BSync.online);
       if (online) {
         document.getElementById('resetBtn').onclick = onReset;
+        bindAnnounce();
         window.BSync.subscribeTeams(d => { LIVE = d || {}; renderAll(); });
       } else {
         document.getElementById('live').innerHTML = `<div class="offline"><b>오프라인 모드</b> — 실시간 진행이 비활성화됐어요.<br><code>firebase-config.js</code> 설정 시 켜집니다. (게임·출제는 정상 동작)</div>`;
         document.getElementById('resetBtn').disabled = true;
+        document.getElementById('msgBtn').disabled = true;
+        document.getElementById('endBtn').disabled = true;
         renderOcc(); // 빈 혼잡도
       }
     };
@@ -243,15 +275,59 @@
   }
 
   function renderBank() {
-    document.getElementById('bank').innerHTML = `<details><summary>전체 ${DATA.stations.length}문제 보기</summary>
+    const bank = document.getElementById('bank');
+    bank.innerHTML = `<details><summary>전체 ${DATA.stations.length}문제 보기</summary>
       <table><tr><th>#</th><th>장소</th><th>문제</th><th>정답</th></tr>
-      ${DATA.stations.map(s => `<tr><td>${s.id}</td><td>${esc(s.place || '')}</td><td>${esc((s.question || '').replace(/\n/g, ' ')).slice(0, 60)}</td><td class="ans">${esc(Array.isArray(s.answer) ? s.answer.join(' / ') : (s.answer || ''))}</td></tr>`).join('')}
+      ${DATA.stations.map(s => `<tr><td>${s.id}</td><td>${esc(s.place || '')}</td><td>${esc((s.question || '').replace(/\n/g, ' '))}</td><td class="ans">${esc(Array.isArray(s.answer) ? s.answer.join(' / ') : (s.answer || ''))}</td></tr>`).join('')}
       </table></details>`;
+    renderMath(bank);   // 커닝지 안 수식($\mathrm{...}$ 등) 렌더
+  }
+
+  // KaTeX 렌더(로딩 중이면 재시도). play.html과 동일 패턴.
+  function renderMath(el, tries) {
+    tries = tries || 0;
+    if (window.renderMathInElement) {
+      try { window.renderMathInElement(el, { delimiters: [{ left: '$$', right: '$$', display: true }, { left: '$', right: '$', display: false }], throwOnError: false }); } catch (e) {}
+    } else if (tries < 25) {
+      setTimeout(() => renderMath(el, tries + 1), 150);
+    }
   }
 
   function onReset() {
     if (!confirm('⚠️ 모든 조의 진행 기록을 삭제합니다.\n실제 게임 중이면 누르지 마세요.\n계속할까요?')) return;
     if (window.BSync && window.BSync.resetTeams) window.BSync.resetTeams();
+  }
+
+  // ── 전체 공지 / 게임 종료·소집 (대시보드 → 전체 학생 단말기, 거의 실시간) ──
+  function bindAnnounce() {
+    const panel = document.getElementById('msgPanel');
+    const txt = document.getElementById('msgText');
+    const state = document.getElementById('msgState');
+    const flash = (m) => { state.textContent = m; setTimeout(() => { state.textContent = ''; }, 2500); };
+
+    document.getElementById('msgBtn').onclick = () => {
+      panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+    };
+    document.querySelectorAll('.quick-msg').forEach(b => {
+      b.onclick = () => { txt.value = b.dataset.q; };
+    });
+    document.getElementById('msgSend').onclick = () => {
+      const m = txt.value.trim();
+      if (!m) { flash('메시지를 입력하세요'); return; }
+      window.BSync.sendAnnounce(m, false);
+      flash('✅ 전체 학생에게 보냈습니다');
+    };
+    document.getElementById('msgClear').onclick = () => {
+      window.BSync.sendAnnounce(null, false);
+      flash('배너를 내렸습니다');
+    };
+    // 게임 종료·소집: 모든 학생 화면을 마감 + 소집 메시지 고정
+    document.getElementById('endBtn').onclick = () => {
+      if (!confirm('🏁 게임을 종료하고 전원 본부로 소집합니다.\n모든 학생 화면에 종료 안내가 떠 진행이 멈춥니다.\n계속할까요?')) return;
+      const m = txt.value.trim() || '🏁 게임이 종료되었습니다. 본부로 모여주세요!';
+      window.BSync.sendAnnounce(m, true);
+      flash('🏁 게임 종료 신호를 보냈습니다');
+    };
   }
 
   function timeAgo(ts) { if (!ts) return ''; const s = Math.max(0, Math.round((Date.now() - ts) / 1000)); if (s < 60) return s + '초 전'; const m = Math.round(s / 60); return m < 60 ? m + '분 전' : Math.round(m / 60) + '시간 전'; }

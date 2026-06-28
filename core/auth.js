@@ -10,14 +10,22 @@
  *   DOMAIN,                // '@snu.ms.kr'
  *   user(),                // 현재 로그인 사용자(도메인 OK) 또는 null
  *   domainOK(email),
+ *   isAdmin(email),        // 교사(운영자) 화이트리스트인지 — 대시보드/개발자페이지/출제 게이트용
+ *   ADMINS,                // 교사 이메일 목록(UI 판별용 — 진짜 권한은 database.rules.json이 강제)
  *   signIn(),              // 구글 팝업 로그인 → 도메인 검사 (실패 시 throw 'DOMAIN')
  *   signOut(),
  *   onChange(cb),          // 로그인 상태 변경(도메인 OK인 user 또는 null)
  * }
  * 준비되면 window.BAUTH_READY=true + 'bauth-ready' 이벤트.
+ *
+ * ⚠️ 교사 추가/제거: 아래 ADMINS 배열 + database.rules.json 의 동일 목록을 함께 수정 후 git push.
+ *    UI(여기)는 편의이고, 실제 데이터 보호는 보안규칙이 강제한다.
  * ============================================================ */
 const cfg = window.FIREBASE_CONFIG;
 const DOMAIN = '@snu.ms.kr';
+// 교사(운영자) 화이트리스트 — database.rules.json 과 반드시 동일하게 유지.
+const ADMINS = ['june_wook@snu.ms.kr', 'snumsmaths@snu.ms.kr', 'sw@snu.ms.kr'];
+const isAdmin = (email) => !!email && ADMINS.includes(String(email).toLowerCase());
 
 if (cfg && cfg.apiKey) {
   try {
@@ -34,9 +42,9 @@ if (cfg && cfg.apiKey) {
     const domainOK = (email) => !!email && email.toLowerCase().endsWith(DOMAIN);
 
     window.BAuth = {
-      configured: true, DOMAIN,
+      configured: true, DOMAIN, ADMINS,
       user() { return curUser; },
-      domainOK,
+      domainOK, isAdmin,
       async signIn() {
         const res = await signInWithPopup(auth, provider);
         if (!domainOK(res.user.email)) { await signOut(auth); throw new Error('DOMAIN'); }
@@ -55,8 +63,8 @@ if (cfg && cfg.apiKey) {
 // config 없거나 실패 시: '로그인 미구성' 스텁(게임은 오프라인으로 동작)
 if (!window.BAuth) {
   window.BAuth = {
-    configured: false, DOMAIN,
-    user() { return null; }, domainOK() { return false; },
+    configured: false, DOMAIN, ADMINS,
+    user() { return null; }, domainOK() { return false; }, isAdmin,
     signIn() { return Promise.reject(new Error('NO_CONFIG')); },
     signOut() { return Promise.resolve(); },
     onChange(cb) { cb(null); },

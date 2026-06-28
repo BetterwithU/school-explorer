@@ -2,8 +2,10 @@
  * core/sync.js — 실시간 동기화 (Firebase Realtime DB), 게임 공용
  *
  * - window.FIREBASE_CONFIG 가 채워져 있으면 활성화(온라인), 비면 오프라인.
- * - window.SYNC_SESSION 으로 게임/세션 분리 (예: 'B1'). 없으면 config.sessionId, 그것도 없으면 'default'.
- *   → A(sessions/default)와 B(sessions/B1)가 같은 Firebase 프로젝트에서 충돌 없이 공존.
+ * - 세션 분리: URL ?session= 우선 → 없으면 window.SYNC_SESSION → 그것도 없으면 null(오프라인).
+ *   세션 키는 {mode}__{gameSet}__{class}__{seq} 형식의 ASCII 머신키(예: login__B1__c2__r01).
+ *   mode prefix(login__/open__/test__)가 보안규칙·게임모드의 단일 출처. open__/test__는 DB 미사용.
+ *   ⚠️ 'default' 무음폴백 제거: 세션이 없으면 조용히 엉뚱한 방으로 가지 않고 온라인 동기화를 끈다.
  * - 오프라인-우선 원칙: 여기 실패해도 게임은 로컬로 정상 동작해야 한다.
  *   따라서 어떤 경우에도 마지막에 BSYNC_READY=true + 'bsync-ready' 이벤트를 쏜다(온/오프 공통).
  *
@@ -15,7 +17,23 @@
  * config 없거나 init 실패 시 window.BSync 는 만들어지지 않음(online 판단은 !!window.BSync).
  * ============================================================ */
 const cfg = window.FIREBASE_CONFIG;
-const SESSION = window.SYNC_SESSION || (cfg && cfg.sessionId) || 'default';
+
+// 세션 키 결정: URL ?session= 우선, 없으면 window.SYNC_SESSION. 무음 'default' 폴백 없음.
+function resolveSession() {
+  let s = null;
+  try { s = new URLSearchParams(location.search).get('session'); } catch {}
+  if (!s) s = window.SYNC_SESSION || null;
+  if (!s) return null;
+  // ASCII 머신키만 허용(한글/특수문자/Firebase 금지문자 차단). 형식 어긋나면 무효 처리.
+  if (!/^(login|open|test)__[A-Za-z0-9_]+$/.test(s)) {
+    console.warn('[BSync] 세션 키 형식이 올바르지 않습니다(무시):', s);
+    return null;
+  }
+  return s;
+}
+const SESSION = resolveSession();
+// open__/test__ 모드는 DB를 쓰지 않는다(로컬 완결). login__ 만 온라인 동기화 대상.
+const ONLINE_MODE = !!SESSION && /^login__/.test(SESSION);
 
 function getDeviceId() {
   try {
@@ -30,14 +48,16 @@ function getDeviceId() {
   }
 }
 
-if (cfg && cfg.apiKey && cfg.databaseURL) {
+if (cfg && cfg.apiKey && cfg.databaseURL && ONLINE_MODE) {
   try {
     const { initializeApp, getApps, getApp } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
     const { getDatabase, ref, set, get, onValue, remove, serverTimestamp } = await import(
       'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js'
     );
+    const { getAuth } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');
     const app = getApps().length ? getApp() : initializeApp(cfg);  // auth.js와 같은 앱 공유
     const db = getDatabase(app);
+    const dbAuth = getAuth(app);   // 보안규칙(teams 소유권)이 요구하는 uid 출처
     const deviceId = getDeviceId();
     const base = `sessions/${SESSION}`;
 
@@ -48,14 +68,16 @@ if (cfg && cfg.apiKey && cfg.databaseURL) {
       // 진행 보고 — 실패해도 조용히 무시(게임 진행에 영향 0)
       report(team, data) {
         if (!team) return;
+        const uid = dbAuth.currentUser && dbAuth.currentUser.uid;
+        if (!uid) return;  // 로그인(uid) 없으면 보고 안 함 — 보안규칙이 uid 소유권을 요구.
         // ts는 서버 시계(serverTimestamp) — 기기마다 시계가 달라도 '마지막 확인 시각'이 일관됨.
-        set(ref(db, `${base}/teams/${team}/${deviceId}`), { ...data, ts: serverTimestamp() }).catch(() => {});
+        set(ref(db, `${base}/teams/${team}/${deviceId}`), { ...data, uid, ts: serverTimestamp() }).catch(() => {});
       },
-      // 모든 조의 실시간 상태 구독(② 배정 + HQ 공용)
+      // 모든 조의 실시간 상태 구독(② 배정 + 대시보드 공용)
       subscribeTeams(cb) {
         onValue(ref(db, `${base}/teams`), (snap) => cb(snap.val() || {}));
       },
-      // 게임 on/off (HQ 제어용 — B에선 선택적)
+      // 게임 on/off (대시보드 제어용 — B에선 선택적)
       subscribeGameState(cb) {
         onValue(ref(db, `${base}/gameOn`), (snap) => cb(snap.val() === true));
       },
@@ -65,11 +87,11 @@ if (cfg && cfg.apiKey && cfg.databaseURL) {
       getGameState() {
         return get(ref(db, `${base}/gameOn`)).then(s => s.val() === true).catch(() => false);
       },
-      // 모든 조 진행 기록 삭제(HQ 초기화). gameOn은 건드리지 않음.
+      // 모든 조 진행 기록 삭제(대시보드 초기화). gameOn은 건드리지 않음.
       resetTeams() {
         return remove(ref(db, `${base}/teams`)).catch(() => {});
       },
-      // ── 수동 개입(override) — HQ가 특정 조를 특정 station으로 강제 배정 ──
+      // ── 수동 개입(override) — 대시보드가 특정 조를 특정 station으로 강제 배정 ──
       // 라이브 이벤트의 비상 탈출구. play 클라이언트가 다음 내비에서 1회 소비.
       setOverride(team, stationId) {
         if (!team) return Promise.resolve();
@@ -82,11 +104,27 @@ if (cfg && cfg.apiKey && cfg.databaseURL) {
       subscribeOverrides(cb) {
         onValue(ref(db, `${base}/override`), (snap) => cb(snap.val() || {}));
       },
+      // ── 공지/소집 메시지 (대시보드 → 전체 학생, 거의 실시간) ──
+      // 대시보드가 announce에 쓰면, 구독 중인 모든 play 클라이언트가 즉시 받는다.
+      // text가 비면(null) 배너 해제. end=true면 게임 강제 종료(학생 화면 마감).
+      sendAnnounce(text, end) {
+        const payload = (text == null && !end) ? null
+          : { text: text || '', end: end === true, ts: serverTimestamp() };
+        return set(ref(db, `${base}/announce`), payload).catch(() => {});
+      },
+      subscribeAnnounce(cb) {
+        onValue(ref(db, `${base}/announce`), (snap) => cb(snap.val() || null));
+      },
     };
   } catch (e) {
     console.warn('BSync 비활성(초기화 실패) — 오프라인으로 진행:', e && e.message);
   }
 }
+
+// 세션/모드 진단 (디버깅용 — 어떤 방에 붙었는지/오프라인인지 명확히)
+if (!SESSION) console.info('[BSync] 세션 없음 → 오프라인(로컬) 진행');
+else if (!ONLINE_MODE) console.info('[BSync] %s 모드 → DB 미사용(로컬 완결)', SESSION.split('__')[0]);
+else if (!window.BSync) console.info('[BSync] %s → 온라인 모드지만 Firebase 미구성/실패 → 오프라인', SESSION);
 
 // 준비 완료 신호 — config 없을 때도(오프라인 판단용) 반드시 발생
 window.BSYNC_READY = true;

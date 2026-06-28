@@ -34,7 +34,7 @@
 <body>
   <div class="wrap">
     <h1>🧪 분산 시뮬레이터</h1>
-    <p class="lead">가상 조들을 굴려 ② 실시간 배정을 검증합니다. HQ(다른 탭)를 같이 열어 동선을 관찰하세요.</p>
+    <p class="lead">가상 조들을 굴려 ② 실시간 배정을 검증합니다. 대시보드(다른 탭)를 같이 열어 동선을 관찰하세요.</p>
 
     <div class="panel">
       <div class="ctrls">
@@ -50,7 +50,7 @@
         <span>최대 동시혼잡: <b id="maxOcc">0</b>팀</span>
         <span>틱: <b id="tickN">0</b></span>
       </div>
-      <div class="warnbox" id="offwarn" style="display:none">⚠️ 오프라인(Firebase 미연결/규칙잠금) — HQ엔 안 뜹니다. 그래도 로컬 분산 통계는 계산됩니다. ② 실배정 검증은 ①폴백 분산으로 동작.</div>
+      <div class="warnbox" id="offwarn" style="display:none">⚠️ 오프라인(Firebase 미연결/규칙잠금) — 대시보드엔 안 뜹니다. 그래도 로컬 분산 통계는 계산됩니다. ② 실배정 검증은 ①폴백 분산으로 동작.</div>
     </div>
 
     <div class="panel">
@@ -67,14 +67,19 @@
   </div>
 
   <script src="../../firebase-config.js"></script>
-  <script>window.SYNC_SESSION = 'B1';</script>
+  <!-- 교사 전용 게이트 -->
+  <script type="module" src="../../core/auth.js"></script>
+  <script src="teacher-gate.js"></script>
+  <!-- 시뮬레이터는 ?session= 으로 검증할 인스턴스를 받는다. 없으면 가상데이터 전용 세션으로 격리(실데이터 오염 방지). -->
+  <!-- 기본은 test__ (DB 미접촉, 완전 로컬). 온라인 관찰이 필요하면 ?session=login__... 로 명시 입장. -->
+  <script>window.SYNC_SESSION = new URLSearchParams(location.search).get('session') || 'test__B1__sim__r01';</script>
   <script type="module" src="../../core/sync.js"></script>
   <script src="../../modes/B/engine.js"></script>
   <script>
   const E = window.BEngine;
   let DATA, LIVE = {}, VTS = [], timer = null, tick = 0, maxOcc = 0;
 
-  E.loadStations('stations.json').then(d => { DATA = d; document.getElementById('nTeams').value = Math.min(12, (d.meta.teams||[]).length || 12); initSync(); }).catch(e => log('로드 실패: ' + e.message));
+  E.loadStations(E.resolveSet()).then(d => { DATA = d; document.getElementById('nTeams').value = Math.min(12, (d.meta.teams||[]).length || 12); initSync(); }).catch(e => log('로드 실패(' + E.resolveSet() + '): ' + e.message));
 
   function online() { return !!(window.BSync && window.BSync.online); }
   function initSync() {

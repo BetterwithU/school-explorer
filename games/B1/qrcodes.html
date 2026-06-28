@@ -47,6 +47,11 @@
     <div class="grid" id="grid"></div>
   </div>
 
+  <!-- 교사 전용 게이트 -->
+  <script src="../../firebase-config.js"></script>
+  <script type="module" src="../../core/auth.js"></script>
+  <script src="teacher-gate.js"></script>
+
   <script src="../../qrcode.min.js"></script>
   <script src="../../modes/B/engine.js"></script>
   <script>
@@ -55,11 +60,11 @@
   // 기본 배포주소 추정: 현재 위치에서 play.html
   const DEFAULT_BASE = new URL('play.html', location.href).href;
 
-  E.loadStations('stations.json').then(d => {
+  E.loadStations(E.resolveSet()).then(d => {   // ?set= 으로 어느 세트의 QR을 뽑을지 결정
     DATA = d;
     document.getElementById('baseUrl').value = DEFAULT_BASE;
     render();
-  }).catch(e => { document.getElementById('grid').innerHTML = '데이터 로드 실패: ' + e.message; });
+  }).catch(e => { document.getElementById('grid').innerHTML = '데이터 로드 실패(' + E.resolveSet() + '): ' + e.message; });
 
   function render() {
     const base = (document.getElementById('baseUrl').value || DEFAULT_BASE).trim();

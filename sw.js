@@ -8,19 +8,46 @@
  *  - stations.json: 네트워크 우선(최신 반영) + 실패 시 캐시.
  *  - 그 외 B 자산·이미지·CDN(KaTeX/jsQR/firebase): 캐시 우선 + 런타임 캐싱.
  * ============================================================ */
-const CACHE = 'b1-offline-v2';
+const CACHE = 'b1-offline-v4';   // 게임세트 다중화(sets/) 경로 변경 → 캐시 버전 bump(옛 캐시 비움)
 
 // 설치 시 미리 받아둘 핵심 파일(개별 best-effort — 하나 실패해도 설치 계속)
 const PRECACHE = [
   'games/B1/play.html',
+  'games/B1/sets/index.json',
   'modes/B/engine.js',
   'core/sync.js',
+  'core/auth.js',
   'firebase-config.js',
   'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js',
   'https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css',
   'https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js',
   'https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js',
 ];
+
+// index.json의 모든 세트를 돌며 stations.json + 문제·단서 이미지 경로를 뽑는다(오프라인 선캐시용).
+async function setAssetsToCache() {
+  const out = new Set();
+  let setIds = ['B1'];
+  try {
+    const idx = await fetch('games/B1/sets/index.json', { cache: 'reload' });
+    if (idx.ok) { const m = await idx.json(); if (Array.isArray(m.sets)) setIds = m.sets.map(s => s.id).filter(Boolean); }
+  } catch {}
+  for (const id of setIds) {
+    const base = 'games/B1/sets/' + id + '/';
+    out.add(base + 'stations.json');
+    try {
+      const res = await fetch(base + 'stations.json', { cache: 'reload' });
+      if (!res.ok) continue;
+      const data = await res.json();
+      (data.stations || []).forEach(s => {
+        [s.questionImage, s.cluePhoto].forEach(p => {
+          if (p && !/^(https?:)?\/\/|^data:/.test(p)) out.add(base + String(p).replace(/^\.?\//, ''));
+        });
+      });
+    } catch {}
+  }
+  return [...out];
+}
 
 // 이 SW가 가로챌(=오프라인 지원할) 대상인지 판단. B와 무관하면 false → 통과(A 보호).
 function isB(url) {
@@ -38,7 +65,9 @@ function isB(url) {
 self.addEventListener('install', (e) => {
   e.waitUntil((async () => {
     const c = await caches.open(CACHE);
-    await Promise.allSettled(PRECACHE.map(u => c.add(new Request(u, { cache: 'reload' }))));
+    const imgs = await setAssetsToCache();   // 모든 세트의 stations.json + 문제 이미지
+    const all = PRECACHE.concat(imgs);
+    await Promise.allSettled(all.map(u => c.add(new Request(u, { cache: 'reload' }))));
     self.skipWaiting();
   })());
 });

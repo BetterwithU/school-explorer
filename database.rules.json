@@ -3,22 +3,31 @@
     ".read": false,
     ".write": false,
     "sessions": {
-      "B1": {
-        ".read": "auth != null && auth.token.email.matches(/@snu[.]ms[.]kr$/)",
-        ".write": "auth != null && auth.token.email.matches(/@snu[.]ms[.]kr$/)",
-        "gameOn": { ".validate": "newData.isBoolean()" },
+      "$session": {
+        ".read": "$session.matches(/^login__/) && auth != null && (auth.token.email === 'june_wook@snu.ms.kr' || auth.token.email === 'snumsmaths@snu.ms.kr' || auth.token.email === 'sw@snu.ms.kr')",
+
+        "gameOn": {
+          ".write": "$session.matches(/^login__/) && auth != null && (auth.token.email === 'june_wook@snu.ms.kr' || auth.token.email === 'snumsmaths@snu.ms.kr' || auth.token.email === 'sw@snu.ms.kr')",
+          ".validate": "newData.isBoolean()"
+        },
+        "announce": {
+          ".write": "$session.matches(/^login__/) && auth != null && (auth.token.email === 'june_wook@snu.ms.kr' || auth.token.email === 'snumsmaths@snu.ms.kr' || auth.token.email === 'sw@snu.ms.kr')"
+        },
         "override": {
+          ".write": "$session.matches(/^login__/) && auth != null && (auth.token.email === 'june_wook@snu.ms.kr' || auth.token.email === 'snumsmaths@snu.ms.kr' || auth.token.email === 'sw@snu.ms.kr')",
           "$team": { ".validate": "newData.isNumber() || !newData.exists()" }
         },
+
         "teams": {
+          ".write": "auth != null && (auth.token.email === 'june_wook@snu.ms.kr' || auth.token.email === 'snumsmaths@snu.ms.kr' || auth.token.email === 'sw@snu.ms.kr') && !newData.exists()",
           "$team": {
-            "$device": { ".validate": "newData.hasChild('step') || !newData.exists()" }
+            "$device": {
+              ".write": "$session.matches(/^login__/) && auth != null && auth.token.email.matches(/@snu[.]ms[.]kr$/) && (!data.exists() || data.child('uid').val() === auth.uid)",
+              ".validate": "(newData.hasChild('uid') && newData.child('uid').val() === auth.uid && newData.hasChild('step')) || !newData.exists()",
+              "$field": { ".validate": "$field === 'uid' || $field === 'step' || $field === 'team' || $field === 'ts' || $field === 'solvedCount' || $field === 'total' || $field === 'need' || $field === 'currentTarget' || $field === 'placeName' || $field === 'wonAt' || $field === 'myName' || $field === 'partnerName' || $field === 'email'" }
+            }
           }
         }
-      },
-      "$session": {
-        ".read": true,
-        ".write": true
       }
     }
   }
