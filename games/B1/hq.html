@@ -117,6 +117,7 @@
   </div>
 
   <script src="../../firebase-config.js"></script>
+  <script src="results-config.js"></script>
   <!-- 대시보드는 ?session=login__B1__c2__r01 로 특정 게임 인스턴스에 연결된다. -->
   <script>window.SYNC_SESSION = null;</script>
   <script type="module" src="../../core/auth.js"></script>
@@ -321,13 +322,61 @@
       window.BSync.sendAnnounce(null, false);
       flash('배너를 내렸습니다');
     };
-    // 게임 종료·소집: 모든 학생 화면을 마감 + 소집 메시지 고정
-    document.getElementById('endBtn').onclick = () => {
-      if (!confirm('🏁 게임을 종료하고 전원 본부로 소집합니다.\n모든 학생 화면에 종료 안내가 떠 진행이 멈춥니다.\n계속할까요?')) return;
+    // 게임 종료·소집: 결과 영구저장(+시트 기록) → 학생 화면 마감.
+    document.getElementById('endBtn').onclick = async () => {
+      if (!confirm('🏁 게임을 종료합니다.\n· 현재까지의 결과가 영구 저장되고 채점 시트에 기록됩니다.\n· 모든 학생 화면에 종료 안내가 떠 진행이 멈춥니다.\n\n⚠️ 종료를 눌러야 결과가 기록됩니다. 계속할까요?')) return;
       const m = txt.value.trim() || '🏁 게임이 종료되었습니다. 본부로 모여주세요!';
+      // 1) 먼저 마감 신호 → 신규 정답 유입 차단
       window.BSync.sendAnnounce(m, true);
-      flash('🏁 게임 종료 신호를 보냈습니다');
+      flash('🏁 결과 저장 중…');
+      // 2) 잠시 대기 후 신선 데이터로 스냅샷(LIVE 캐시 race 방지)
+      await new Promise(r => setTimeout(r, 1000));
+      try {
+        await saveGameResults();
+        flash('✅ 결과 저장·시트 기록 완료');
+      } catch (e) {
+        flash('⚠️ ' + (e.message || '결과 저장 일부 실패'));
+      }
     };
+  }
+
+  // 게임종료 결과 스냅샷 → Firebase results/ 영구저장 + 구글시트 POST.
+  async function saveGameResults() {
+    const session = (new URLSearchParams(location.search).get('session') || '');
+    const parts = session.split('__');  // [mode, set, classSlug, rNN]
+    const meta = { session, mode: parts[0] || '', gameSet: parts[1] || '', className: parts[2] || '', seq: (parts[3] || '').replace(/^r/, '') };
+
+    // 신선 재조회 → 집계(조별 step 최고 기기 대표)
+    const teams = await window.BSync.getTeamsOnce();
+    const rows = [];
+    for (const team in teams) {
+      const arr = Object.values(teams[team] || {});
+      if (!arr.length) continue;
+      const best = arr.reduce((a, b) => ((b.step || 0) > (a.step || 0) ? b : a));
+      rows.push({
+        ...meta, team,
+        myName: best.myName || '', partnerName: best.partnerName || '', email: best.email || '',
+        solvedCount: best.solvedCount || 0, total: best.total || DATA.stations.length, need: best.need || E.winNeed(DATA),
+        won: !!best.wonAt, wonAt: best.wonAt || null, endedAt: Date.now(),
+      });
+    }
+    if (!rows.length) throw new Error('저장할 조 결과가 없습니다(오프라인이거나 참가 없음).');
+
+    // ① Firebase 영구저장(안전망 — 우선)
+    await window.BSync.saveResults(rows);
+
+    // ② 구글시트 기록(best-effort — 실패해도 Firebase엔 남음)
+    if (window.RESULTS_SHEET_WEBAPP) {
+      const idToken = await window.BSync.getIdToken();
+      const res = await fetch(window.RESULTS_SHEET_WEBAPP, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },  // 프리플라이트 회피
+        body: JSON.stringify({ idToken, session, rows }),
+        redirect: 'follow',
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!data.ok) throw new Error('시트 기록 실패(결과는 저장됨): ' + (data.error || 'unknown'));
+    }
   }
 
   function timeAgo(ts) { if (!ts) return ''; const s = Math.max(0, Math.round((Date.now() - ts) / 1000)); if (s < 60) return s + '초 전'; const m = Math.round(s / 60); return m < 60 ? m + '분 전' : Math.round(m / 60) + '시간 전'; }

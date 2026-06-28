@@ -77,6 +77,18 @@ if (cfg && cfg.apiKey && cfg.databaseURL && ONLINE_MODE) {
       subscribeTeams(cb) {
         onValue(ref(db, `${base}/teams`), (snap) => cb(snap.val() || {}));
       },
+      // 모든 조 상태를 1회 신선하게 재조회(게임종료 스냅샷용 — LIVE 캐시 race 방지)
+      getTeamsOnce() {
+        return get(ref(db, `${base}/teams`)).then(s => s.val() || {}).catch(() => ({}));
+      },
+      // 게임 결과 영구저장 — sessions/와 분리된 results/{session}. 초기화·덮어쓰기와 무관하게 보존.
+      saveResults(rows) {
+        return set(ref(db, `results/${SESSION}`), { rows, endedAt: serverTimestamp() }).catch((e) => { throw e; });
+      },
+      // 현재 로그인 교사의 Firebase ID 토큰(시트 웹앱이 서버측 검증) — 없으면 null.
+      getIdToken() {
+        return dbAuth.currentUser ? dbAuth.currentUser.getIdToken() : Promise.resolve(null);
+      },
       // 게임 on/off (대시보드 제어용 — B에선 선택적)
       subscribeGameState(cb) {
         onValue(ref(db, `${base}/gameOn`), (snap) => cb(snap.val() === true));

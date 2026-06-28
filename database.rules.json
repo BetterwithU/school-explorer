@@ -29,6 +29,12 @@
           }
         }
       }
+    },
+    "results": {
+      "$session": {
+        ".read": "auth != null && (auth.token.email === 'june_wook@snu.ms.kr' || auth.token.email === 'snumsmaths@snu.ms.kr' || auth.token.email === 'sw@snu.ms.kr')",
+        ".write": "auth != null && (auth.token.email === 'june_wook@snu.ms.kr' || auth.token.email === 'snumsmaths@snu.ms.kr' || auth.token.email === 'sw@snu.ms.kr')"
+      }
     }
   }
 }
