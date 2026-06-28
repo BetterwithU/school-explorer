@@ -231,6 +231,12 @@
   const SET = (() => { const s = new URLSearchParams(location.search).get('set'); return (s && /^[A-Za-z0-9]+$/.test(s)) ? s : 'B1'; })();
   const SET_BASE = 'sets/' + SET + '/';
   const LS_KEY = 'b1_station_builder_draft_' + SET;   // 세트별 초안 분리
+  // 미리보기 이미지 경로: 절대URL·data:·blob:은 그대로, 상대경로는 세트 폴더 기준(play.html과 동일 규칙).
+  function previewSrc(p) {
+    if (!p) return '';
+    if (/^(https?:)?\/\/|^data:|^blob:/.test(p)) return p;
+    return SET_BASE + String(p).replace(/^\.?\//, '');
+  }
   const KATEX_DELIMS = [
     { left: '$$', right: '$$', display: true },
     { left: '$', right: '$', display: false },
@@ -406,7 +412,7 @@
           <input type="text" data-url placeholder="또는 이미지 URL 붙여넣기" value="${esc(val)}">
         </div>
         <div class="img-preview ${val ? 'show' : ''}" data-imgprev>
-          ${val ? `<img src="${esc(val)}" alt="">` : ''}
+          ${val ? `<img src="${esc(previewSrc(val))}" alt="" onerror="this.style.display='none'">` : ''}
           <div class="img-path">${val ? esc(val) : ''}</div>
         </div>
       </div>`;
@@ -419,7 +425,7 @@
     const pickBtn = $('[data-pick]', wrap);
 
     function showPreview(src, pathText) {
-      prev.innerHTML = `<img src="${src}" alt=""><div class="img-path">${esc(pathText || src)}</div>`;
+      prev.innerHTML = `<img src="${esc(previewSrc(src))}" alt="" onerror="this.style.display='none'"><div class="img-path">${esc(pathText || src)}</div>`;
       prev.classList.add('show');
     }
     // URL 직접 입력
