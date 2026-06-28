@@ -6,6 +6,41 @@
 
 const STORAGE_KEY = 'schoolExplorer';
 const DEV_KEY = 'schoolExplorerDev';
+const EVENT_KEY = 'schoolExplorerEvent';
+const DEFAULT_EVENT = 'camping';   // ?event 없을 때 기본 행사
+
+/* ---------- 행사(event) 판정 ----------
+ * ?event=camping 처럼 URL에 행사명이 오면 sessionStorage에 고정 → 그 탭에서 페이지를 넘어가도 유지.
+ * URL에 없으면 sessionStorage에서 복구, 그것도 없으면 DEFAULT_EVENT.
+ * 행사별 데이터 폴더(events/{event}/)와 Firebase 세션을 가른다. (isDev와 동일 패턴)
+ */
+function currentEvent() {
+  let ev = null;
+  try { ev = new URLSearchParams(location.search).get('event'); } catch {}
+  if (ev) { try { sessionStorage.setItem(EVENT_KEY, ev); } catch {} return ev; }
+  try { ev = sessionStorage.getItem(EVENT_KEY); } catch {}
+  return ev || DEFAULT_EVENT;
+}
+
+// 같은 페이지 내 이동 href에 event를 항상 붙인다(공유·새 탭·QR 대비). 동작은 sessionStorage가 보장.
+function withEvent(href) {
+  const ev = currentEvent();
+  try {
+    const u = new URL(href, location.href);
+    if (!u.searchParams.get('event')) u.searchParams.set('event', ev);
+    return u.pathname.split('/').pop() + u.search + u.hash;
+  } catch {
+    if (href.includes('event=')) return href;
+    const sep = href.includes('?') ? '&' : '?';
+    return `${href}${sep}event=${encodeURIComponent(ev)}`;
+  }
+}
+function goTo(href) { location.href = withEvent(href); }
+
+// Firebase 세션을 행사별로 분리(진행/게임상태 안 섞이게). app.js는 sync.js(module)보다 먼저 실행됨.
+try {
+  if (window.FIREBASE_CONFIG) window.FIREBASE_CONFIG.sessionId = 'evt_' + currentEvent();
+} catch {}
 
 /* ---------- 개발자 모드 판정 (운영자 전용) ----------
  * ?dev=1을 한 번이라도 만나면 sessionStorage에 고정 → 페이지를 넘어가도 그 탭 안에서 유지.
@@ -28,9 +63,10 @@ function devOff() {
 
 /* ---------- 데이터 로드 ---------- */
 async function loadData() {
+  const base = `events/${currentEvent()}/`;
   const [course, questions] = await Promise.all([
-    fetch('course.json').then(r => r.json()),
-    fetch('questions.json').then(r => r.json()),
+    fetch(base + 'course.json').then(r => r.json()),
+    fetch(base + 'questions.json').then(r => r.json()),
   ]);
   return { course, questions };
 }

@@ -46,10 +46,13 @@
   <script>
     // QR이 연결되는 곳 = 일반 게임 시작 페이지(규칙 화면부터)
     // 현재 host.html이 놓인 사이트 주소를 기준으로 index.html?fresh=1 을 만든다.
+    // 운영자가 host.html?event=새행사 로 열면, 학생 시작 QR 전체가 그 행사로 흐른다.
+    const EVENT = (new URLSearchParams(location.search).get('event') || 'camping');
     const base = location.origin + location.pathname.replace(/[^/]*$/, '');
-    const targetUrl = base + 'index.html?fresh=1';
+    const targetUrl = base + 'index.html?fresh=1&event=' + encodeURIComponent(EVENT);
     const frame = document.getElementById('qrFrame');
     document.getElementById('urlText').textContent = targetUrl;
+    document.title = `🚀 시작 QR (${EVENT})`;
     if (typeof QRCode === 'undefined') {
       frame.innerHTML = '<div class="err">QR 라이브러리를 불러오지 못했습니다.</div>';
     } else {

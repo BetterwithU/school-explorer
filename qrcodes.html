@@ -158,13 +158,16 @@
 
   <script>
     const DEFAULT_BASE = 'https://betterwithu.github.io/school-explorer';
+    // 운영자가 qrcodes.html?event=새행사 로 열면 그 행사의 QR을 굽는다.
+    const EVENT = (new URLSearchParams(location.search).get('event') || 'camping');
+    document.title = `🔳 QR 인쇄 (${EVENT})`;
 
     function renderQRCodes() {
       const base = (document.getElementById('baseUrl').value.trim() || DEFAULT_BASE).replace(/\/$/, '');
       const grid = document.getElementById('grid');
       grid.innerHTML = '';
 
-      fetch('course.json')
+      fetch(`events/${EVENT}/course.json`)
         .then(r => r.json())
         .then(course => {
           // 장소(미션)마다 한 행(.place-row). 같은 장소 QR은 한 줄에 나란히,
@@ -188,7 +191,7 @@
               // 카드 라벨 = 장소명(층 표기 제외) + 칸(A·B·C·D). 공통(1개)은 장소명만.
               const shortPlace = m.placeName.split('(')[0].trim();
               const label = isCommon ? shortPlace : `${shortPlace} ${slot}`;
-              const url = `${base}/mission.html?q=${encodeURIComponent(qid)}`;
+              const url = `${base}/mission.html?event=${encodeURIComponent(EVENT)}&q=${encodeURIComponent(qid)}`;
               const card = document.createElement('div');
               card.className = 'qr-card';
               card.innerHTML = `
