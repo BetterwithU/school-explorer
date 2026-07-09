@@ -644,7 +644,7 @@
       const t = String(raw).trim();
       if (t.includes('play.html') || t.includes('?s=')) sid = new URL(t, location.href).searchParams.get('s');
       else if (/^\d+$/.test(t)) sid = t;            // 순수 station 번호
-      if (sid && E.stationById(DATA, sid)) openStation(sid);
+      if (sid && E.stationById(DATA, sid)) arriveStation(sid);   // 목적지 검증 경유(다른 QR이면 안내만)
       else alert('이 QR은 우리 게임 station이 아니에요 🙅');
     } catch { alert('QR을 읽을 수 없어요. 다시 시도해주세요.'); }
   }
