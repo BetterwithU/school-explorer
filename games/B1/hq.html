@@ -101,8 +101,8 @@
 
     <div id="alertBar"></div>
 
-    <div class="section-title">🏁 12개 달성 순서 <span style="color:#8b9bb4;font-weight:normal;font-size:0.78rem">(참고용 — 실제 우승은 본부 도착 순, 선생님 판정)</span></div>
-    <div id="rank"><div class="muted">아직 12개 달성한 조 없음</div></div>
+    <div class="section-title"><span id="rankTitle">🏁 달성 순서</span> <span style="color:#8b9bb4;font-weight:normal;font-size:0.78rem">(참고용 — 실제 우승은 본부 도착 순, 선생님 판정)</span></div>
+    <div id="rank"><div class="muted">아직 달성한 조 없음</div></div>
 
     <div class="section-title">📡 실시간 조별 진행</div>
     <div id="live"><div class="muted">불러오는 중…</div></div>
@@ -132,6 +132,11 @@
   E.loadStations(E.resolveSet()).then(data => {   // 세션/URL의 set으로 sets/{set}/stations.json 로드
     DATA = data;
     document.getElementById('subt').textContent = `${data.meta.title || '탐험 레이스'} · 전체 ${data.stations.length}곳 · 우승 ${E.winNeed(data)}곳`;
+    const rt = document.getElementById('rankTitle'); if (rt) rt.textContent = `🏁 ${E.winNeed(data)}개 달성 순서`;
+    // 결과 시트 버튼 링크 연결 (온·오프 공통 — bindAnnounce가 online에서만 불려서 놓치던 문제 수정)
+    const rs = document.getElementById('resultSheetLink');
+    if (rs && window.RESULTS_SHEET_URL) rs.href = window.RESULTS_SHEET_URL;
+    else if (rs) rs.style.display = 'none';
     renderBank();
     authGateDash(initSync);
   }).catch(e => { document.getElementById('live').innerHTML = `<div class="offline">데이터 로드 실패: ${e.message}</div>`; });
@@ -206,16 +211,17 @@
   }
 
   function renderRank() {
+    const need = DATA ? E.winNeed(DATA) : '';
     const a = agg();
     const winners = Object.keys(a).filter(t => a[t].wonAt).map(t => ({ team: t, wonAt: a[t].wonAt }))
       .sort((x, y) => x.wonAt - y.wonAt);
     const el = document.getElementById('rank');
-    if (!winners.length) { el.innerHTML = '<div class="muted">아직 12개 달성한 조 없음</div>'; return; }
+    if (!winners.length) { el.innerHTML = `<div class="muted">아직 ${need}개 달성한 조 없음</div>`; return; }
     const medal = ['🥇', '🥈', '🥉'];
     el.innerHTML = `<div class="rank">${winners.map((w, i) =>
       `<div class="rank-row ${i === 0 ? 'gold' : ''}"><span class="rank-medal">${medal[i] || (i + 1)}</span>
         <span class="rank-name">${esc(w.team)}</span>
-        <span class="rank-time">12개 달성 ${new Date(w.wonAt).toLocaleTimeString('ko-KR')}</span></div>`).join('')}</div>`;
+        <span class="rank-time">${need}개 달성 ${new Date(w.wonAt).toLocaleTimeString('ko-KR')}</span></div>`).join('')}</div>`;
   }
 
   function renderLive() {
@@ -250,7 +256,10 @@
         const team = btn.dataset.ovr;
         const sel = document.querySelector(`select[data-team="${cssEsc(team)}"]`);
         const sid = sel ? +sel.value : null;
-        if (sid == null) return;
+        if (sid == null || isNaN(sid)) return;
+        const st0 = DATA && E.stationById(DATA, sid);
+        const place = st0 ? (st0.place || (sid + '번')) : (sid + '번');
+        if (!confirm(`'${team}'을(를) '${place}'(으)로 강제 이동할까요?\n학생 화면의 목적지가 바뀝니다.`)) return;
         if (window.BSync && window.BSync.setOverride) window.BSync.setOverride(team, sid);
         const st = document.querySelector(`[data-ovstate="${cssEsc(team)}"]`);
         if (st) { st.textContent = `→ ${sid}번 배정됨`; setTimeout(() => { st.textContent = ''; }, 2500); }
@@ -306,10 +315,6 @@
     const txt = document.getElementById('msgText');
     const state = document.getElementById('msgState');
     const flash = (m) => { state.textContent = m; setTimeout(() => { state.textContent = ''; }, 2500); };
-    // 결과 시트 버튼 링크 연결
-    const rs = document.getElementById('resultSheetLink');
-    if (rs && window.RESULTS_SHEET_URL) rs.href = window.RESULTS_SHEET_URL;
-    else if (rs) rs.style.display = 'none';
 
     document.getElementById('msgBtn').onclick = () => {
       panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
