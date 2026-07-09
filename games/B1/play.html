@@ -20,7 +20,8 @@
       font-size: 0.82rem; color: #9fd8c4; margin-bottom: 14px;
       border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;
     }
-    .topbar .team { font-weight: 800; color: #2ec4b6; }
+    .topbar .team { font-weight: 800; color: #2ec4b6; display: inline-flex; flex-direction: column; gap: 2px; }
+    .topbar .team-names { font-weight: 600; color: #e6f5ee; font-size: 0.82rem; }
     .dev-badge { background: #7c3aed; color: #fff; font-size: 0.66rem; padding: 2px 7px; border-radius: 9px; margin-left: 5px; }
 
     .progress { display: flex; gap: 5px; margin-bottom: 16px; }
@@ -559,7 +560,9 @@
 
   /* ---------- 공통 조각 ---------- */
   function topbar() {
-    return `<div class="topbar"><span class="team">📜 ${esc(PROGRESS.team)}${DEV ? '<span class="dev-badge">DEV</span>' : ''}</span>
+    const names = [PROGRESS.myName, PROGRESS.partnerName].filter(Boolean).join(' · ');
+    const nameLine = names ? `<div class="team-names">${esc(names)}</div>` : '';
+    return `<div class="topbar"><span class="team">📜 ${esc(PROGRESS.team)}${nameLine}${DEV ? '<span class="dev-badge">DEV</span>' : ''}</span>
       <span>${E.solvedCount(PROGRESS)} / ${E.winNeed(DATA)} 해결</span></div>`;
   }
   function progressBar() {
