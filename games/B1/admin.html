@@ -231,6 +231,7 @@
   <script src="roster.js"></script>
   <script src="../../firebase-config.js"></script>
   <script type="module" src="../../core/auth.js"></script>
+  <script type="module" src="../../core/sync.js"></script>
   <script>
   /* games/B1/admin.html — 개발자 페이지(배정 허브)
    * 배정 = 게임세트 + 대상(반) + 회차 + 모드 → ASCII 머신키 생성 → localStorage 이력에 저장.
@@ -241,7 +242,7 @@
     const gateEl = document.getElementById('gate');
     const appEl = document.getElementById('appWrap');
     const fb = document.getElementById('gateFb');
-    const open = () => { gateEl.style.display = 'none'; appEl.style.display = 'block'; };
+    const open = () => { gateEl.style.display = 'none'; appEl.style.display = 'block'; mergeServerHistory(); };
     const apply = () => {
       const A = window.BAuth;
       if (!A || !A.configured) { fb.textContent = '⚠️ Firebase 미구성 — 로컬에선 게이트를 통과시킵니다.'; open(); return; }
@@ -300,6 +301,22 @@
   function loadAll() { try { return JSON.parse(localStorage.getItem(LS_KEY)) || []; } catch { return []; } }
   function saveAll(list) { localStorage.setItem(LS_KEY, JSON.stringify(list)); }
 
+  // 서버(BStore) 배정이력을 로컬과 병합 → 다른 PC에서 만든 배정도 이 화면에 뜬다(회차관리 PC간 공유).
+  // 로그인(교사) 후 호출. 서버가 정본이 아니라 '합집합'(session 키 기준 dedup, 로컬 우선).
+  async function mergeServerHistory() {
+    if (!window.BStore) return;
+    try {
+      const server = await window.BStore.getAssignments();  // { session: meta, ... }
+      const local = loadAll();
+      const bySession = {};
+      Object.values(server || {}).forEach(a => { if (a && a.session) bySession[a.session] = a; });
+      local.forEach(a => { bySession[a.session] = a; });     // 로컬이 서버를 덮음(status 등 로컬 편집 보존)
+      const merged = Object.values(bySession).sort((x, y) => (y.createdAt || 0) - (x.createdAt || 0));
+      saveAll(merged);
+      renderHistory();
+    } catch (e) { /* 오프라인/권한없음 → 로컬만 표시 */ }
+  }
+
   // ---- 배정 ----
   document.getElementById('assignBtn').onclick = () => {
     const className = document.getElementById('className').value.trim();
@@ -336,6 +353,13 @@
 
     list.unshift({ session, gameSet, className, seq: seqN, mode, createdAt: Date.now(), hasRoster: !!rosterNames });
     saveAll(list);
+
+    // 서버(BStore)에도 저장 → 학생 크롬북·다른 PC에서도 보임. login 모드만(규칙이 login__ 허용).
+    // 실패해도 로컬엔 남으므로 조용히 넘어감(오프라인/미로그인 시).
+    if (mode === 'login' && window.BStore) {
+      if (pairs) window.BStore.savePairs(session, pairs).catch(() => {});
+      window.BStore.saveAssignment(session, { session, gameSet, className, seq: seqN, mode, createdAt: Date.now(), hasRoster: !!rosterNames }).catch(() => {});
+    }
     const rmsg = pairs
       ? ` · ${pairRows.length}명 → ${pairs.length}조 랜덤 짝 배정`
       : (mode === 'login' ? ' · ⚠️ 명단 없음(짝 이름 자유입력)' : '');
@@ -388,6 +412,7 @@
       saveAll(loadAll().filter(a => a.session !== b.dataset.del));
       localStorage.removeItem('b1_roster_session_' + b.dataset.del);
       localStorage.removeItem('b1_pairs_' + b.dataset.del);
+      if (window.BStore) window.BStore.removeAssignment(b.dataset.del).catch(() => {});  // 서버 이력도 제거
       renderHistory();
     });
     const setStatus = (session, status) => { const l = loadAll(); const a = l.find(x => x.session === session); if (a) { a.status = status; saveAll(l); renderHistory(); } };

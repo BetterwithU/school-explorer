@@ -282,15 +282,26 @@
     }
   }
 
-  // 이 세션에 연결된 사전 짝 배정 목록
+  // 이 세션에 연결된 사전 짝 배정 목록 (로컬 캐시)
   function getPairs() {
     try { return JSON.parse(localStorage.getItem('b1_pairs_' + SESSION)) || null; } catch { return null; }
   }
+  let pairsFetched = false;  // 서버 조회 1회만(무한루프 방지)
 
   /* ---------- 화면: 시작(팀 선택) ---------- */
   function screenStart() {
     CURSCREEN = 'start';
-    const pairs = getPairs();
+    let pairs = getPairs();
+    // 학생 크롬북엔 로컬에 짝이 없다 → 서버(BStore)에서 1회 가져와 캐시 후 재렌더.
+    if ((!pairs || !pairs.length) && !pairsFetched && window.BStore) {
+      pairsFetched = true;
+      window.BStore.getPairs(SESSION).then(sp => {
+        if (sp && sp.length) {
+          try { localStorage.setItem('b1_pairs_' + SESSION, JSON.stringify(sp)); } catch {}
+          if (CURSCREEN === 'start') screenStart();  // 짝 받아서 다시 그림
+        }
+      }).catch(() => {});
+    }
     const u = (window.BAuth && window.BAuth.user && window.BAuth.user()) ? window.BAuth.user() : null;
     const loginLine = u ? `<p class="lead" style="font-size:0.78rem;color:#9fd8c4">🔑 로그인: ${esc(u.email)}</p>` : '';
 

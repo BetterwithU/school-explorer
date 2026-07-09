@@ -6,6 +6,12 @@
       "$session": {
         ".read": "$session.matches(/^login__/) && auth != null && (auth.token.email === 'june_wook@snu.ms.kr' || auth.token.email === 'snumsmaths@snu.ms.kr' || auth.token.email === 'sw@snu.ms.kr')",
 
+        "pairs": {
+          "//": "짝 목록: 교사만 쓰고, @snu 로그인 학생은 읽기(자기 반 조 목록 표시용). 세션 read가 교사만이라 pairs에 학생 read를 별도로 연다.",
+          ".read": "$session.matches(/^login__/) && auth != null && auth.token.email.matches(/@snu[.]ms[.]kr$/)",
+          ".write": "$session.matches(/^login__/) && auth != null && (auth.token.email === 'june_wook@snu.ms.kr' || auth.token.email === 'snumsmaths@snu.ms.kr' || auth.token.email === 'sw@snu.ms.kr')"
+        },
+
         "gameOn": {
           ".write": "$session.matches(/^login__/) && auth != null && (auth.token.email === 'june_wook@snu.ms.kr' || auth.token.email === 'snumsmaths@snu.ms.kr' || auth.token.email === 'sw@snu.ms.kr')",
           ".validate": "newData.isBoolean()"
@@ -35,6 +41,11 @@
         ".read": "auth != null && (auth.token.email === 'june_wook@snu.ms.kr' || auth.token.email === 'snumsmaths@snu.ms.kr' || auth.token.email === 'sw@snu.ms.kr')",
         ".write": "auth != null && (auth.token.email === 'june_wook@snu.ms.kr' || auth.token.email === 'snumsmaths@snu.ms.kr' || auth.token.email === 'sw@snu.ms.kr')"
       }
+    },
+    "assignments": {
+      "//": "배정 이력(전역) — 교사만 read/write. PC 넘나들며 회차관리. 미성년 실명(짝)은 여기 없고 sessions/pairs에.",
+      ".read": "auth != null && (auth.token.email === 'june_wook@snu.ms.kr' || auth.token.email === 'snumsmaths@snu.ms.kr' || auth.token.email === 'sw@snu.ms.kr')",
+      ".write": "auth != null && (auth.token.email === 'june_wook@snu.ms.kr' || auth.token.email === 'snumsmaths@snu.ms.kr' || auth.token.email === 'sw@snu.ms.kr')"
     }
   }
 }

@@ -133,6 +133,52 @@ if (cfg && cfg.apiKey && cfg.databaseURL && ONLINE_MODE) {
   }
 }
 
+/* ---------- BStore: 세션과 무관한 공용 저장소 ----------
+ * 배정이력(assignments/)·짝(sessions/{session}/pairs)을 PC 간 공유하기 위한 창구.
+ * BSync는 login__ 세션이 있어야 생기지만, admin(배정 화면)은 세션이 없다.
+ * BStore는 config만 있으면(세션 불필요) 항상 초기화 → admin·play·hq 공용.
+ * 실명(짝 이름)이 서버에 올라가지만, database.rules.json이 접근을 강제:
+ *   - assignments/: 교사(@snu 화이트리스트)만 read/write
+ *   - sessions/{session}/pairs: 교사 write, @snu 로그인 학생 read(자기 반 조 목록 표시용)
+ */
+if (cfg && cfg.apiKey && cfg.databaseURL) {
+  try {
+    const { initializeApp, getApps, getApp } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
+    const { getDatabase, ref, set, get, remove, serverTimestamp } = await import(
+      'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js'
+    );
+    const app = getApps().length ? getApp() : initializeApp(cfg);
+    const db = getDatabase(app);
+
+    window.BStore = {
+      online: true,
+      // ── 배정 짝(pairs) — 특정 세션에 묶임. 학생 크롬북에서도 읽힘 ──
+      savePairs(session, pairs) {
+        if (!session || !pairs) return Promise.resolve();
+        return set(ref(db, `sessions/${session}/pairs`), pairs).catch((e) => { throw e; });
+      },
+      getPairs(session) {
+        if (!session) return Promise.resolve(null);
+        return get(ref(db, `sessions/${session}/pairs`)).then(s => s.val() || null).catch(() => null);
+      },
+      // ── 배정 이력(assignments) — 전역. 교사만. PC 넘나들며 회차관리 ──
+      saveAssignment(session, meta) {
+        if (!session) return Promise.resolve();
+        return set(ref(db, `assignments/${session}`), { ...meta, ts: serverTimestamp() }).catch((e) => { throw e; });
+      },
+      getAssignments() {
+        return get(ref(db, 'assignments')).then(s => s.val() || {}).catch(() => ({}));
+      },
+      removeAssignment(session) {
+        if (!session) return Promise.resolve();
+        return remove(ref(db, `assignments/${session}`)).catch(() => {});
+      },
+    };
+  } catch (e) {
+    console.warn('BStore 비활성(초기화 실패):', e && e.message);
+  }
+}
+
 // 세션/모드 진단 (디버깅용 — 어떤 방에 붙었는지/오프라인인지 명확히)
 if (!SESSION) console.info('[BSync] 세션 없음 → 오프라인(로컬) 진행');
 else if (!ONLINE_MODE) console.info('[BSync] %s 모드 → DB 미사용(로컬 완결)', SESSION.split('__')[0]);
