@@ -301,17 +301,30 @@
       switchTab('history');
       return;
     }
-    // 로그인 모드면 명단을 이 세션에 연결(짝 이름 드롭다운용). 즉석 명단 > 등록된 반 명단 순.
+    // 명단 소스 확정 (즉석 > 등록된 반 명단)
+    let pairRows = null;
+    if (pendingAdhoc && pendingAdhoc.length) pairRows = pendingAdhoc;
+    else { const reg = R.getClass(className); if (reg.length) pairRows = reg; }
+
+    // 로그인 모드: 이름 목록을 세션에 연결 (짝 이름 자유입력 fallback용)
     let rosterNames = null;
-    if (mode === 'login') {
-      if (pendingAdhoc && pendingAdhoc.length) rosterNames = R.nameList(pendingAdhoc);
-      else { const reg = R.getClass(className); if (reg.length) rosterNames = R.nameList(reg); }
-      if (rosterNames) localStorage.setItem('b1_roster_session_' + session, JSON.stringify(rosterNames));
+    if (mode === 'login' && pairRows) {
+      rosterNames = R.nameList(pairRows);
+      localStorage.setItem('b1_roster_session_' + session, JSON.stringify(rosterNames));
+    }
+
+    // 전 모드: 명단이 있으면 랜덤 짝 자동 배정
+    let pairs = null;
+    if (pairRows && pairRows.length) {
+      pairs = R.pairUp(pairRows);
+      localStorage.setItem('b1_pairs_' + session, JSON.stringify(pairs));
     }
 
     list.unshift({ session, gameSet, className, seq: seqN, mode, createdAt: Date.now(), hasRoster: !!rosterNames });
     saveAll(list);
-    const rmsg = mode === 'login' ? (rosterNames ? ` · 명단 ${rosterNames.length}명 연결됨` : ' · ⚠️ 명단 없음(짝 이름 자유입력)') : '';
+    const rmsg = pairs
+      ? ` · ${pairRows.length}명 → ${pairs.length}조 랜덤 짝 배정`
+      : (mode === 'login' ? ' · ⚠️ 명단 없음(짝 이름 자유입력)' : '');
     document.getElementById('assignHint').innerHTML = `✅ <b>${esc(className)} · ${MODE_INFO[mode].label} · ${seqN}회차</b> 배정 완료${rmsg} — 배정 이력 탭에서 QR/링크를 확인하세요.`;
     document.getElementById('className').value = '';
     pendingAdhoc = null;
@@ -354,7 +367,8 @@
     wrap.querySelectorAll('[data-del]').forEach(b => b.onclick = () => {
       if (!confirm('이 배정을 이력에서 삭제할까요?\n(게임 데이터는 지워지지 않습니다)')) return;
       saveAll(loadAll().filter(a => a.session !== b.dataset.del));
-      localStorage.removeItem('b1_roster_session_' + b.dataset.del);  // 연결 명단도 정리
+      localStorage.removeItem('b1_roster_session_' + b.dataset.del);
+      localStorage.removeItem('b1_pairs_' + b.dataset.del);
       renderHistory();
     });
     const setStatus = (session, status) => { const l = loadAll(); const a = l.find(x => x.session === session); if (a) { a.status = status; saveAll(l); renderHistory(); } };
@@ -431,6 +445,7 @@
       const cls = R.saveRows(rows);
       rosterMsg(`✅ ${cls.join(', ')} 명단 등록 완료 (총 ${rows.length}명)`, true);
       renderRosterList();
+      refreshRosterLink();
     } catch (e) { rosterMsg('⚠️ ' + e.message, false); }
   }
   document.getElementById('dlSample').onclick = () => {

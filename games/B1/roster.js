@@ -91,9 +91,36 @@
     return list.map(r => r.no ? `${r.no}. ${r.name}` : r.name);
   }
 
+  // Fisher-Yates 셔플
+  function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      const tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+    }
+    return a;
+  }
+
+  // rows 배열을 랜덤 2인 짝으로 구성. 홀수면 마지막 조만 3인.
+  // 반환: [{team:"1조", members:["1. 김민준","2. 이서연"]}, ...]
+  function pairUp(rows) {
+    if (!rows || !rows.length) return [];
+    const names = shuffle(rows.map(r => r.no ? `${r.no}. ${r.name}` : r.name));
+    const pairs = [];
+    let i = 0;
+    while (i < names.length) {
+      const left = names.length - i;
+      const size = left === 1 ? 1 : left === 3 ? 3 : 2;
+      pairs.push({ team: `${pairs.length + 1}조`, members: names.slice(i, i + size) });
+      i += size;
+    }
+    return pairs;
+  }
+
   window.BRoster = {
     parseCSV, parseXLSX, parseGoogleSheet,
     loadAll, saveAll, classNames, getClass, removeClass, saveRows, nameList,
+    shuffle, pairUp,
     SAMPLE_CSV: '반,번호,이름\n2반,1,김민준\n2반,2,이서연\n2반,3,박지호\n',
   };
 })();
