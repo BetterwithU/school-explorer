@@ -227,6 +227,7 @@
           <a href="출제.html" target="_blank">🎯 출제 빌더<small>문제·정답·힌트·이미지 편집</small></a>
           <a href="qrcodes.html" target="_blank">🔳 QR 인쇄<small>장소별 QR코드 출력</small></a>
           <a href="힌트사진.html" target="_blank">📸 힌트사진 점검표<small>사진↔실외/실내 번호 확인(QR 부착용)</small></a>
+          <a id="resultSheetLink" href="#" target="_blank">📊 결과 시트<small>게임 성적 기록(구글시트) 열기</small></a>
         </div>
         <div class="warn">⚠️ 이 개발자 페이지는 운영자 전용입니다. 학생에게는 <b>배정 이력</b>에서 만든 QR/링크만 주세요.</div>
       </div>
@@ -238,6 +239,7 @@
   <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="roster.js"></script>
+  <script src="results-config.js"></script>
   <script src="../../firebase-config.js"></script>
   <script type="module" src="../../core/auth.js"></script>
   <script type="module" src="../../core/sync.js"></script>
@@ -579,6 +581,12 @@
   })();
 
   renderHistory();
+  // 결과 시트 버튼 링크 연결 (results-config.js의 URL)
+  (function () {
+    const a = document.getElementById('resultSheetLink');
+    if (a && window.RESULTS_SHEET_URL) a.href = window.RESULTS_SHEET_URL;
+    else if (a) a.style.display = 'none';
+  })();
   </script>
 
   <!-- 랜덤 짝 배정 연출 오버레이 -->

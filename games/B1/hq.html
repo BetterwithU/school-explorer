@@ -80,6 +80,7 @@
       <button id="msgBtn">📢 전체 공지</button>
       <button class="danger" id="endBtn">🏁 게임 종료·소집</button>
       <button class="danger" id="resetBtn">♻️ 진행 초기화</button>
+      <a id="resultSheetLink" href="#" target="_blank">📊 결과 시트</a>
     </div>
 
     <!-- 전체 공지/소집 패널 -->
@@ -305,6 +306,10 @@
     const txt = document.getElementById('msgText');
     const state = document.getElementById('msgState');
     const flash = (m) => { state.textContent = m; setTimeout(() => { state.textContent = ''; }, 2500); };
+    // 결과 시트 버튼 링크 연결
+    const rs = document.getElementById('resultSheetLink');
+    if (rs && window.RESULTS_SHEET_URL) rs.href = window.RESULTS_SHEET_URL;
+    else if (rs) rs.style.display = 'none';
 
     document.getElementById('msgBtn').onclick = () => {
       panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
