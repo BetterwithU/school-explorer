@@ -90,7 +90,7 @@
       "question": "오른쪽 그림에서 점 $\\mathrm{I}$는 $\\triangle\\mathrm{ABC}$의 내심이고 $\\angle\\mathrm{A}=80^\\circ$이다. $\\angle\\mathrm{BIC}$의 크기를 구하시오.",
       "answer": "130",
       "hints": [
-        "$\\angle\\mathrm{BIC} = 90^\\circ + \\dfrac{1}{2}\\angle\\mathrm{A}$"
+        "$\\angle\\mathrm{IBA}=\\angle\\mathrm{IBC}$이고 $\\angle\\mathrm{ICA}=\\angle\\mathrm{ICB}$이다."
       ]
     },
     {
@@ -114,7 +114,7 @@
       "question": "오른쪽 평행사변형 $\\mathrm{ABCD}$에서 $x+y$의 값을 구하시오.",
       "answer": "11",
       "hints": [
-        "대변의 길이가 같으므로 $x=7$, $y=4$ → $x+y=11$"
+        "평행사변형은 두 쌍의 대변의 길이가 각각 같다."
       ]
     },
     {
@@ -126,7 +126,7 @@
       "question": "오른쪽 그림에서 $\\angle\\mathrm{C}=\\angle\\mathrm{ABD}$이다. $\\overline{\\mathrm{CD}}$의 길이를 구하시오. ($\\overline{\\mathrm{AB}}=6$ cm, $\\overline{\\mathrm{AD}}=4$ cm)",
       "answer": "5",
       "hints": [
-        "$\\triangle\\mathrm{ABC} \\sim \\triangle\\mathrm{ADB}$ (AA 닮음), $\\overline{\\mathrm{AC}}=9$이므로 $\\overline{\\mathrm{CD}}=\\overline{\\mathrm{AC}}-\\overline{\\mathrm{AD}}$"
+        "$\\triangle\\mathrm{ABC} \\sim \\triangle\\mathrm{ADB}$ (AA 닮음) 이므로 $\\overline{\\mathrm{AB}}:\\overline{\\mathrm{AC}}=\\overline{\\mathrm{AD}}:\\overline{\\mathrm{AB}}$이다."
       ]
     },
     {

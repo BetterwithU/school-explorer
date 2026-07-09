@@ -406,7 +406,15 @@
   /* ---------- 화면: 내비(사진 단서) ---------- */
   function screenNav() {
     CURSCREEN = 'nav';
-    if (location.search) history.replaceState(null, '', DEV ? 'play.html?dev=1' : 'play.html');
+    // 스캔 후 붙은 ?s= 만 제거하고 ?session=(+dev)는 유지 → 새로고침해도 세션이 살아있어 게임 이어짐.
+    // (세션 키는 학생에게 노출돼도 무방 — 조작 방지는 서버 보안규칙이 담당)
+    if (params.get('s')) {
+      const keep = new URLSearchParams();
+      if (SESSION) keep.set('session', SESSION);
+      if (DEV && !SESSION) keep.set('dev', '1');
+      const qs = keep.toString();
+      history.replaceState(null, '', 'play.html' + (qs ? '?' + qs : ''));
+    }
     scanDone = false;
     // 목적지 결정 (우선순위):
     //  0) 대시보드 수동개입(override)이 있으면 그곳으로 강제 — 1회성 소비.
