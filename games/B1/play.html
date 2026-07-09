@@ -312,7 +312,13 @@
         </div>
         <div class="feedback" id="startFb"></div>`;
       document.querySelectorAll('.pair-btn').forEach(btn => {
-        btn.onclick = () => pickTeam(btn.dataset.team, btn.dataset.m0, btn.dataset.m1);
+        btn.onclick = () => {
+          // 잘못 눌러 다른 조로 시작하는 실수 방지 — 확인창 1번.
+          const m0 = btn.dataset.m0, m1 = btn.dataset.m1;
+          const members = [m0, m1].filter(Boolean).join(' · ');
+          if (!confirm(`${btn.dataset.team}로 시작할까요?\n\n${members}\n\n※ 우리 조가 맞는지 확인하세요.`)) return;
+          pickTeam(btn.dataset.team, m0, m1);
+        };
       });
     } else {
       // 명단 없는 경우 fallback: 조 선택 + 이름 직접 입력
