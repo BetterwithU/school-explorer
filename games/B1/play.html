@@ -23,6 +23,8 @@
     .topbar .team { font-weight: 800; color: #2ec4b6; display: inline-flex; flex-direction: column; gap: 2px; }
     .topbar .team-names { font-weight: 600; color: #e6f5ee; font-size: 0.82rem; }
     .dev-badge { background: #7c3aed; color: #fff; font-size: 0.66rem; padding: 2px 7px; border-radius: 9px; margin-left: 5px; }
+    @keyframes announceBlink { 0%,100% { background:#2e74c4; } 50% { background:#e63950; } }
+    #announceBanner.blink { animation: announceBlink 0.7s ease-in-out infinite; }
 
     .progress { display: flex; gap: 5px; margin-bottom: 16px; }
     .pchip { flex: 1; height: 7px; border-radius: 4px; background: rgba(255,255,255,0.12); }
@@ -311,10 +313,20 @@
     if (a && a.text) {
       banner.textContent = '📢 ' + a.text;
       banner.style.display = 'block';
+      // 처음 10초 깜박임 → 20초 더 고정 표시 → 총 30초 후 자동으로 사라짐.
+      if (announceTimers) announceTimers.forEach(clearTimeout);
+      banner.classList.add('blink');
+      announceTimers = [
+        setTimeout(() => banner.classList.remove('blink'), 10000),   // 10초 후 깜박임 정지
+        setTimeout(() => { banner.style.display = 'none'; banner.classList.remove('blink'); }, 30000), // 30초 후 사라짐
+      ];
     } else {
+      if (announceTimers) announceTimers.forEach(clearTimeout);
+      banner.classList.remove('blink');
       banner.style.display = 'none';
     }
   }
+  let announceTimers = null;
 
   // 이 세션에 연결된 사전 짝 배정 목록 (로컬 캐시)
   function getPairs() {
