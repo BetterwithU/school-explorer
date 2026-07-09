@@ -71,12 +71,18 @@
   function getClass(cls) { return loadAll()[cls] || []; }
   function removeClass(cls) { const m = loadAll(); delete m[cls]; saveAll(m); }
 
+  // 반 이름 정규화: CSV의 반 값이 순수 숫자면 "반"을 붙인다("1"→"1반"). 이미 "반"이 있으면 그대로.
+  function normClass(cls) {
+    const s = String(cls || '').trim();
+    return /^\d+$/.test(s) ? s + '반' : s;
+  }
+
   // 파싱 결과를 반별로 묶어 저장. rows의 cls가 비면 fallbackClass로.
   function saveRows(rows, fallbackClass) {
     const map = loadAll();
     const byClass = {};
     rows.forEach(r => {
-      const cls = (r.cls || fallbackClass || '미분류').trim();
+      const cls = normClass(r.cls || fallbackClass || '미분류');
       (byClass[cls] = byClass[cls] || []).push({ no: r.no || '', name: r.name });
     });
     Object.keys(byClass).forEach(cls => { map[cls] = byClass[cls]; });
