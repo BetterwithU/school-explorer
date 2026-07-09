@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "중2 도형 단원평가 탐험 레이스",
-    "stationCount": 15,
+    "stationCount": 16,
     "need": 12,
     "hintBudget": 6,
     "teams": [
@@ -18,7 +18,7 @@
       "11조",
       "12조"
     ],
-    "createdWith": "_source/문제_전달.md (15문제, 실외8+실내7)"
+    "createdWith": "_source/문제_전달.md (16문제, 실외8+실내8)"
   },
   "stations": [
     {
@@ -199,6 +199,18 @@
       "answer": "120",
       "hints": [
         "$\\angle\\mathrm{BOC} = 2\\,\\angle\\mathrm{A}$"
+      ]
+    },
+    {
+      "id": 16,
+      "place": "실내8",
+      "indoor": true,
+      "cluePhoto": "",
+      "questionImage": "images/Q2.jpg",
+      "question": "오른쪽 사각형이 평행사변형이 되도록 하는 $x$, $y$에 대하여 $x-y$의 값을 구하시오.",
+      "answer": "43",
+      "hints": [
+        "대각이 같아 $x=50$, 한 쌍의 대변이 같아 $y=7$ → $x-y=43$"
       ]
     }
   ]
