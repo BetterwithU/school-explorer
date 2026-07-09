@@ -40,6 +40,7 @@
     .chip { font-size: 0.82rem; font-weight: 800; padding: 4px 11px; border-radius: 20px; }
     .chip.set { background: rgba(125,211,252,.14); color: #7dd3fc; }
     .chip.cls { background: rgba(46,196,182,.14); color: #6fe0d2; }
+    .chip.cls-big { background: #2ec4b6; color: #06251f; font-size: 1.05rem; font-weight: 900; padding: 5px 15px; }
     .chip.seq { background: rgba(255,209,102,.14); color: #ffd166; }
     .chip.login { background: rgba(46,116,196,.2); color: #9fc4f0; }
     .chip.open  { background: rgba(124,196,98,.16); color: #aee08a; }
@@ -303,6 +304,14 @@
     return 'c' + h;
   }
   const pad2 = n => String(n).padStart(2, '0');
+  // 반 이름 표시용 정규화: 순수 숫자("1")나 슬러그("c1")를 "1반"으로. 이미 "반" 있으면 그대로.
+  function classDisplay(raw) {
+    const s = String(raw || '').trim();
+    if (!s) return '미분류';
+    if (/반$/.test(s)) return s;                 // "2반" 그대로
+    let m = s.match(/^c(\d+)$/i) || s.match(/^(\d+)$/); // "c1" 또는 "1"
+    return m ? m[1] + '반' : s;
+  }
   const esc = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   function toast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 1600); }
   function playUrlFor(session) { const u = new URL('play.html', location.href); u.searchParams.set('session', session); return u.href; }
@@ -457,11 +466,13 @@
     const endBtn = ended
       ? `<button class="assign-del" data-revive="${esc(a.session)}" style="border-color:#3a5; color:#aee08a">↺ 되살리기</button>`
       : `<button class="assign-del" data-end="${esc(a.session)}" style="border-color:#7b5; color:#ffd166">🏁 종료·보관</button>`;
+    // 반 이름 표시용: "1"·"c1" 같은 값도 "1반"으로 보이게(옛 배정 호환).
+    const clsLabel = classDisplay(a.className);
     return `
       <div class="assign" style="${ended ? 'opacity:.55' : ''}">
         <div class="assign-head">
+          <span class="chip cls-big">🏫 ${esc(clsLabel)}</span>
           <span class="chip set">📚 ${esc(a.gameSet)}</span>
-          <span class="chip cls">👥 ${esc(a.className)}</span>
           <span class="chip seq">🔁 ${a.seq}회차</span>
           <span class="chip ${mi.cls}">${mi.label}</span>
           ${ended ? '<span class="chip" style="background:rgba(139,155,180,.2);color:#8b9bb4">🗄 보관됨</span>' : ''}
