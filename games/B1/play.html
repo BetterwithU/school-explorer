@@ -230,8 +230,28 @@
   function route() {
     const scanned = params.get('s');
     if (E.isWin(DATA, PROGRESS)) { screenWin(); return; }
-    if (scanned) { openStation(scanned); return; }
+    if (scanned) { arriveStation(scanned); return; }
     screenNav();
+  }
+
+  // QR 도착 처리: 스캔한 곳이 '지금 추천된 목적지'와 같을 때만 문제를 연다.
+  // 다른 QR이면 안내메시지만 보여주고 문제는 노출하지 않는다(내비로 복귀).
+  // (DEV=테스트 모드는 아무 QR이나 열어 검증 가능)
+  function arriveStation(scanned) {
+    const st = E.stationById(DATA, scanned);
+    if (!st) { alert('이 QR은 우리 게임 station이 아니에요 🙅'); screenNav(); return; }
+    if (PROGRESS.solved[st.id]) {   // 이미 푼 곳
+      flashGuide('✅', '이미 푼 곳이에요', `'${st.place}'은(는) 이미 풀었어요. 추천된 다음 장소로 가세요!`);
+      return;
+    }
+    // 지금 추천된 목적지(currentTarget)를 확정 — 없으면 내비가 배정하도록 넘김
+    const target = (PROGRESS.currentTarget != null && !PROGRESS.solved[PROGRESS.currentTarget]) ? PROGRESS.currentTarget : null;
+    if (!DEV && target != null && String(st.id) !== String(target)) {
+      const tgt = E.stationById(DATA, target);
+      flashGuide('🧭', '여기가 아니에요!', `추천된 다음 장소가 아니에요.\n사진 속 장소를 찾아가서 그곳의 QR을 스캔하세요.`);
+      return;   // 문제 노출 안 함 → flashGuide 종료 후 내비 화면 유지
+    }
+    openStation(scanned);
   }
 
   /* ---------- 실시간(sync) — 오프라인이면 전부 no-op, 게임은 그대로 ---------- */

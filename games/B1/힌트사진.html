@@ -50,7 +50,7 @@
       const card = document.createElement('div');
       card.className = 'card';
       const photo = s.cluePhoto
-        ? `<img class="thumb" src="${esc(s.cluePhoto)}" alt="${esc(label)}" loading="lazy">`
+        ? `<img class="thumb" src="${esc(E.resolveImg(s.cluePhoto, DATA.__set))}" alt="${esc(label)}" loading="lazy" onerror="this.outerHTML='<div class=&quot;thumb missing&quot;>⚠️ 사진 로드 실패</div>'">`
         : `<div class="thumb missing">📷 힌트 사진 없음<br>(시작 장소)</div>`;
       card.innerHTML = `
         <div class="card-head">
