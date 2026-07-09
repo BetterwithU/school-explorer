@@ -124,6 +124,11 @@ if (cfg && cfg.apiKey && cfg.databaseURL && ONLINE_MODE) {
           : { text: text || '', end: end === true, ts: serverTimestamp() };
         return set(ref(db, `${base}/announce`), payload).catch(() => {});
       },
+      // 강제 초기화 신호 — 학생 기기가 자기 진행 localStorage를 지우고 새로고침(처음부터).
+      // ts로 1회 처리. 서버 teams/도 함께 비운다.
+      sendReset() {
+        return set(ref(db, `${base}/announce`), { text: '', end: false, reset: true, ts: serverTimestamp() }).catch(() => {});
+      },
       subscribeAnnounce(cb) {
         onValue(ref(db, `${base}/announce`), (snap) => cb(snap.val() || null));
       },

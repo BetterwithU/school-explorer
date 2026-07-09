@@ -283,6 +283,19 @@
 
   // 대시보드 공지/소집 표시. a.end면 게임 마감 오버레이(되돌릴 수 없게 고정).
   function showAnnounce(a) {
+    // 강제 초기화 신호: 대시보드가 진행초기화를 누르면 학생 기기의 진행 localStorage까지 지우고 새 시작.
+    // ts로 1회만 처리(같은 신호 반복 방지). 이 세션에서 내가 처리한 마지막 reset ts를 기억.
+    if (a && a.reset && a.ts) {
+      const seenKey = 'b1_reset_seen_' + SESSION;
+      let seen = 0; try { seen = +localStorage.getItem(seenKey) || 0; } catch {}
+      if (a.ts > seen) {
+        try { localStorage.setItem(seenKey, String(a.ts)); } catch {}
+        if (PROGRESS && PROGRESS.team) E.clearProgress(PROGRESS.team);  // storageKey가 세션 기준 → 이 세션 진행만 삭제
+        try { localStorage.removeItem(CURTEAM_KEY); } catch {}          // 조 선택도 초기화 → 처음부터
+        location.reload();
+        return;
+      }
+    }
     const banner = document.getElementById('announceBanner');
     const overlay = document.getElementById('endOverlay');
     if (a && a.end) {

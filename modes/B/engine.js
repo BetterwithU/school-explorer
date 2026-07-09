@@ -131,10 +131,18 @@
     return startIds.concat(base.slice(offset), base.slice(0, offset));
   }
 
+  // URL의 전체 세션 키(login__B1__c1__r03) — 회차·반까지 포함. 없으면 null.
+  function resolveSession() {
+    try { return new URLSearchParams(location.search).get('session') || null; } catch { return null; }
+  }
+
   /* ---------- 진행상태 (localStorage) ---------- */
-  // 진행키에 모드+세트 포함 → (B1 3조 vs B2 3조) + (test 리허설 vs login 채점)이 섞이지 않는다.
+  // 진행키 = 전체 세션(회차·반 포함) + 조. → 회차가 다르면(r02 vs r03) 진행이 완전 분리되어
+  // "새 회차 = 자동으로 깨끗한 새 시작". 세션이 없으면(과도기) mode+set로 폴백.
   function storageKey(teamName, setId, mode) {
-    return STORAGE_PREFIX + (mode || resolveMode()) + '_' + (setId || resolveSet()) + '_' + (teamName || 'anon');
+    const sess = resolveSession();
+    const scope = sess ? sess : ((mode || resolveMode()) + '_' + (setId || resolveSet()));
+    return STORAGE_PREFIX + scope + '_' + (teamName || 'anon');
   }
 
   function startGame(data, teamName) {

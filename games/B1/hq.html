@@ -294,8 +294,9 @@
   }
 
   function onReset() {
-    if (!confirm('⚠️ 모든 조의 진행 기록을 삭제합니다.\n실제 게임 중이면 누르지 마세요.\n계속할까요?')) return;
-    if (window.BSync && window.BSync.resetTeams) window.BSync.resetTeams();
+    if (!confirm('⚠️ 모든 조의 진행 기록을 삭제하고, 학생 기기도 처음부터 다시 시작하게 합니다.\n실제 게임 중이면 누르지 마세요.\n계속할까요?')) return;
+    if (window.BSync && window.BSync.resetTeams) window.BSync.resetTeams();   // 서버 teams/ 삭제(대시보드)
+    if (window.BSync && window.BSync.sendReset) window.BSync.sendReset();     // 학생 기기 localStorage 강제 초기화 신호
   }
 
   // ── 전체 공지 / 게임 종료·소집 (대시보드 → 전체 학생 단말기, 거의 실시간) ──
