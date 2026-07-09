@@ -68,6 +68,20 @@
     .warn b { color: #ffd166; }
     .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #2e74c4; color: #fff; padding: 10px 18px; border-radius: 10px; font-size: 0.88rem; font-weight: 700; opacity: 0; transition: opacity .25s; pointer-events: none; z-index: 999; }
     .toast.show { opacity: 1; }
+
+    /* 랜덤 짝 배정 연출 오버레이 */
+    .shuffle-ov { position: fixed; inset: 0; z-index: 9998; background: rgba(9,13,26,.94); display: none; flex-direction: column; align-items: center; justify-content: center; padding: 24px; }
+    .shuffle-ov.show { display: flex; }
+    .shuffle-title { font-size: 1.3rem; font-weight: 900; color: #ffd166; margin-bottom: 6px; text-align: center; }
+    .shuffle-sub { font-size: 0.85rem; color: #9fb2d4; margin-bottom: 20px; }
+    .shuffle-names { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; max-width: 640px; margin-bottom: 22px; min-height: 40px; }
+    .sname { background: #1e2840; color: #cfe3ff; border: 1px solid #34456e; border-radius: 8px; padding: 6px 11px; font-size: 0.86rem; font-weight: 700; transition: transform .12s, background .12s, color .12s; }
+    .sname.pick { background: #ffd166; color: #3a2600; transform: scale(1.18); }
+    .shuffle-result { display: flex; flex-direction: column; gap: 7px; max-width: 480px; width: 100%; max-height: 42vh; overflow-y: auto; }
+    .srow { display: flex; align-items: center; gap: 10px; background: #12213b; border: 1px solid #28365e; border-radius: 10px; padding: 9px 13px; opacity: 0; transform: translateY(8px); animation: srowin .3s forwards; }
+    .steam { color: #2ec4b6; font-weight: 900; font-size: 0.9rem; min-width: 42px; }
+    .smembers { color: #e6eefc; font-size: 0.9rem; }
+    @keyframes srowin { to { opacity: 1; transform: none; } }
   </style>
 </head>
 <body>
@@ -329,7 +343,12 @@
     document.getElementById('className').value = '';
     pendingAdhoc = null;
     renderHistory();
-    switchTab('history');
+    // 짝 배정이 있으면 랜덤 연출을 보여주고, 끝나면 이력 탭으로. 없으면 바로 전환.
+    if (pairs && pairs.length) {
+      playShuffleAnimation(pairRows, pairs, () => switchTab('history'));
+    } else {
+      switchTab('history');
+    }
   };
   let pendingAdhoc = null;  // 즉석 업로드 명단(이번 배정용)
 
@@ -509,6 +528,72 @@
   })();
 
   renderHistory();
+  </script>
+
+  <!-- 랜덤 짝 배정 연출 오버레이 -->
+  <div class="shuffle-ov" id="shuffleOv">
+    <div class="shuffle-title" id="shTitle">🎲 랜덤 짝 배정 중…</div>
+    <div class="shuffle-sub" id="shSub">이름을 섞고 있어요</div>
+    <div class="shuffle-names" id="shNames"></div>
+    <div class="shuffle-result" id="shResult"></div>
+  </div>
+
+  <script>
+  /* 조 배정 랜덤 연출: 이름 카드를 무작위로 반짝이며 섞다가, 확정된 짝을 한 줄씩 공개.
+   * 실제 배정 결과(pairs)는 이미 정해진 상태 — 연출은 '보여주기'용. onDone 후 이력 탭 전환. */
+  function playShuffleAnimation(pairRows, pairs, onDone) {
+    const ov = document.getElementById('shuffleOv');
+    const namesEl = document.getElementById('shNames');
+    const resultEl = document.getElementById('shResult');
+    const title = document.getElementById('shTitle');
+    const sub = document.getElementById('shSub');
+    title.textContent = '🎲 랜덤 짝 배정 중…';
+    sub.textContent = `${pairRows.length}명을 섞는 중…`;
+    resultEl.innerHTML = '';
+    const names = pairRows.map(r => r.no ? `${r.no}. ${r.name}` : r.name);
+    namesEl.innerHTML = names.map((n, i) => `<span class="sname" id="sn${i}">${escA(n)}</span>`).join('');
+    ov.classList.add('show');
+
+    // 1단계: 무작위 반짝임(정해진 횟수, Date.now/random 없이 인덱스 회전)
+    let ticks = 0;
+    const maxTicks = 18;
+    let prev = -1;
+    const timer = setInterval(() => {
+      if (prev >= 0) { const e = document.getElementById('sn' + prev); if (e) e.classList.remove('pick'); }
+      const idx = (ticks * 7 + 3) % names.length;   // 결정적 회전 → 반짝이는 느낌
+      const e = document.getElementById('sn' + idx); if (e) e.classList.add('pick');
+      prev = idx;
+      ticks++;
+      if (ticks >= maxTicks) {
+        clearInterval(timer);
+        if (prev >= 0) { const p = document.getElementById('sn' + prev); if (p) p.classList.remove('pick'); }
+        revealPairs();
+      }
+    }, 90);
+
+    // 2단계: 확정된 짝을 한 줄씩 공개
+    function revealPairs() {
+      title.textContent = '✅ 짝 배정 완료!';
+      sub.textContent = `${pairs.length}개 조가 정해졌어요`;
+      namesEl.style.display = 'none';
+      let i = 0;
+      const reveal = setInterval(() => {
+        if (i >= pairs.length) {
+          clearInterval(reveal);
+          setTimeout(() => { ov.classList.remove('show'); namesEl.style.display = ''; onDone && onDone(); }, 900);
+          return;
+        }
+        const pr = pairs[i];
+        const row = document.createElement('div');
+        row.className = 'srow';
+        row.innerHTML = `<span class="steam">${escA(pr.team)}</span><span class="smembers">${escA((pr.members || []).join('  ·  '))}</span>`;
+        resultEl.appendChild(row);
+        resultEl.scrollTop = resultEl.scrollHeight;
+        i++;
+      }, 260);
+    }
+  }
+  function escA(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
   </script>
 </body>
 </html>

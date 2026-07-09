@@ -423,6 +423,7 @@
       </div>
       <input class="answer-input" id="ans" placeholder="정답 입력" autocomplete="off">
       <button class="btn" id="submitBtn">✅ 정답 제출</button>
+      ${skipControl(st)}
       <div class="feedback" id="fb"></div>
       ${DEV ? '<span class="small-link" id="navBack">← 내비로</span>' : ''}`;
 
@@ -446,6 +447,22 @@
     document.getElementById('submitBtn').onclick = () => submitAnswer(st);
     document.getElementById('ans').addEventListener('keydown', e => { if (e.key === 'Enter') submitAnswer(st); });
     const nb = document.getElementById('navBack'); if (nb) nb.onclick = screenNav;
+    const sk = document.getElementById('skipBtn'); if (sk) sk.onclick = () => doSkip(st);
+  }
+
+  // 스킵 버튼 UI: 교실(start)·스킵불가면 안 보임. 남은 횟수 표시.
+  function skipControl(st) {
+    if (!E.canSkip(DATA, PROGRESS, st.id)) return '';
+    const rem = E.skipsRemaining(DATA, PROGRESS);
+    return `<button class="btn ghost" id="skipBtn" style="margin-top:8px">⏭️ 이 문제 건너뛰기 (남은 패스 ${rem}회)</button>`;
+  }
+
+  function doSkip(st) {
+    const rem = E.skipsRemaining(DATA, PROGRESS);
+    if (!confirm(`이 문제를 건너뛸까요?\n남은 패스 ${rem}회 → ${rem - 1}회\n(건너뛴 문제는 나중에 다시 만날 수 있어요)`)) return;
+    if (!E.skipStation(DATA, PROGRESS, st.id)) { toast('더 이상 건너뛸 수 없어요'); return; }
+    report();
+    screenNav();
   }
 
   function updateHintUI(st, revealed) {

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📸 힌트 사진 점검 — 중2 탐험 레이스</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Apple SD Gothic Neo','Malgun Gothic',sans-serif; background: #f4f5f8; color: #1a1a2e; padding: 18px; }
+    .wrap { max-width: 1000px; margin: 0 auto; }
+    h1 { font-size: 1.4rem; color: #1a3a6e; text-align: center; }
+    .lead { text-align: center; color: #555; font-size: 0.86rem; margin: 6px 0 16px; line-height: 1.5; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+    .card { background: #fff; border: 1px solid #dde; border-radius: 14px; overflow: hidden; break-inside: avoid; box-shadow: 0 1px 4px rgba(0,0,0,.05); }
+    .card-head { padding: 12px 14px 10px; }
+    .label { font-size: 1.35rem; font-weight: 900; display: flex; align-items: center; gap: 7px; }
+    .label.in { color: #1a9b6f; }
+    .label.out { color: #c2740c; }
+    .fname { font-size: 0.72rem; color: #999; margin-top: 3px; }
+    .thumb { width: 100%; aspect-ratio: 4/3; object-fit: cover; background: #eee; display: block; }
+    .thumb.missing { display: flex; align-items: center; justify-content: center; color: #b33; font-size: 0.85rem; font-weight: 700; min-height: 160px; }
+    @media print {
+      body { background: #fff; padding: 0; }
+      .lead { display: none; }
+      .card { border: 1px solid #ccc; box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>📸 힌트 사진 점검표</h1>
+    <p class="lead">각 힌트 사진이 <b>실외/실내 + 번호</b>로 구별됩니다. QR을 붙일 때 이 사진 속 장소에 해당 번호 QR을 부착하세요.</p>
+    <div class="grid" id="grid"></div>
+  </div>
+
+  <script src="../../modes/B/engine.js"></script>
+  <script>
+  const E = window.BEngine;
+  E.loadStations(E.resolveSet()).then(d => render(d))
+    .catch(e => { document.getElementById('grid').innerHTML = '데이터 로드 실패(' + E.resolveSet() + '): ' + e.message; });
+
+  function render(DATA) {
+    // 라벨 = stations.json의 place(예: 실외1·실내3) 그대로 → QR 인쇄물과 동일 체계
+    const grid = document.getElementById('grid');
+    grid.innerHTML = '';
+    DATA.stations.forEach(s => {
+      const isIn = !!s.indoor;
+      const icon = isIn ? '🏠' : '🌳';
+      const label = s.place || (isIn ? '실내' : '실외');
+      const card = document.createElement('div');
+      card.className = 'card';
+      const photo = s.cluePhoto
+        ? `<img class="thumb" src="${esc(s.cluePhoto)}" alt="${esc(label)}" loading="lazy">`
+        : `<div class="thumb missing">📷 힌트 사진 없음<br>(시작 장소)</div>`;
+      card.innerHTML = `
+        <div class="card-head">
+          <div class="label ${isIn ? 'in' : 'out'}">${icon} ${esc(label)}</div>
+          <div class="fname">${esc(s.cluePhoto || '—')} · station ${s.id}</div>
+        </div>
+        ${photo}`;
+      grid.appendChild(card);
+    });
+  }
+  function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+  </script>
+</body>
+</html>

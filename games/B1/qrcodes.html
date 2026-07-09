@@ -17,13 +17,11 @@
     .btn.print { background: #1a9b6f; }
     .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px; }
     .qr-card { background: #fff; border: 1px solid #dde; border-radius: 12px; padding: 14px; text-align: center; break-inside: avoid; }
-    .qr-no { font-size: 1.5rem; font-weight: 900; color: #1a3a6e; }
-    .qr-place { font-size: 0.86rem; color: #333; margin: 2px 0 10px; min-height: 2.2em; }
+    .qr-label { font-size: 1.5rem; font-weight: 900; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 6px; }
+    .qr-label.in { color: #1a9b6f; }
+    .qr-label.out { color: #c2740c; }
     .qr-box { display: flex; justify-content: center; }
     .qr-tag { margin-top: 8px; font-size: 0.72rem; color: #888; }
-    .qr-indoor { display: inline-block; font-size: 0.7rem; padding: 1px 7px; border-radius: 10px; margin-top: 4px; }
-    .qr-indoor.in { background: #e3f3ec; color: #1a9b6f; }
-    .qr-indoor.out { background: #fdeee0; color: #c2740c; }
     @media print {
       body { background: #fff; padding: 0; }
       .bar, .lead, .noprint { display: none !important; }
@@ -74,11 +72,10 @@
       const url = base + (base.includes('?') ? '&' : '?') + 's=' + encodeURIComponent(s.id);
       const card = document.createElement('div');
       card.className = 'qr-card';
+      const label = s.place || (s.indoor ? '실내' : '실외');
       card.innerHTML = `
-        <div class="qr-no">${s.id}</div>
-        <div class="qr-place">${esc(s.place || '')}</div>
+        <div class="qr-label ${s.indoor ? 'in' : 'out'}">${s.indoor ? '🏠' : '🌳'} ${esc(label)}</div>
         <div class="qr-box" id="qr-${s.id}"></div>
-        <div class="qr-indoor ${s.indoor ? 'in' : 'out'}">${s.indoor ? '🏠 실내' : '🌳 실외'}</div>
         <div class="qr-tag">스캔 → ${s.id}번 문제</div>`;
       grid.appendChild(card);
       new QRCode(document.getElementById('qr-' + s.id), { text: url, width: 150, height: 150, colorDark: '#1a1a2e', colorLight: '#ffffff' });

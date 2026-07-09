@@ -1,4 +1,10 @@
 .DS_Store
+
+# ⚠️ 학생 명단 CSV/XLSX — 미성년 실명(개인정보). 절대 커밋 금지. 로컬 보관만.
+*명단*.csv
+*명단*.xlsx
+games/*/**명단*.csv
+
 images/Gemini_Generated_Image_dj6mrcdj6mrcdj6m.png
 images/Gemini_Generated_Image_i4pomei4pomei4po.png
 images/Gemini_Generated_Image_lgf72tlgf72tlgf7.png

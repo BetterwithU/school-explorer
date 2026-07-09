@@ -116,17 +116,19 @@
   }
 
   // ① 결정적 루트: 이 조가 도는 station id 순서 (전체 N개; 우승은 need개째에서 판정)
+  // start:true 스테이션(교실)은 모든 조 공통으로 맨 앞 고정 → 다같이 출발, 나머지만 조별 분산.
   function teamRoute(data, teamName) {
-    const ids = data.stations.map(s => s.id);
+    const startIds = data.stations.filter(s => s.start).map(s => s.id);
+    const ids = data.stations.filter(s => !s.start).map(s => s.id);
     const n = ids.length;
-    if (n === 0) return [];
+    if (n === 0) return startIds.slice();
     const base = shuffledBase(ids);
     const teams = teamList(data);
     const idx = teams.indexOf(teamName);
     const offset = idx >= 0
       ? Math.round((idx * n) / Math.max(teams.length, 1)) % n
       : hashSeed(teamName) % n;
-    return base.slice(offset).concat(base.slice(0, offset));
+    return startIds.concat(base.slice(offset), base.slice(0, offset));
   }
 
   /* ---------- 진행상태 (localStorage) ---------- */
@@ -208,6 +210,38 @@
     return p;
   }
 
+  /* ---------- 스킵(어려운 문제 패스) ----------
+   * 남은 스킵 수: meta.skipBudget(없으면 N-need = 버릴 수 있는 여유분). 조 전체 공유.
+   * 스킵 = 그 station을 route 맨 뒤로 보냄(안 풀면 나중에 다시 만남) + 예산 차감.
+   * 교실(start)은 스킵 불가(관문). */
+  function skipBudget(data) {
+    const b = data.meta && data.meta.skipBudget;
+    if (b == null || b === '' || isNaN(+b)) return Math.max(0, data.stations.length - winNeed(data));
+    return Math.max(0, +b);
+  }
+  function skipsRemaining(data, p) {
+    return Math.max(0, skipBudget(data) - (p.skipsUsed || 0));
+  }
+  function canSkip(data, p, stationId) {
+    const st = stationById(data, stationId);
+    if (!st || st.start) return false;              // 교실은 스킵 불가
+    if (p.solved[stationId]) return false;          // 이미 푼 곳
+    return skipsRemaining(data, p) > 0;
+  }
+  // 스킵 실행: 성공 시 true. route에서 해당 id를 맨 뒤로 이동 + 예산 차감 + 목적지 해제.
+  function skipStation(data, p, stationId) {
+    if (!canSkip(data, p, stationId)) return false;
+    const i = p.route.indexOf(stationId);
+    if (i >= 0) { p.route.splice(i, 1); p.route.push(stationId); }
+    p.skipsUsed = (p.skipsUsed || 0) + 1;
+    p.justSkipped = stationId;                       // 다음 1회 배정에서 이 곳 제외(바로 재배정 방지)
+    let s = p.route.findIndex(id => !p.solved[id]);
+    p.step = s === -1 ? p.route.length : s;
+    p.currentTarget = null;                          // 다음 진입 시 재배정
+    saveProgress(p);
+    return true;
+  }
+
   /* ---------- 채점 ---------- */
   function normalize(s) {
     return String(s == null ? '' : s).trim().toLowerCase().replace(/\s+/g, '');
@@ -245,10 +279,27 @@
     return stationById(data, id);
   }
 
+  // start(교실) 관문: 아직 안 푼 start 스테이션이 있으면 그걸 먼저 반환.
+  // 교실 공통문제를 풀기 전엔 어떤 배정 로직도 다른 곳으로 못 보낸다.
+  function pendingStart(data, p) {
+    const s = data.stations.find(st => st.start && !p.solved[st.id]);
+    return s || null;
+  }
+
+  // 방금 스킵한 곳을 후보에서 제외(바로 재배정 방지). 그것만 남았으면 어쩔 수 없이 포함.
+  function excludeSkipped(unv, p) {
+    if (p.justSkipped == null) return unv;
+    const filtered = unv.filter(id => id !== p.justSkipped);
+    return filtered.length ? filtered : unv;
+  }
+
   // 오프라인 폴백: 안 간 곳 중 '실내' 우선 배정(거기서 와이파이 재접속 → 추적 재개).
   // 실내가 다 끝났으면 안 간 아무 곳. 루트 순서 유지 → 결정적.
   function nextTargetOffline(data, p) {
-    const unv = p.route.filter(id => !p.solved[id]);
+    const gate = pendingStart(data, p);
+    if (gate) return gate;                       // 교실 먼저(관문)
+    const unv = excludeSkipped(p.route.filter(id => !p.solved[id]), p);
+    p.justSkipped = null;                        // 1회 소비
     if (!unv.length) return null;
     const indoor = unv.find(id => { const s = stationById(data, id); return s && s.indoor; });
     return stationById(data, indoor != null ? indoor : unv[0]);
@@ -268,9 +319,12 @@
   }
 
   function nextTargetSmart(data, p, liveTeams) {
-    const unvisited = p.route.filter(id => !p.solved[id]); // 루트 순서 유지(동률 tiebreak)
+    const gate = pendingStart(data, p);
+    if (gate) return gate;                       // 교실 관문: 풀기 전엔 무조건 교실로
+    if (!liveTeams) return nextTargetOffline(data, p); // 오프라인 폴백(실내 우선; justSkipped 처리 포함)
+    const unvisited = excludeSkipped(p.route.filter(id => !p.solved[id]), p); // 루트 순서 유지(동률 tiebreak)
+    p.justSkipped = null;                        // 1회 소비
     if (!unvisited.length) return null;
-    if (!liveTeams) return nextTargetOffline(data, p); // 오프라인 폴백(실내 우선)
     // 다른 조의 목적지 혼잡도 집계
     const occ = {};
     for (const team in liveTeams) {
@@ -319,6 +373,7 @@
     solvedCount, isWin, currentStationId, markSolved,
     checkAnswer, normalize,
     hintsRemaining, useHint,
+    skipBudget, skipsRemaining, canSkip, skipStation,
     nextTarget, nextTargetOffline, nextTargetSmart, setTarget, reportPayload, aggregateTeamRecord,
     // 게임세트 다중화 헬퍼
     resolveSet, resolveMode, setBase, resolveImg,

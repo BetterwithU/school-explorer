@@ -2,7 +2,7 @@
   "meta": {
     "title": "중2 도형 단원평가 탐험 레이스",
     "stationCount": 16,
-    "need": 12,
+    "need": 13,
     "hintBudget": 6,
     "teams": [
       "1조",
@@ -203,8 +203,9 @@
     },
     {
       "id": 16,
-      "place": "실내8",
+      "place": "교실(출발)",
       "indoor": true,
+      "start": true,
       "cluePhoto": "",
       "questionImage": "images/Q2.jpg",
       "question": "오른쪽 사각형이 평행사변형이 되도록 하는 $x$, $y$에 대하여 $x-y$의 값을 구하시오.",
