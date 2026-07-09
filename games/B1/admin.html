@@ -91,6 +91,19 @@
     .steam { color: #2ec4b6; font-weight: 900; font-size: 0.9rem; min-width: 42px; }
     .smembers { color: #e6eefc; font-size: 0.9rem; }
     @keyframes srowin { to { opacity: 1; transform: none; } }
+
+    /* 출석 체크 목록 */
+    .attend-box { margin-top: 10px; background: #0d1628; border: 1px solid #28365e; border-radius: 10px; padding: 10px 12px; }
+    .attend-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; flex-wrap: wrap; gap: 6px; }
+    .attend-label { font-size: 0.82rem; color: #9fd8c4; font-weight: 700; }
+    .attend-cnt { color: #ffd166; }
+    .attend-btns { display: flex; gap: 6px; }
+    .attend-btn { background: #1e2840; border: 1px solid #28365e; color: #cfe3ff; border-radius: 7px; padding: 4px 10px; font-size: 0.74rem; cursor: pointer; }
+    .attend-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 5px; max-height: 220px; overflow-y: auto; }
+    .attend-item { display: flex; align-items: center; gap: 6px; background: #16213e; border: 1px solid #28365e; border-radius: 7px; padding: 6px 9px; cursor: pointer; transition: opacity .15s; }
+    .attend-item.absent { opacity: .35; }
+    .attend-item input[type=checkbox] { width: auto; accent-color: #2ec4b6; cursor: pointer; }
+    .attend-item span { font-size: 0.8rem; color: #e6eefc; cursor: pointer; }
   </style>
 </head>
 <body>
@@ -140,9 +153,10 @@
           </div>
         </div>
 
-        <!-- 명단 연결 (로그인 모드 전용 — 학생이 짝 이름을 명단에서 고름) -->
+        <!-- 명단 연결 + 출석 체크 -->
         <div id="rosterLink" style="margin-top:6px">
           <div class="hint" id="rosterStatus"></div>
+          <div id="attendBox" style="display:none"></div>
           <div id="adhocBox" style="display:none;margin-top:6px">
             <label class="fld">📄 즉석 명단 업로드 (동아리 등 — 등록 안 된 그룹)</label>
             <input type="file" id="adhocFile" accept=".csv,.xlsx,.xls">
@@ -360,10 +374,19 @@
       switchTab('history');
       return;
     }
-    // 명단 소스 확정 (즉석 > 등록된 반 명단)
+    // 명단 소스 확정 (즉석 > 등록된 반 명단) → 출석 체크된 학생만 추림
     let pairRows = null;
-    if (pendingAdhoc && pendingAdhoc.length) pairRows = pendingAdhoc;
-    else { const reg = R.getClass(className); if (reg.length) pairRows = reg; }
+    const allRows = (pendingAdhoc && pendingAdhoc.length) ? pendingAdhoc : R.getClass(className);
+    if (allRows.length) {
+      const checked = Array.from(document.querySelectorAll('.att-cb:checked'));
+      if (checked.length) {
+        const keys = new Set(checked.map(cb => `${cb.dataset.no}|${cb.dataset.name}`));
+        pairRows = allRows.filter(r => keys.has(`${r.no}|${r.name}`));
+      } else {
+        document.getElementById('assignHint').textContent = '⚠️ 출석 학생을 1명 이상 체크하세요.';
+        return;
+      }
+    }
 
     // 로그인 모드: 이름 목록을 세션에 연결 (짝 이름 자유입력 fallback용)
     let rosterNames = null;
@@ -544,28 +567,81 @@
   document.getElementById('rosterSheetBtn').onclick = () => importRows(R.parseGoogleSheet(document.getElementById('rosterSheet').value));
   renderRosterList();
 
-  // ---- 배정 탭: 명단 연결 상태 표시 (모드·반에 따라) ----
+  // ---- 배정 탭: 명단 연결 상태 표시 + 출석 체크 ----
   function refreshRosterLink() {
     const mode = document.querySelector('input[name=mode]:checked').value;
     const cls = document.getElementById('className').value.trim();
     const box = document.getElementById('rosterLink');
     const status = document.getElementById('rosterStatus');
     const adhoc = document.getElementById('adhocBox');
+    const attendBox = document.getElementById('attendBox');
     // 등록된 반 datalist 채우기
     document.getElementById('classOptions').innerHTML = R.classNames().map(c => `<option value="${esc(c)}">`).join('');
-    if (mode !== 'login') { box.style.display = 'none'; pendingAdhoc = null; return; }
-    box.style.display = 'block';
     const reg = cls ? R.getClass(cls) : [];
-    if (pendingAdhoc && pendingAdhoc.length) {
+    const sourceRows = (pendingAdhoc && pendingAdhoc.length) ? pendingAdhoc : reg;
+
+    // 명단이 없고 login 모드도 아니면 전체 숨김
+    if (!sourceRows.length && mode !== 'login') { box.style.display = 'none'; attendBox.style.display = 'none'; return; }
+    box.style.display = 'block';
+
+    if (mode !== 'login') {
+      status.innerHTML = sourceRows.length ? `👥 <b style="color:#aee08a">${esc(cls)}</b> 명단 ${sourceRows.length}명 — 출석 확인 후 배정` : '';
+      adhoc.style.display = 'none';
+    } else if (pendingAdhoc && pendingAdhoc.length) {
       status.innerHTML = `📄 즉석 명단 <b style="color:#aee08a">${pendingAdhoc.length}명</b> 사용 — 이 배정에만 적용`;
       adhoc.style.display = 'block';
     } else if (reg.length) {
-      status.innerHTML = `👥 등록된 <b style="color:#aee08a">${esc(cls)}</b> 명단 ${reg.length}명 자동 연결됨`;
+      status.innerHTML = `👥 등록된 <b style="color:#aee08a">${esc(cls)}</b> 명단 ${reg.length}명`;
       adhoc.style.display = 'none';
     } else {
-      status.innerHTML = `⚠️ <b>${esc(cls || '이 반')}</b>은 등록된 명단이 없습니다. 아래에서 즉석 업로드하거나, 반 명단 탭에서 등록하세요. (없으면 짝 이름 자유입력)`;
+      status.innerHTML = `⚠️ <b>${esc(cls || '이 반')}</b>은 등록된 명단이 없습니다. 아래에서 즉석 업로드하거나, 반 명단 탭에서 등록하세요.`;
       adhoc.style.display = 'block';
     }
+
+    // 출석 체크 목록 렌더
+    if (sourceRows.length) renderAttendance(sourceRows);
+    else attendBox.style.display = 'none';
+  }
+
+  function renderAttendance(rows) {
+    const attendBox = document.getElementById('attendBox');
+    const sorted = [...rows].sort((a, b) => (parseInt(a.no, 10) || 999) - (parseInt(b.no, 10) || 999));
+    const total = sorted.length;
+    attendBox.className = 'attend-box';
+    attendBox.innerHTML = `
+      <div class="attend-header">
+        <span class="attend-label">✅ 출석 확인 <span class="attend-cnt" id="attendCount">${total}</span>/${total}명</span>
+        <div class="attend-btns">
+          <button class="attend-btn" type="button" onclick="setAllAttend(true)">전체 선택</button>
+          <button class="attend-btn" type="button" onclick="setAllAttend(false)">전체 해제</button>
+        </div>
+      </div>
+      <div class="attend-grid">
+        ${sorted.map((r, i) => {
+          const lbl = r.no ? `${r.no}. ${r.name}` : r.name;
+          return `<label class="attend-item" id="atli_${i}">
+            <input type="checkbox" class="att-cb" checked data-no="${esc(r.no)}" data-name="${esc(r.name)}">
+            <span>${esc(lbl)}</span>
+          </label>`;
+        }).join('')}
+      </div>`;
+    attendBox.style.display = 'block';
+    attendBox.querySelectorAll('.att-cb').forEach(cb => {
+      cb.onchange = () => {
+        cb.closest('.attend-item').classList.toggle('absent', !cb.checked);
+        document.getElementById('attendCount').textContent = attendBox.querySelectorAll('.att-cb:checked').length;
+      };
+    });
+  }
+
+  function setAllAttend(v) {
+    document.querySelectorAll('.att-cb').forEach(cb => {
+      cb.checked = v;
+      cb.closest('.attend-item').classList.toggle('absent', !v);
+    });
+    const total = document.querySelectorAll('.att-cb').length;
+    const cnt = document.getElementById('attendCount');
+    if (cnt) cnt.textContent = v ? total : 0;
   }
   document.querySelectorAll('input[name=mode]').forEach(r => r.addEventListener('change', refreshRosterLink));
   document.getElementById('className').addEventListener('input', refreshRosterLink);
