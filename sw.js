@@ -8,7 +8,7 @@
  *  - stations.json: 네트워크 우선(최신 반영) + 실패 시 캐시.
  *  - 그 외 B 자산·이미지·CDN(KaTeX/jsQR/firebase): 캐시 우선 + 런타임 캐싱.
  * ============================================================ */
-const CACHE = 'b1-offline-v4';   // 게임세트 다중화(sets/) 경로 변경 → 캐시 버전 bump(옛 캐시 비움)
+const CACHE = 'b1-offline-v5';   // 힌트사진 webp 경량화 → 캐시 버전 bump(옛 JPG 캐시 비움)
 
 // 설치 시 미리 받아둘 핵심 파일(개별 best-effort — 하나 실패해도 설치 계속)
 const PRECACHE = [

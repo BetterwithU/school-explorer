@@ -32,3 +32,8 @@ images/유니콘.jpeg
 
 # Understand-Anything 지식그래프 (로컬 전용)
 .understand-anything/
+
+# 힌트사진 원본 JPG(원본 보존·재변환용, 게임은 webp만 사용 — 레포 경량화)
+games/B1/sets/B1/images/out*.JPG
+games/B1/sets/B1/images/inside*.jpg
+games/B1/sets/B1/images/inside*.JPG
