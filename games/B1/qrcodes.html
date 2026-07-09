@@ -21,7 +21,6 @@
     .qr-label.in { color: #1a9b6f; }
     .qr-label.out { color: #c2740c; }
     .qr-box { display: flex; justify-content: center; }
-    .qr-tag { margin-top: 8px; font-size: 0.72rem; color: #888; }
     @media print {
       body { background: #fff; padding: 0; }
       .bar, .lead, .noprint { display: none !important; }
@@ -75,8 +74,7 @@
       const label = s.place || (s.indoor ? '실내' : '실외');
       card.innerHTML = `
         <div class="qr-label ${s.indoor ? 'in' : 'out'}">${s.indoor ? '🏠' : '🌳'} ${esc(label)}</div>
-        <div class="qr-box" id="qr-${s.id}"></div>
-        <div class="qr-tag">스캔 → ${s.id}번 문제</div>`;
+        <div class="qr-box" id="qr-${s.id}"></div>`;
       grid.appendChild(card);
       new QRCode(document.getElementById('qr-' + s.id), { text: url, width: 150, height: 150, colorDark: '#1a1a2e', colorLight: '#ffffff' });
     });
