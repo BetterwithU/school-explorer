@@ -69,6 +69,14 @@
     .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #2e74c4; color: #fff; padding: 10px 18px; border-radius: 10px; font-size: 0.88rem; font-weight: 700; opacity: 0; transition: opacity .25s; pointer-events: none; z-index: 999; }
     .toast.show { opacity: 1; }
 
+    /* 배정 이력 — 조 편성(짝) 목록 */
+    .pairs-box { margin-top: 12px; background: #0f1c33; border: 1px solid #28365e; border-radius: 10px; padding: 8px 12px; }
+    .pairs-box summary { cursor: pointer; font-size: 0.85rem; font-weight: 700; color: #9fd8c4; user-select: none; }
+    .pairs-list { margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 6px 16px; }
+    .pair-line { font-size: 0.86rem; color: #e6eefc; padding: 3px 0; }
+    .pair-line b { color: #2ec4b6; margin-right: 8px; }
+    @media (max-width: 640px) { .pairs-list { grid-template-columns: 1fr; } }
+
     /* 랜덤 짝 배정 연출 오버레이 */
     .shuffle-ov { position: fixed; inset: 0; z-index: 9998; background: rgba(9,13,26,.94); display: none; flex-direction: column; align-items: center; justify-content: center; padding: 24px; }
     .shuffle-ov.show { display: flex; }
@@ -315,6 +323,13 @@
       const merged = Object.values(bySession).sort((x, y) => (y.createdAt || 0) - (x.createdAt || 0));
       saveAll(merged);
       renderHistory();
+      // 다른 PC에서 만든 배정의 조 편성(짝)도 서버에서 가져와 로컬 캐시 → 조 편성 보기 표시.
+      await Promise.all(merged.map(async a => {
+        if (localStorage.getItem('b1_pairs_' + a.session)) return;   // 이미 로컬에 있으면 skip
+        const sp = await window.BStore.getPairs(a.session);
+        if (sp && sp.length) { try { localStorage.setItem('b1_pairs_' + a.session, JSON.stringify(sp)); } catch {} }
+      }));
+      renderHistory();   // 짝 캐시 후 다시 렌더(조 편성 보기 반영)
     } catch (e) { /* 오프라인/권한없음 → 로컬만 표시 */ }
   }
 
@@ -459,8 +474,18 @@
             ${dashRow}
           </div>
         </div>
+        ${renderPairs(a.session)}
         <div class="assign-warn">${mi.warn}</div>
       </div>`;
+  }
+
+  // 이 배정의 조 편성(짝) 목록을 펼쳐 보여준다 — 배정 후 "1조가 누구·누구"를 다시 확인.
+  function renderPairs(session) {
+    let pairs = null;
+    try { pairs = JSON.parse(localStorage.getItem('b1_pairs_' + session)); } catch {}
+    if (!pairs || !pairs.length) return '';
+    const rows = pairs.map(p => `<div class="pair-line"><b>${esc(p.team)}</b> ${esc((p.members || []).join(' · '))}</div>`).join('');
+    return `<details class="pairs-box"><summary>👥 조 편성 보기 (${pairs.length}조)</summary><div class="pairs-list">${rows}</div></details>`;
   }
 
   // 플레이 시뮬 (테스트 모드)
