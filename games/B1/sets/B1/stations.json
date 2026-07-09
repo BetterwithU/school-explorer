@@ -39,7 +39,7 @@
       "indoor": true,
       "cluePhoto": "images/inside1.webp",
       "questionImage": "images/S5.jpg",
-      "question": "오른쪽 그림과 같이 $\\overline{\\mathrm{AD}}$와 $\\overline{\\mathrm{BE}}$의 교점을 $\\mathrm{C}$라고 하자. (맞꼭지각을 낀 두 변의 길이의 비가 같아 SAS 닮음) $\\overline{\\mathrm{DE}}$의 길이를 구하시오.",
+      "question": "오른쪽 그림과 같이 $\\overline{\\mathrm{AD}}$와 $\\overline{\\mathrm{BE}}$의 교점을 $\\mathrm{C}$라고 하자. $\\overline{\\mathrm{DE}}$의 길이를 구하시오.",
       "answer": "10",
       "hints": [
         "$\\triangle\\mathrm{ABC} \\sim \\triangle\\mathrm{DEC}$, 닮음비 $3:2$"
@@ -198,7 +198,7 @@
       "question": "오른쪽 그림에서 점 $\\mathrm{O}$는 $\\triangle\\mathrm{ABC}$의 외심이고 $\\angle\\mathrm{A}=60^\\circ$이다. $\\angle\\mathrm{BOC}$의 크기를 구하시오.",
       "answer": "120",
       "hints": [
-        "$\\angle\\mathrm{BOC} = 2\\,\\angle\\mathrm{A}$"
+        "$\\triangle\\mathrm{OAB}$, $\\triangle\\mathrm{OBC}$, $\\triangle\\mathrm{OCA}$가 모두 이등변삼각형이다."
       ]
     },
     {

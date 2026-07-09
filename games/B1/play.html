@@ -572,7 +572,7 @@
       ${topbar()}
       <h2 style="color:#ffd166">🏁 ${need}곳 완료!</h2>
       <p class="lead">${esc(PROGRESS.team)}, ${need}곳을 다 풀었어요! (${solved}곳)<br>이제 <b style="color:#ffd166">출발점(본부)으로 가장 먼저 도착</b>하면 우승!<br>지금 바로 달려가세요! 🏃‍♂️💨</p>
-      <div class="clue-place"><div class="lbl">12곳 달성 시각 (참고용)</div><div class="nm" style="font-size:1.1rem">${PROGRESS.wonAt ? new Date(PROGRESS.wonAt).toLocaleTimeString('ko-KR') : '-'}</div></div>
+      <div class="clue-place"><div class="lbl">목표 달성 시각 (기록용)</div><div class="nm" style="font-size:1.1rem">${PROGRESS.wonAt ? new Date(PROGRESS.wonAt).toLocaleTimeString('ko-KR') : '-'}</div></div>
       ${DEV ? '<button class="btn ghost" id="resetWin">진행 초기화</button>' : ''}`;
     const rw = document.getElementById('resetWin');
     if (rw) rw.onclick = () => { E.clearProgress(PROGRESS.team); PROGRESS = E.startGame(DATA, PROGRESS.team); screenNav(); };
