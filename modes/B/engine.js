@@ -26,7 +26,7 @@
       s = p.get('set');
       if (!s) {
         const sess = p.get('session') || '';
-        const m = sess.match(/^(?:login|open|test)__([A-Za-z0-9]+)__/);
+        const m = sess.match(/^(?:login|open|test|demo)__([A-Za-z0-9]+)__/);
         if (m) s = m[1];
       }
     } catch {}
@@ -40,7 +40,7 @@
   function resolveMode() {
     try {
       const sess = new URLSearchParams(location.search).get('session') || '';
-      const m = sess.match(/^(login|open|test)__/);
+      const m = sess.match(/^(login|open|test|demo)__/);
       if (m) return m[1];
     } catch {}
     return 'play';

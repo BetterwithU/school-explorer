@@ -98,8 +98,9 @@
     </header>
 
     <div class="controls">
-      <a href="admin.html" target="_blank">🛠️ 개발자 페이지</a>
-      <a href="play.html?session=test__B1__sim__r01" target="_blank">🎮 테스트 플레이</a>
+      <a id="devLink" href="admin.html" target="_blank">🛠️ 개발자 페이지</a>
+      <a id="testPlayLink" href="play.html?session=test__B1__sim__r01" target="_blank">🎮 테스트 플레이</a>
+      <a id="demoLink" href="play.html?session=demo__B1__spectate__r01" target="_blank" class="start-brief">👣 학생처럼 해보기</a>
       <button class="start-brief" id="briefBtn">🚀 게임 시작 안내</button>
       <button id="msgBtn">📢 전체 공지</button>
       <button class="danger" id="endBtn">🏁 게임 종료·소집</button>
@@ -219,16 +220,20 @@
     authGateDash(initSync);
   }).catch(e => { document.getElementById('live').innerHTML = `<div class="offline">데이터 로드 실패: ${e.message}</div>`; });
 
-  // 로그인 게이트 — 학교 구글 계정(@snu.ms.kr) 통과해야 대시보드 표시
+  // 관전 모드 여부 — @snu이지만 화이트리스트(운영진) 아니면 true. 조작 버튼 숨김·서버쓰기는 규칙이 차단.
+  let IS_SPECTATOR = false;
+
+  // 로그인 게이트 — 학교 구글 계정(@snu.ms.kr)이면 통과. 화이트리스트면 운영, 아니면 관전.
   function authGateDash(onReady) {
     let passed = false;
     const go = () => { if (passed) return; passed = true; onReady(); };
     const apply = () => {
       if (!window.BAuth || !window.BAuth.configured) { go(); return; }
-      // 대시보드는 등록된 교사(화이트리스트)만. 일반 @snu 학생은 통과 못 함.
+      // @snu 로그인(u 존재 = 도메인 통과)이면 통과. 화이트리스트 아니면 관전 모드로.
+      // (참관 교사: 대시보드 주소만 받아 로그인하면 자동 관전. 학생이 어쩌다 들어와도 조작 불가.)
       window.BAuth.onChange(u => {
-        if (u && window.BAuth.isAdmin(u.email)) go();
-        else if (!passed) showDashLogin(u && !window.BAuth.isAdmin(u.email) ? u.email : null);
+        if (u) { IS_SPECTATOR = !window.BAuth.isAdmin(u.email); go(); }
+        else if (!passed) showDashLogin(null);
       });
     };
     if (window.BAUTH_READY) apply();
@@ -246,7 +251,20 @@
     };
   }
 
+  // 관전 모드 UI: 조작 버튼 숨기고 배지 표시. 보기(순위·진행·혼잡도)는 그대로.
+  function applySpectatorUI() {
+    if (!IS_SPECTATOR) return;
+    // 숨길 조작 버튼: 공지·종료·초기화·개발자페이지·테스트플레이. (게임시작안내·결과시트·학생처럼해보기는 유지)
+    ['msgBtn', 'endBtn', 'resetBtn', 'devLink', 'testPlayLink'].forEach(id => {
+      const el = document.getElementById(id); if (el) el.style.display = 'none';
+    });
+    // 상단에 관전 배지
+    const hdr = document.querySelector('header p');
+    if (hdr) hdr.innerHTML += ' <span style="background:#7c3aed;color:#fff;padding:2px 9px;border-radius:9px;font-weight:800;font-size:0.78rem;margin-left:6px">👀 관전 모드</span>';
+  }
+
   function initSync() {
+    applySpectatorUI();
     const apply = () => {
       const online = !!(window.BSync && window.BSync.online);
       if (online) {
@@ -321,11 +339,11 @@
         <div class="tc-target">📍 ${esc(place)}</div>
         <div class="bar"><span style="width:${Math.min(100, pct)}%"></span></div>
         <div class="tc-prog">${prog}</div>
-        <div class="ovr">
+        ${IS_SPECTATOR ? '' : `<div class="ovr">
           <select data-team="${esc(team)}">${DATA.stations.map(s => `<option value="${s.id}">${s.id}. ${esc(s.place || '')}</option>`).join('')}</select>
           <button data-ovr="${esc(team)}">🛠 강제 이동</button>
           <span class="ov-state" data-ovstate="${esc(team)}"></span>
-        </div>
+        </div>`}
       </div>`;
     }).join('');
     // 수동개입 바인딩

@@ -25,14 +25,15 @@ function resolveSession() {
   if (!s) s = window.SYNC_SESSION || null;
   if (!s) return null;
   // ASCII 머신키만 허용(한글/특수문자/Firebase 금지문자 차단). 형식 어긋나면 무효 처리.
-  if (!/^(login|open|test)__[A-Za-z0-9_]+$/.test(s)) {
+  if (!/^(login|open|test|demo)__[A-Za-z0-9_]+$/.test(s)) {
     console.warn('[BSync] 세션 키 형식이 올바르지 않습니다(무시):', s);
     return null;
   }
   return s;
 }
 const SESSION = resolveSession();
-// open__/test__ 모드는 DB를 쓰지 않는다(로컬 완결). login__ 만 온라인 동기화 대상.
+// open__/test__/demo__ 모드는 DB를 쓰지 않는다(로컬 완결). login__ 만 온라인 동기화 대상.
+// demo = 참관 교사가 학생처럼 QR 스캔 체험(카메라 O), 단 기록 안 함(성적 안 섞임).
 const ONLINE_MODE = !!SESSION && /^login__/.test(SESSION);
 
 function getDeviceId() {

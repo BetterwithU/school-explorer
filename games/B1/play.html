@@ -153,9 +153,10 @@
     navigator.serviceWorker.register('../../sw.js', { scope: '../../' }).catch(() => {});
   }
   const params = new URLSearchParams(location.search);
-  // 세션 키(login__/open__/test__) = 게임 모드의 단일 출처. 개발자 페이지가 배정 시 ?session= 으로 부여.
+  // 세션 키(login__/open__/test__/demo__) = 게임 모드의 단일 출처. 개발자 페이지가 배정 시 ?session= 으로 부여.
+  // demo = 참관 교사 '학생처럼 해보기'(카메라 스캔 O, 로그인은 대시보드에서 이미 함, 기록 X).
   const SESSION = (params.get('session') || '').trim();
-  const MODE = /^(login|open|test)__/.test(SESSION) ? SESSION.split('__')[0] : null;  // login | open | test | null
+  const MODE = /^(login|open|test|demo)__/.test(SESSION) ? SESSION.split('__')[0] : null;  // login | open | test | demo | null
   // DEV(카메라 우회·진행초기화)는 test 모드에서만. login 모드에선 ?dev=1 을 무시(채점 우회 차단).
   // open 모드에선 하위호환으로 ?dev=1 인정(체험 편의).
   const DEV = MODE === 'test' || (MODE === 'open' && params.get('dev') === '1');
@@ -190,6 +191,17 @@
    * open/test 모드 또는 Firebase 미구성 → 로그인 생략(체험·연습, DB 미기록). */
   function startAfterAuth() {
     initSync();
+    // demo(학생처럼 해보기): 조 선택 없이 '체험' 조로 자동 시작. 이름은 로그인 계정에서.
+    if (MODE === 'demo') {
+      const u = (window.BAuth && window.BAuth.user && window.BAuth.user()) ? window.BAuth.user() : null;
+      const who = u && u.email ? u.email.split('@')[0] : '체험';
+      PROGRESS = E.loadProgress(DATA, '체험조') || E.startGame(DATA, '체험조');
+      PROGRESS.myName = who; PROGRESS.partnerName = '(참관 체험)';
+      PROGRESS.email = (u && u.email) || '';
+      E.saveProgress(PROGRESS);
+      route();
+      return;
+    }
     const urlTeam = params.get('team');   // ?team=3조 → 탭/기기마다 다른 조로 테스트
     const savedTeam = urlTeam || (DEV ? (localStorage.getItem(CURTEAM_KEY) || (E.teamList(DATA)[0] || '1조')) : localStorage.getItem(CURTEAM_KEY));
     if (savedTeam) {

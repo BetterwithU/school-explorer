@@ -4,7 +4,7 @@
     ".write": false,
     "sessions": {
       "$session": {
-        ".read": "$session.matches(/^login__/) && auth != null && (auth.token.email === 'june_wook@snu.ms.kr' || auth.token.email === 'snumsmaths@snu.ms.kr' || auth.token.email === 'sw@snu.ms.kr')",
+        ".read": "$session.matches(/^login__/) && auth != null && auth.token.email.matches(/@snu[.]ms[.]kr$/)",
 
         "pairs": {
           ".read": "$session.matches(/^login__/) && auth != null && auth.token.email.matches(/@snu[.]ms[.]kr$/)",
