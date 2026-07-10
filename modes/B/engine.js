@@ -105,6 +105,8 @@
       return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
     };
   }
+  // 순수 랜덤 base 순서: 실내/실외 구분 없이 전체를 결정적으로 섞는다(원본 불변).
+  // 조별 offset 회전과 결합 → 모든 조가 서로 다른 지점에서 시작해 자연 분산(라틴방진).
   function shuffledBase(ids) {
     const base = ids.slice();
     const rng = mulberry32(hashSeed('BASE:' + ids.join(',')));
@@ -301,16 +303,15 @@
     return filtered.length ? filtered : unv;
   }
 
-  // 오프라인 폴백: 안 간 곳 중 '실내' 우선 배정(거기서 와이파이 재접속 → 추적 재개).
-  // 실내가 다 끝났으면 안 간 아무 곳. 루트 순서 유지 → 결정적.
+  // 오프라인 폴백: 루트순(순수 랜덤) 첫 미방문지로 배정 → 결정적, 실내/실외 구분 없음.
+  // (과거엔 '실내 우선'이라 실내를 다 돌아야 실외가 열렸음 — 랜덤 분산과 충돌해 제거.)
   function nextTargetOffline(data, p) {
     const gate = pendingStart(data, p);
     if (gate) return gate;                       // 교실 먼저(관문)
     const unv = excludeSkipped(p.route.filter(id => !p.solved[id]), p);
     p.justSkipped = null;                        // 1회 소비
     if (!unv.length) return null;
-    const indoor = unv.find(id => { const s = stationById(data, id); return s && s.indoor; });
-    return stationById(data, indoor != null ? indoor : unv[0]);
+    return stationById(data, unv[0]);            // 루트순 첫 미방문(랜덤 순서 그대로)
   }
 
   /* ---------- ② 실시간 동적 배정 ----------
@@ -329,7 +330,7 @@
   function nextTargetSmart(data, p, liveTeams) {
     const gate = pendingStart(data, p);
     if (gate) return gate;                       // 교실 관문: 풀기 전엔 무조건 교실로
-    if (!liveTeams) return nextTargetOffline(data, p); // 오프라인 폴백(실내 우선; justSkipped 처리 포함)
+    if (!liveTeams) return nextTargetOffline(data, p); // 오프라인 폴백(루트순 랜덤; justSkipped 처리 포함)
     const unvisited = excludeSkipped(p.route.filter(id => !p.solved[id]), p); // 루트 순서 유지(동률 tiebreak)
     p.justSkipped = null;                        // 1회 소비
     if (!unvisited.length) return null;
