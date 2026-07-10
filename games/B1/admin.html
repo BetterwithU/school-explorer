@@ -270,14 +270,25 @@
     const appEl = document.getElementById('appWrap');
     const fb = document.getElementById('gateFb');
     const open = () => { gateEl.style.display = 'none'; appEl.style.display = 'block'; mergeServerHistory(); };
+    const loginBtn = document.getElementById('gateLogin');
     const apply = () => {
       const A = window.BAuth;
       if (!A || !A.configured) { fb.textContent = '⚠️ Firebase 미구성 — 로컬에선 게이트를 통과시킵니다.'; open(); return; }
+      // 초기 인증 확인이 끝날 때까지 로그인 버튼을 감춘다 → 이미 로그인돼 있으면 팝업 없이 바로 통과.
+      let resolved = false;
+      loginBtn.style.display = 'none';
+      fb.textContent = '인증 확인 중…';
       A.onChange(u => {
-        if (u && A.isAdmin(u.email)) open();
-        else if (u) { fb.textContent = '이 계정은 교사로 등록되어 있지 않습니다: ' + u.email; }
+        console.info('[gate] onChange:', u ? u.email : 'null', '| isAdmin=', u ? A.isAdmin(u.email) : '-');
+        if (u && A.isAdmin(u.email)) { open(); return; }
+        // 첫 확인이 끝났는데 통과 못 함 → 그때 비로소 로그인 버튼 노출.
+        resolved = true;
+        loginBtn.style.display = '';
+        fb.textContent = u ? ('이 계정은 교사로 등록되어 있지 않습니다: ' + u.email) : '';
       });
-      document.getElementById('gateLogin').onclick = async () => {
+      // 안전장치: 3초 내 어떤 상태도 안 오면(초기 콜백 지연) 로그인 버튼을 보여준다.
+      setTimeout(() => { if (!resolved && appEl.style.display !== 'block') { loginBtn.style.display = ''; fb.textContent = ''; } }, 3000);
+      loginBtn.onclick = async () => {
         fb.textContent = '';
         try { const u = await A.signIn(); if (!A.isAdmin(u.email)) { fb.textContent = '교사로 등록되지 않은 계정입니다.'; await A.signOut(); } }
         catch (e) { fb.textContent = e.message === 'DOMAIN' ? '학교 계정(@snu.ms.kr)만 가능합니다.' : '로그인 실패'; }

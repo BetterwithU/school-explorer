@@ -30,11 +30,15 @@ const isAdmin = (email) => !!email && ADMINS.includes(String(email).toLowerCase(
 if (cfg && cfg.apiKey) {
   try {
     const { initializeApp, getApps, getApp } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
-    const { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } =
+    const { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut,
+            setPersistence, browserLocalPersistence } =
       await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');
 
     const app = getApps().length ? getApp() : initializeApp(cfg);  // sync.js와 앱 공유
     const auth = getAuth(app);
+    // 로그인 지속성 명시(로컬 = 새로고침·재접속해도 세션 유지) → "접속할 때마다 로그인" 방지.
+    try { await setPersistence(auth, browserLocalPersistence); }
+    catch (e) { console.warn('[BAuth] setPersistence 실패(세션 유지 안 될 수 있음):', e && (e.code || e.message)); }
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({ hd: 'snu.ms.kr' });   // 학교 도메인 계정 우선 표시
 
@@ -52,7 +56,12 @@ if (cfg && cfg.apiKey) {
       },
       signOut() { return signOut(auth); },
       onChange(cb) {
-        onAuthStateChanged(auth, (u) => { curUser = (u && domainOK(u.email)) ? u : null; cb(curUser); });
+        onAuthStateChanged(auth, (u) => {
+          curUser = (u && domainOK(u.email)) ? u : null;
+          // 진단: 인증 상태 전이를 콘솔에 남긴다(로그인 반복 원인 추적용).
+          console.info('[BAuth] authState:', u ? (u.email + (curUser ? '' : ' (도메인 불일치)')) : 'null(비로그인/미복원)');
+          cb(curUser);
+        });
       },
     };
   } catch (e) {
