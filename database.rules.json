@@ -12,18 +12,22 @@
         },
 
         "gameOn": {
+          ".read": "$session.matches(/^login__/) && auth != null && auth.token.email.matches(/@snu[.]ms[.]kr$/)",
           ".write": "$session.matches(/^login__/) && auth != null && (auth.token.email === 'june_wook@snu.ms.kr' || auth.token.email === 'snumsmaths@snu.ms.kr' || auth.token.email === 'sw@snu.ms.kr')",
           ".validate": "newData.isBoolean()"
         },
         "announce": {
+          ".read": "$session.matches(/^login__/) && auth != null && auth.token.email.matches(/@snu[.]ms[.]kr$/)",
           ".write": "$session.matches(/^login__/) && auth != null && (auth.token.email === 'june_wook@snu.ms.kr' || auth.token.email === 'snumsmaths@snu.ms.kr' || auth.token.email === 'sw@snu.ms.kr')"
         },
         "override": {
+          ".read": "$session.matches(/^login__/) && auth != null && auth.token.email.matches(/@snu[.]ms[.]kr$/)",
           ".write": "$session.matches(/^login__/) && auth != null && (auth.token.email === 'june_wook@snu.ms.kr' || auth.token.email === 'snumsmaths@snu.ms.kr' || auth.token.email === 'sw@snu.ms.kr')",
           "$team": { ".validate": "newData.isNumber() || !newData.exists()" }
         },
 
         "teams": {
+          ".read": "$session.matches(/^login__/) && auth != null && auth.token.email.matches(/@snu[.]ms[.]kr$/)",
           ".write": "auth != null && (auth.token.email === 'june_wook@snu.ms.kr' || auth.token.email === 'snumsmaths@snu.ms.kr' || auth.token.email === 'sw@snu.ms.kr') && !newData.exists()",
           "$team": {
             "$device": {

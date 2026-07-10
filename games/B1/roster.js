@@ -14,9 +14,12 @@
   function parseCSV(text) {
     const rows = String(text || '').replace(/\r/g, '').split('\n').map(r => r.trim()).filter(Boolean);
     if (!rows.length) return [];
-    // 헤더 인식: 첫 행에 '이름'/'name'이 있으면 헤더로 보고 건너뜀
+    // 헤더 인식(견고): '이름/name/성명'은 학생 데이터 값에 안 나오므로 부분일치로 헤더 판정.
+    // '반/번호/class/no'는 "2반"처럼 데이터 값에 섞여 나오므로 셀 전체가 정확히 그 단어일 때만 헤더로 인정.
+    // (안 그러면 헤더 없는 명단의 첫 행 "2반,1,김민준"을 헤더로 오인해 1번 학생을 유실함)
     const head = rows[0].split(',').map(c => c.trim().toLowerCase());
-    const hasHeader = head.some(c => /이름|name/.test(c)) || head.some(c => /반|class|번호|no/.test(c));
+    const isHeaderCell = c => /이름|name|성명/.test(c) || /^(반|학년반|class|번호|no|number)$/i.test(c);
+    const hasHeader = head.some(isHeaderCell);
     const ci = {
       cls: head.findIndex(c => /반|class/.test(c)),
       no:  head.findIndex(c => /번호|no|number/.test(c)),
