@@ -279,7 +279,6 @@
       loginBtn.style.display = 'none';
       fb.textContent = '인증 확인 중…';
       A.onChange(u => {
-        console.info('[gate] onChange:', u ? u.email : 'null', '| isAdmin=', u ? A.isAdmin(u.email) : '-');
         if (u && A.isAdmin(u.email)) { open(); return; }
         // 첫 확인이 끝났는데 통과 못 함 → 그때 비로소 로그인 버튼 노출.
         resolved = true;

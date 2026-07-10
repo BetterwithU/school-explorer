@@ -58,8 +58,6 @@ if (cfg && cfg.apiKey) {
       onChange(cb) {
         onAuthStateChanged(auth, (u) => {
           curUser = (u && domainOK(u.email)) ? u : null;
-          // 진단: 인증 상태 전이를 콘솔에 남긴다(로그인 반복 원인 추적용).
-          console.info('[BAuth] authState:', u ? (u.email + (curUser ? '' : ' (도메인 불일치)')) : 'null(비로그인/미복원)');
           cb(curUser);
         });
       },
