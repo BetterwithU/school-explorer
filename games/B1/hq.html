@@ -97,7 +97,7 @@
       <p id="subt">중2 탐험 레이스 · 실시간 진행</p>
     </header>
 
-    <div class="controls">
+    <div class="controls" id="controls" style="display:none">
       <a id="devLink" href="admin.html" target="_blank">🛠️ 개발자 페이지</a>
       <a id="testPlayLink" href="play.html?session=test__B1__sim__r01" target="_blank">🎮 테스트 플레이</a>
       <a id="demoLink" href="play.html?session=demo__B1__spectate__r01" target="_blank" class="start-brief">👣 학생처럼 해보기</a>
@@ -251,10 +251,12 @@
     };
   }
 
-  // 관전 모드 UI: 조작 버튼 숨기고 배지 표시. 보기(순위·진행·혼잡도)는 그대로.
+  // 로그인 통과 후 호출. 상단 버튼을 이제 표시(로그인 전엔 숨김). 관전 모드면 조작 버튼만 다시 숨김.
   function applySpectatorUI() {
-    if (!IS_SPECTATOR) return;
-    // 숨길 조작 버튼: 공지·종료·초기화·개발자페이지·테스트플레이. (게임시작안내·결과시트·학생처럼해보기는 유지)
+    const controls = document.getElementById('controls');
+    if (controls) controls.style.display = '';   // 로그인 통과 → 버튼 영역 표시
+    if (!IS_SPECTATOR) return;                    // 운영(화이트리스트)은 전부 표시하고 끝
+    // 관전 모드: 조작 버튼 숨김(공지·종료·초기화·개발자·테스트플레이). 게임시작안내·결과시트·학생처럼해보기는 유지.
     ['msgBtn', 'endBtn', 'resetBtn', 'devLink', 'testPlayLink'].forEach(id => {
       const el = document.getElementById(id); if (el) el.style.display = 'none';
     });
