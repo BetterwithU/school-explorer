@@ -501,8 +501,21 @@
     const qrImg = document.getElementById('briefQRImg');
     let qrGenerated = false;
 
-    document.getElementById('briefBtn').onclick = () => { overlay.style.display = 'block'; document.body.style.overflow = 'hidden'; };
-    document.getElementById('briefClose').onclick = () => { overlay.style.display = 'none'; document.body.style.overflow = ''; };
+    // 게임 안내 오버레이 — 히스토리에 상태를 넣어, 뒤로가기가 클래스룸이 아니라 '오버레이 닫기'가 되게.
+    function openBrief() {
+      overlay.style.display = 'block'; document.body.style.overflow = 'hidden';
+      history.pushState({ brief: true }, '');
+    }
+    function closeBrief(fromPop) {
+      overlay.style.display = 'none'; document.body.style.overflow = '';
+      if (!fromPop && history.state && history.state.brief) history.back(); // 닫기 버튼 → 히스토리 정리
+    }
+    document.getElementById('briefBtn').onclick = openBrief;
+    document.getElementById('briefClose').onclick = () => closeBrief(false);
+    // 뒤로가기: 오버레이가 열려 있으면 닫기만 하고 대시보드에 머문다.
+    window.addEventListener('popstate', () => {
+      if (overlay.style.display === 'block') closeBrief(true);
+    });
 
     showQRBtn.onclick = () => {
       showQRBtn.style.display = 'none';
