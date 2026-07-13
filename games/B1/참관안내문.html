@@ -73,13 +73,13 @@
   .body { padding: 30px 40px 8px; }
   section { margin-bottom: 26px; }
   h2 {
-    font-size: 12px; letter-spacing: .1em; text-transform: uppercase;
-    color: var(--green); font-weight: 800;
+    font-size: 18px; letter-spacing: -.01em;
+    color: var(--green); font-weight: 900;
     display: flex; align-items: center; gap: 8px;
     margin-bottom: 14px;
     padding-bottom: 9px; border-bottom: 1.5px solid var(--line-soft);
   }
-  h2 .ic { font-size: 15px; }
+  h2 .ic { font-size: 18px; }
 
   .lede { font-size: 14px; color: var(--ink-soft); margin-bottom: 12px; }
 
@@ -211,7 +211,8 @@
 
   /* ─────────── 인쇄 ─────────── */
   @media print {
-    body { padding: 0; background: #fff; }
+    @page { margin: 0; }
+    body { padding: 12mm 15mm; background: #fff; }
     .sheet { border: none; box-shadow: none; border-radius: 0; max-width: 100%; }
     header, .step, .design, .access, .path, .feat, .rule .em {
       -webkit-print-color-adjust: exact; print-color-adjust: exact;
@@ -292,7 +293,7 @@
       </div>
     </section>
 
-    <section>
+    <section style="break-before: page; padding-top: 28px;">
       <h2><span class="ic">📊</span> 실시간 대시보드로 지켜봅니다</h2>
       <p class="lede">진행 교사는 대시보드에서 게임 전체를 한눈에 봅니다. 참관하시는 선생님도 같은 화면을 함께 보실 수 있습니다.</p>
       <div class="dash-grid">

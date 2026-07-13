@@ -86,6 +86,14 @@
     .occ-count { font-size: 1.3rem; font-weight: 900; margin-top: 3px; }
     .occ-count.zero { color: #5b6b8a; }
 
+    /* 수신 공지 배너 (학생과 동일 메시지 표시) */
+    #hqAnnounceBanner { display:none; position:sticky; top:0; z-index:200; background:#1a3a6e; border:1px solid #3a6bc4; border-radius:12px; padding:12px 16px; margin:8px 0; animation: hqBlink 1s ease-in-out 3; }
+    #hqAnnounceBanner.end { background:#3a1020; border-color:#c43a5a; }
+    #hqAnnounceBanner .hq-ann-row { display:flex; align-items:center; gap:10px; }
+    #hqAnnounceBanner .hq-ann-text { flex:1; font-weight:800; font-size:0.96rem; color:#e6eefc; }
+    #hqAnnounceBanner .hq-ann-close { background:transparent; border:none; color:#8b9bb4; font-size:1.1rem; cursor:pointer; padding:0 4px; }
+    @keyframes hqBlink { 0%,100%{opacity:1} 50%{opacity:.5} }
+
     details { background: #16213e; border-radius: 12px; padding: 12px 14px; margin-bottom: 10px; }
     summary { cursor: pointer; color: #cfe3ff; font-size: 0.9rem; font-weight: bold; }
     table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.8rem; }
@@ -140,6 +148,12 @@
     </div>
 
     <div id="alertBar"></div>
+    <div id="hqAnnounceBanner">
+      <div class="hq-ann-row">
+        <span class="hq-ann-text" id="hqAnnText"></span>
+        <button class="hq-ann-close" id="hqAnnClose" title="닫기">✕</button>
+      </div>
+    </div>
 
   <!-- 게임 시작 안내 오버레이 (position:fixed — wrap 밖에 있어도 무관) -->
   <div id="briefingOverlay" style="display:none">
@@ -444,6 +458,9 @@
       flash('배너를 내렸습니다');
     };
     // 게임 종료·소집: 결과 영구저장(+시트 기록) → 학생 화면 마감.
+    // 수신: 학생들과 동일한 공지 배너를 대시보드에도 표시
+    window.BSync.subscribeAnnounce(a => showHqAnnounce(a));
+
     document.getElementById('endBtn').onclick = async () => {
       if (!confirm('🏁 게임을 종료합니다.\n· 현재까지의 결과가 영구 저장되고 채점 시트에 기록됩니다.\n· 모든 학생 화면에 종료 안내가 떠 진행이 멈춥니다.\n\n⚠️ 종료를 눌러야 결과가 기록됩니다. 계속할까요?')) return;
       // 종료 메시지는 공지 입력칸과 무관하게 항상 고정('5분 남았어요' 같은 직전 공지가 딸려오지 않게).
@@ -461,6 +478,23 @@
       }
     };
   }
+
+  // 수신 공지 배너 표시/해제
+  let hqAnnTimer = null;
+  function showHqAnnounce(a) {
+    const banner = document.getElementById('hqAnnounceBanner');
+    const textEl = document.getElementById('hqAnnText');
+    if (!a || !a.msg) { banner.style.display = 'none'; return; }
+    textEl.textContent = '📢 ' + a.msg;
+    banner.className = a.end ? 'end' : '';
+    banner.style.display = 'block';
+    clearTimeout(hqAnnTimer);
+    if (!a.end) hqAnnTimer = setTimeout(() => { banner.style.display = 'none'; }, 15000);
+  }
+  document.getElementById('hqAnnClose').onclick = () => {
+    document.getElementById('hqAnnounceBanner').style.display = 'none';
+    clearTimeout(hqAnnTimer);
+  };
 
   // 게임종료 결과 스냅샷 → Firebase results/ 영구저장 + 구글시트 POST.
   async function saveGameResults() {
