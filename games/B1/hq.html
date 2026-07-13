@@ -58,6 +58,7 @@
     .rank-row.gold { background: linear-gradient(135deg,#3a2e00,#1c2336); border: 1px solid #ffd166; }
     .rank-medal { font-size: 1.2rem; width: 30px; text-align: center; }
     .rank-name { font-weight: 800; }
+    .rank-mem { color: #9fd8c4; font-size: 0.82rem; font-weight: 600; }
     .rank-time { margin-left: auto; color: #ffd166; font-size: 0.84rem; }
 
     /* 팀 카드 */
@@ -341,7 +342,7 @@
   function renderRank() {
     const need = DATA ? E.winNeed(DATA) : '';
     const a = agg();
-    const winners = Object.keys(a).filter(t => a[t].wonAt).map(t => ({ team: t, wonAt: a[t].wonAt }))
+    const winners = Object.keys(a).filter(t => a[t].wonAt).map(t => ({ team: t, wonAt: a[t].wonAt, myName: a[t].myName, partnerName: a[t].partnerName }))
       .sort((x, y) => x.wonAt - y.wonAt);
     const el = document.getElementById('rank');
     if (!winners.length) { el.innerHTML = `<div class="muted">아직 ${need}개 달성한 조 없음</div>`; return; }
@@ -349,6 +350,7 @@
     el.innerHTML = `<div class="rank">${winners.map((w, i) =>
       `<div class="rank-row ${i === 0 ? 'gold' : ''}"><span class="rank-medal">${medal[i] || (i + 1)}</span>
         <span class="rank-name">${esc(w.team)}</span>
+        ${(w.myName || w.partnerName) ? `<span class="rank-mem">${esc(w.myName || '?')}${w.partnerName ? ' · ' + esc(w.partnerName) : ''}</span>` : ''}
         <span class="rank-time">${need}개 달성 ${new Date(w.wonAt).toLocaleTimeString('ko-KR')}</span></div>`).join('')}</div>`;
   }
 
