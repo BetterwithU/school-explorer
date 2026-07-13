@@ -349,6 +349,10 @@
   // 서버(BStore) 배정이력을 로컬과 병합 → 다른 PC에서 만든 배정도 이 화면에 뜬다(회차관리 PC간 공유).
   // 로그인(교사) 후 호출. 서버가 정본이 아니라 '합집합'(session 키 기준 dedup, 로컬 우선).
   async function mergeServerHistory() {
+    // BStore 초기화 타이밍 레이스 대비: 최대 3초 대기
+    if (!window.BStore) {
+      await new Promise(r => { let n=0; const id=setInterval(()=>{ if(window.BStore||++n>15){clearInterval(id);r();} },200); });
+    }
     if (!window.BStore) return;
     try {
       const server = await window.BStore.getAssignments();  // { session: meta, ... }
