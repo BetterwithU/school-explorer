@@ -484,8 +484,8 @@
   function showHqAnnounce(a) {
     const banner = document.getElementById('hqAnnounceBanner');
     const textEl = document.getElementById('hqAnnText');
-    if (!a || !a.msg) { banner.style.display = 'none'; return; }
-    textEl.textContent = '📢 ' + a.msg;
+    if (!a || !a.text) { banner.style.display = 'none'; return; }
+    textEl.textContent = '📢 ' + a.text;
     banner.className = a.end ? 'end' : '';
     banner.style.display = 'block';
     clearTimeout(hqAnnTimer);
